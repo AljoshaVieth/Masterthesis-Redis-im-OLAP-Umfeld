@@ -1,0 +1,60 @@
+% Licence:  Creative Commons Attribution (CC BY 4.0)
+% Author: Tim Träris (2022)
+% Author: Valentin Weber (2023)
+\documentclass[english]{hfubook} % remove `english` for german language
+
+\begin{document}
+
+\author{Aljosha Vieth}
+\matriculationnumber{271401}
+\studyprogram{Computer Science}
+\streetname{Zollernstraße 87}
+\postalcode{75328}
+\city{Schömberg}
+\email{mail@aljoshavieth.de}
+\title{Redis im OLAP Umfeld}
+\subtitle{Ist Redis im OLAP Umfeld nützlich?}     % optional
+\type{Master Thesis}
+\supervisor{Prof. Dr. Piepmeyer}
+\cosupervisor{Dr. Weininger}
+\date{31.08.2023}
+
+\maketitle
+
+% Roman numbering
+\frontmatter
+\pagenumbering{Roman}
+
+\include{framework/abstract}            % Abstract
+\tableofcontents                        % Contents
+\listoffigures                          % List of Figures
+\listoftables                           % List of Tables
+\lstlistoflistings                      % List of Code Listings
+\abbrtitle
+\include{framework/abbreviations}       % Abbreviations
+
+% Content
+\mainmatter
+\include{content/1_introduction}
+\include{content/2_background}
+\include{content/3_design}
+\include{content/4_implementation}
+\include{content/5_conclusion}
+
+% Bibliography
+\begin{singlespace}
+    \printbibliography
+\end{singlespace}
+
+% Declaration of Authorship (in German)
+\eidesstattlicheerkaerung
+
+% Appendices
+\appendix
+
+\begin{appendices}
+    \include{appendix/A_monthly_reports}
+    \include{appendix/B_another_important_appendix}
+\end{appendices}
+
+\end{document}
