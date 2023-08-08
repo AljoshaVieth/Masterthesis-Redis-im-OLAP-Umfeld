@@ -1,6 +1,31 @@
 \chapter{Technische Grundlagen}
-\section{OLAP}
-lorem ipsum
+\section{Analyse von Geschäftsdaten}
+Viele Unternehmen nutzen heutzutage große Mengen von Geschäftsdaten zur strategischen Planung. Diese Daten werden in sogenannten Datawarehouses gespeichert und mit \acf{OLAP} analysiert.
+\subsection{Data Warehouses}
+Data Warehouses wurden entwickelt, um Daten, die für strategische Entscheidungen im Geschäftsumfeld nützlich sein können, zu speichern.
+Dazu werden Daten aus Geschäftsprozessen wie etwa Verkäufen extrahiert, für die weitere Verwendung transformiert und in bestimmten Datenbanken gespeichert.
+Klassische  operative oder transaktionale Datenbankansätze die auf den täglichen Gebrauch durch viele Nutzende optimiert sind, eignen sich nicht für ein solches Datawarewhouse, da hier üblicherweise keine historischen Daten gespeichert werden.
+Des weiteren enthalten diese detaillierte Daten was das Ausführen von komplexen Abfragen erschwert bzw. verlangsamt.
+Um aber Entscheidungen aus den Daten ableiten zu können, sind sowohl historische Daten als auch komplexe Abfragen notwendig.
+Ein Data Warehouse soll diese Probleme lösen und sowohl historische Daten als auch Optimierungen der Datenstruktur für komplexere Abfragen bieten.
+In der ursprüngliche Definition nach Inmon werden Data Warehouses als Sammlung von subjektorientierten, integrierten, nicht flüchtigen und zeitvariablen Daten beschrieben.
+Subjektorientiert bedeuted, dass sich die Daten auf bestimmte Aspekte der geforderten Analyse beziehen, also z.B. Daten über Produktionsmengen und Verkäufen bei Produktionsunternehmen.
+Mit integrierten Daten ist gemeint, dass Daten aus verschiedenen Umgebungen in dem Warehouse integriert sind.
+Nicht flüchtig bedeutet, dass die Daten über lange Zeiträume hinweg gespeichert bleiben und somit weder gelöscht noch modifiziert werden.
+Zur Analyse ist es wichtig, Daten im zeitlichen Verlauf mit einander zu vergleichen, etwa, um herauszufinden, wie sich die Verkäufe im letzten Quartal entwickelt haben. Zeitvariable beschriebt daher, dass Daten aus verschiedenen Zeitpunkten gespeichert werden~\cite[s. 3-4]{vaisman_data_2022}.
+
+Die Mehrheit der am häufigsten verwendeten Datenbanken nutzt ein relationales Datenbankmodell~\cite{db-engines_most_2023}. 
+In relationalen Datenbanken werden die Daten meist stark normalisiert, also über mehrere Tabellen verteilt und mir Fremdschlüsseln verlinkt. 
+Das verhindert Redundanz, sorgt aber auch dafür, dass Abfragen komplizierter werden und länger in der Ausführung benötigen, da die Daten aus verschiedenen Tabellen kombiniert werden müssen.
+In Data Warehouses die für große Datenmengen und komplexe Abfragen gedacht sind, bildet das Normalisieren durch die erschwerten Abfragen einen Nachteil.
+Um Daten für Abfragen effizient zu speichern, werden diese nicht soweit wie möglich normalisiert sondern Anhand ihrer Inhalte verteilt. Durch Verständnis der Daten können diese in eine sogenannte Faktentabelle und viele Dimensionstabellen aufgeteilt werden. In der Faktentabelle befinden sich die zentralen Metriken die zur Analyse benötigt werden, etwa die Anzahl der Verkäufe eines Produktes. Die Dimensionstabellen enthalten Daten, mit denen die Daten der Faktentabelle unter verschiedenen Umständen betrachtet werden können, etwa eine Dimensionstabelle mit Zeitpunkten oder Orten. Die Dimensionstabellen sind in der Faktentabelle verlinkt. Bei Abfragen können nun verschiedene Dimensionen kombiniert werden um Daten aus der Faktentabelle abzufragen. So können z.B. die Verkäufe aus einem bestimmten Jahr in einer bestimmten Filiale aus der Faktentabelle abgefragt werden.
+Die Dimensionstabellen können außerdem sogenannte Hirarchien enthalten, die verschiedene Genauigkeiten der Dimension definieren.
+So kann ein Zeitpunkt in der Tabelle Werte für Uhrzeit, Tag, Monat, Quartal oder Jahr enthalten. Ein Ort kann etwa aus dem Ortsnamen, dem Bundesland, dem Land, dem Kontinent bestehen. So lassen sich genaue Abfragen zu Verkäufen einer bestimmen Filiale oder etwa allen Filialen in Europa abfragen~\cite[s. 5]{vaisman_data_2022}.
+
+
+\subsection{\acf{OLAP}}
+\acf{OLAP}
+
 
 
 
