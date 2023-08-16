@@ -1,4 +1,16 @@
 \chapter{Implementierung}
+Für diese Arbeit wurde der \acl{SSB} sowohl in PostgreSQL, als auch in abgewandelter Form in Redis durchgeführt.
+\section{\acl{SSB} in PostgreSQL}
+\subsection{Generierung der \acs{SSB}-Daten}
+% Hier ganze Anleitung im Anhang verlinken
+Die Daten für den \acl{SSB} können mit dem Programm ssb-dbgen~\cite{phillips_electrumssb-dbgen_2023} generiert werden.
+Das Programm kann verschiedene Skalierungen der Daten generieren.
+Dabei werden .tbl Dateien generiert, die in eine SQL-basierende Datenbank importiert werden können.
+\subsection{Ausführen des \acl{SSB} in PostgreSQL}
+% Hier ganze Anleitung im Anhang verlinken
+
+Für das Ausführen des \ac{SSB} in PostgreSQL existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}~(japanisch) mit einer Anleitung und Skripten.
+
 
 \section{Arbeitsumfeld}
 

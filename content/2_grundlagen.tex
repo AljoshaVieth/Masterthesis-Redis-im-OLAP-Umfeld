@@ -188,7 +188,7 @@ Außerdem wurden einige, für OLAP unwichtige, Daten entfernt.
 Die genauen Änderungen werden in dem Paper~\cite{oneil_star_2009} zum \ac{SSB} beschrieben.
 % Hier habe ich mich bewusst dazu entschieden, nicht darauf einzugehen, welche Tabellen aus TPC-H wie verändert wurden, da TPC-H irrelevant für diese Arbeit ist.
 Nach den Anpassungen sind die Daten in einer Faktentabelle namens LINEORDER sowie den Dimensionstabellen CUSTOMER, PART, SUPPLIER und DATE organisiert (siehe Abbildung~\ref{pic:ssb-schema}).
-Die Felder innerhalb der Tabellen beginnen mit einem Präfix, bestehend aus dem Anfangsbuchstaben der Tabelle und einem Unterstrich, also etwa d_year in der DATE-Tabelle.
+Die Felder innerhalb der Tabellen beginnen mit einem Präfix, bestehend aus dem Anfangsbuchstaben der Tabelle und einem Unterstrich, also etwa d\_year in der DATE-Tabelle.
 
 \begin{figure}[ht]  % figure position
     \centering      % center the image
@@ -211,8 +211,8 @@ Die Queries des \ac{SSB} sind in vier Kategorien aufgeteilt (query flights): % q
 \paragraph{Q1}
 %ausbauen
 Queries in Q1 schränken die Daten über nur eine Dimension, DATE, ein.
-Die Faktentabelle LINEORDER wird mit der Dimensionstabelle DATE gejoint und die Daten anhand einer Zeitspanne aus der DATE-Tabelle und den Bereichen der Felder "lo_discount"und "lo_quantity" aus der LINEORDER-Tabelle gefiltert.
-Anschließend wird der Umsatz als Summe der Produkte der Felder "lo_extendedprice" und "lo_discount" berechnet und als "revenue" zurückgegeben \cite{oneil_star_2009}.
+Die Faktentabelle LINEORDER wird mit der Dimensionstabelle DATE gejoint und die Daten anhand einer Zeitspanne aus der DATE-Tabelle und den Bereichen der Felder lo\_discount und lo\_quantity aus der LINEORDER-Tabelle gefiltert.
+Anschließend wird der Umsatz als Summe der Produkte der Felder lo\_extendedprice und lo\_discount berechnet und als "revenue" zurückgegeben \cite{oneil_star_2009}.
 
 
 \begin{lstlisting}[
@@ -234,7 +234,7 @@ WHERE
 
 \paragraph{Q2}
 In Q2 schränken die Queries die Daten über zwei Dimensionen ein: PART und SUPPLIER.
-Anschließend wird wie in Q1 der Umsatz gebildet, wobei die Ergebnisse hier noch nach d_year und p_brand1 gruppiert und sortiert werden.  
+Anschließend wird wie in Q1 der Umsatz gebildet, wobei die Ergebnisse hier noch nach d\_year und p\_brand1 gruppiert und sortiert werden.  
 In Q2 werden insgesamt vier Tabellen (LINEORDER, PART, SUPPLIER, DATE) gejoint.
 \begin{lstlisting}[
     language=SQL,
@@ -261,7 +261,7 @@ ORDER BY
 \paragraph{Q3}
 In Q3 schränken die Queries die Daten über drei Dimensionen ein: DATE, SUPPLIER und CUSTOMER.
 Wie in Q1 und Q2 werden auch hier die Umsätze gebildet.
-Anschließend werden sie nach "c_nation", "s_region" und "d_year" gruppiert und nach "d_year" sortiert.
+Anschließend werden sie nach c\_nation, s\_region und d\_year gruppiert und nach d\_year sortiert.
 Es werden insgesamt vier Tabellen (LINEORDER, DATE, SUPPLIER und CUSTOMER) gejoint.
 \begin{lstlisting}[
     language=SQL,
@@ -289,7 +289,7 @@ ORDER BY
 \paragraph{Q4}
 Die Queries von Q4 schränken die Daten basierend auf drei Dimensionen (CUSTOMER, SUPPLIER und PART) ein.
 Auch hier wird wieder der Umsatz berechnet.
-Dieses Mal wird er durch "d_year" und "c_nation" gruppiert und sortiert.
+Dieses Mal wird er durch d\_year und c\_nation gruppiert und sortiert.
 Hier werden erstmals alle fünf Tabellen (LINEORDER, CUSTOMER, SUPPLIER, PART und DATE) gejoint.
 \begin{lstlisting}[
     language=SQL,
