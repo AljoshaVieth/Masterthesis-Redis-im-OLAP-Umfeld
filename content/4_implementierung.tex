@@ -1,23 +1,193 @@
 \chapter{Implementierung}
-Für diese Arbeit wurde der \acl{SSB} sowohl in PostgreSQL, als auch in abgewandelter Form in Redis durchgeführt.
+Für diese Arbeit wurde der \acl{SSB} sowohl in PostgreSQL als auch in einer angepassten Form in Redis durchgeführt.
 \section{\acl{SSB} in PostgreSQL}
 \subsection{Generierung der \acs{SSB}-Daten}
 % Hier ganze Anleitung im Anhang verlinken
-Die Daten für den \acl{SSB} können mit dem Programm ssb-dbgen~\cite{phillips_electrumssb-dbgen_2023} generiert werden.
-Das Programm kann verschiedene Skalierungen der Daten generieren.
-Dabei werden .tbl Dateien generiert, die in eine SQL-basierende Datenbank importiert werden können.
+Es ist möglich, die Daten für den \acl{SSB} mit dem Programm ssb-dbgen~\cite{phillips_electrumssb-dbgen_2023} zu generieren.
+Mit diesem Programm können verschiedene Datenskalierungen erzeugt werden.
+Hierbei werden .tbl-Dateien generiert, die in eine SQL-basierte Datenbank importiert werden können.
 \subsection{Ausführen des \acl{SSB} in PostgreSQL}
+
+% Zeiten anpassen
+Es existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}, das eine Anleitung und Skripte für das Ausführen des \ac{SSB} in PostgreSQL auf Japanisch bereitstellt.
+Zur Ausführung wurde ein Docker-Container mit dem Image "postgres-standard" erstellt.
+Dabei wurden die Standardwerte der PostgreSQL-Konfiguration verwendet.
+Anschließend wurden die .tbl-Dateien und Skripte des Repositories in diesen Container geladen. % Deutschen Begriff für gebinded finden
+Nach der Erstellung des Containers wird zunächst das Skript 'tables.sql' ausgeführt, um die Tabellen in der Datenbank anzulegen.
+Danach können die Daten in die Tabellen importiert werden, indem das Skript 'load.sql' ausgeführt wird.
+Abschließend kann der Benchmark durch die Ausführung des Skripts 'explain-analyze.sql' durchgeführt werden.
 % Hier ganze Anleitung im Anhang verlinken
 
-Für das Ausführen des \ac{SSB} in PostgreSQL existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}~(japanisch) mit einer Anleitung und Skripten.
+% TODO: Ansatz aus Paper beleuchten
+\section{\acs{SSB} in Redis}
+Redis unterstützt, im Gegensatz zu relationalen Datenbanken, keine Verwendung von mehreren Tabellen.
+Es ist möglich, mehrere Datenbanken in Redis zu verwenden. Viele Erweiterungen bieten jedoch nur Unterstützung für die erste Datenbank.
+Die Verwendung von mehreren Datenbanken in Redis wird als Anti-Pattern betrachtet und ist daher nicht empfohlen~\cite{prickett_answer_2022}.
+Stattdessen werden künstliche Namensräume eingeführt, indem Präfixe zu Schlüsseln hinzugefügt werden.
+Die Daten können damit in Kategorien eingeteilt werden.
+Jede Zeile der .tbl-Dateien entspricht einer Zeile in einer der SQL-Tabellen.
+Jede Zeile wurde unter einem einzigartigen Schlüssel mit dem Datentyp HASH in Redis gespeichert.
+
+Im Rahmen dieser Forschung wurden verschiedene Ansätze zur Speicherung von Daten in Redis gewählt.
+\subsection{RediSearch für Abfragen}
+% Beschreiben, warum Redisearch zwingend notwendig ist
+
+% Ab hier alles mit ddepl write überarbeiten
+
+\subsection{Speichern der Daten in Pseudotabellen}
+In diesem Ansatz werden die Daten nach den Tabellen kategorisiert.
+Die Schlüssel der Einträge bestehen dabei aus einer Kombination des Tabellennamens und der ursprünglichen Primärschlüssel (siehe \cref{code:ssb-redis-structur-example}).
+
+\begin{lstlisting}[
+    language=java,
+    caption=Aufbau der Schlüssel der \ac{SSB}-Daten in Redis,
+    label=code:ssb-redis-structur-example
+]
+date:19931104
+\end{lstlisting}
+
+\subsubsection{Einfügen der Daten mit einem Scala-Programm}
+% TODO: Auf digitalen Anhang verweisen
+Um die Daten in Redis einzufügen, wurde ein Scala-Programm geschrieben.
+Das Programm liest zunächst die .tbl Dateien und generiert aus jeder Zeile einen Array mit Strings, wobei die Strings die Werte der einzelnen Spalten darstellen.
+Anschließend werden diese Arrays unter dem generierten Schlüssel in Redis eingefügt.
+Die LINEORDER-Tabelle nutzt zwei Primärschlüssel, deshalb besteht auch in Redis der Schlüssel aus dem Tabellennamen + Primärschlüssel1 + Primärschlüssel2.
+Dabei wird der Befehl HSET genutzt, der es erlaubt, einen Array in Redis als HASH zu speichern.
+
+\begin{lstlisting}[
+    language=scala,
+    float,
+    caption=Einfügen der Daten in Pseudotabellen in Redis,
+    label=code:ssb-redis-insert-pseudotables-snippet
+]
+// This method processes several lines in one go in order to use the redis pipeline,
+// hence it receives a Sequence of lines as input
+def insertIntoRedis(
+    data: Seq[String],
+    databaseName: String,
+    dataStructure: Array[String],
+    isLineOrder: Boolean,
+    pipeline: Pipeline
+): Unit = {
+  data.foreach { line =>
+    val values = line.split("\\|") // Splitting the pipe-separated lines
+    val valueIterator = values.iterator
+    dataStructure.foreach { key =>
+      // Check if key needs to consist of one or two primary keys
+      if (valueIterator.hasNext) {
+        if (isLineOrder) {
+          pipeline.hset(
+            (databaseName + ":" + values(0) + ":" + values(1)).getBytes,
+            key.getBytes,
+            valueIterator.next().getBytes()
+          )
+        } else {
+          pipeline.hset(
+            (databaseName + ":" + values(0)).getBytes,
+            key.getBytes,
+            valueIterator.next().getBytes()
+          )
+        }
+      }
+    }
+  }
+  pipeline.sync()
+}
 
 
-\section{Arbeitsumfeld}
+\end{lstlisting}
+% Darauf achten, dass Listing an richtiger Stelle ist
+% TODO: Redis Pipeline in Grundlagen erklären und hie rverlinken
 
-\subsection{Docker}
+\subsubsection{Denormalisierter Ansatz}
+Der Ansatz mit der tabellenartigen Struktur erfordert das Joinen der Pseudotabellen.
+Es werden mehrere Abfragen benötigt, um anschließend die Daten mit Joins entweder clientseitig oder per LUA-Skript filtern zu können.
+Dieser Umstand macht diesen Ansatz ineffizient und es ist unmöglich, die Berechnungen komplett auf Seite der Datenbank auszuführen.
 
-% Quelle: Docker-Doku
+In Kontrast zu dem tabellenartigen Ansatz steht dieser denormalisierte Ansatz.
 
+Um Joins komplett zu vermeiden und komplett clientseitig arbeiten zu können, werden die Daten komplett denormalisiert.
+Die Tabellen werden komplett aufgelöst.
+Alle Dimensionstabellen (DATE, PART, SUPPLIER, CUSTOMER) werden in die Faktentabelle (LINEORDER) integriert.
+
+\subsubsection{Denormalisieren der Daten und Einfügen in Redis}
+Um die Daten zu denormalisieren und in Redis zu speichern, wurde das Scala-Programm angepasst.
+
+Das Programm definiert eigene Datentypen für die Daten der verschiedenen Tabellen (ShortenedLineorderObject, ShortenedCustomerObject, ShortenedSupplierObject, ShortenedPartObject, ShortenedDateObject).
+Diese Datentypen enthalten Strings für alle Spalten der ursprünglichen Tabellen, die in den \acs{SSB}-Queries verwendet werden.
+Außerdem wird ein neuer Datentyp (DenormalizedObject) definiert, der die Attribute der anderen Datentypen vereint.
+Dieser Datentyp enthält die denormalisierten Daten.
+
+Im ersten Schritt liest das Programm alle .tbl Dateien, generiert die entsprechenden Objekte mit den zuvor definierten Datentypen und speichert diese als Werte in einer Map, wobei als Schlüssel der Primärschlüssel als String verwendet wird.
+
+Anschließend wird über alle Elemente der LINEORDER Einträge iteriert.
+Für jeden Fremdschlüssel wird das entsprechende Objekt aus der entsprechenden Map geladen.
+Enthält ein ShortenedLineorderObject also etwa den suppkey X, so wird das ShortenedSupplierObject mit dem Schlüssel X aus der ShortenedSupplierObject-Map geladen.
+
+Sind alle Fremdschlüssel aufgelöst, wird aus den Objekten ein DenormalizedObject erstellt und mit den Primärschlüsseln des ShortenedLineorderObject als Schlüssel in Redis gespeichert (siehe \cref{code:ssb-redis-insert-denormalized-snippet}).
+
+
+\begin{lstlisting}[
+    language=scala,
+    float,
+    caption=Einfügen der denormalisierten Daten in Redis (Auszug),
+    label=code:ssb-redis-insert-denormalized-snippet
+]
+private def createDenormalizedMap(
+    customerMap: Map[String, ShortenedCustomerObject],
+    supplierMap: Map[String, ShortenedSupplierObject],
+    partMap: Map[String, ShortenedPartObject],
+    lineorderMap: Map[String, ShortenedLineorderObject],
+    dateMap: Map[String, ShortenedDateObject]
+): Unit = {
+
+  lineorderMap.foreach { case (key, lineorder) =>
+    val customer = 
+      customerMap.getOrElse(lineorder.lo_custkey, ShortenedCustomerObject("", "", "", ""))
+    val supplier = 
+      supplierMap.getOrElse(lineorder.lo_suppkey, ShortenedSupplierObject("", "", "", ""))
+    val part = 
+      partMap.getOrElse(lineorder.lo_partkey, ShortenedPartObject("", "", "", ""))
+    val date = 
+      dateMap.getOrElse(lineorder.lo_orderdate, ShortenedDateObject("", ""))
+
+    val denormalized = DenormalizedObject(
+      lineorder.lo_orderkey,
+      ...
+      customer.c_city,
+      customer.c_nation,
+      ...
+    )
+
+    denormalizedMap += (key -> denormalized)
+  }
+}
+
+private def insertDenormalizedObjectsIntoRedis(pipeline: Pipeline): Unit = {
+  denormalizedMap.values.grouped(1000).foreach { denormalizedObjects =>
+    denormalizedObjects.foreach { denormalizedObject =>
+      val hash = Map(
+        "lo_orderkey" -> denormalizedObject.lo_orderkey,
+        ...
+        "c_city" -> denormalizedObject.c_city,
+        "c_nation" -> denormalizedObject.c_nation,
+        ...
+      )
+
+      pipeline.hmset("lineorder:" + denormalizedObject.lo_orderkey + ":" + denormalizedObject.lo_linenumber, hash.asJava)
+      numOfInsertedRecords = numOfInsertedRecords + 1
+    }
+    pipeline.sync()
+  }
+}
+
+
+\end{lstlisting}
+
+% Darauf hinweisen, dass hier natürlich Daten verlorengehen, da nur für SSB Queries relevante Daten gespeichert werden
+
+\subsubsection{Anpassen der Queries}
+Mit RediSearch lassen sich die SQL-Queries des \acf{SSB} sehr gut für Redis anpassen.
 \section{Praktische Implementierung}
 
 \subsection{Scala}
