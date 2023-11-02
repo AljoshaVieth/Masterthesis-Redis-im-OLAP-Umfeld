@@ -1,10 +1,10 @@
 % TODO: FIX LATEX ERRORS
 \chapter{Technische Grundlagen}
 \section{\acf{OLAP}}
-Viele Unternehmen nutzen heute große Mengen von Geschäftsdaten zur strategischen Planung.
-Durch eine Analyse von Geschäftsdaten lassen sich Handlungsempfehlungen ableiten.
-Typische Analysen sind etwa die Berechnung des Umsatzes einer Filiale innerhalb des letzten Jahres und der Vergleich zu vorherigen Jahren oder die Analyse der Verkäufe von einzelnen Produkten in einem bestimmten Quartal.
-Diese Analysen erfordern eine große Datenmenge, die auch historische Daten beinhaltet.
+Viele Unternehmen verwenden heute große Mengen an Geschäftsdaten für eine strategische Planung.
+Durch eine Analyse der Daten lassen sich Handlungsempfehlungen ableiten.
+Typische Analysen umfassen die Berechnung des Umsatzes einer Filiale innerhalb des letzten Jahres sowie der Vergleich zu vorherigen Jahren oder die Analyse der Verkäufe von einzelnen Produkten in einem bestimmten Quartal.
+Diese Analysen erfordern eine umfassende Datenmenge, einschließlich historischer Daten.
 Klassische Datenbanksysteme für Transaktionen, etwa in einem Onlineshop, auch \acf{OLTP} genannt, sind für viele Schreib- und Lesezugriffe optimiert, nutzen meist wenig komplexe Abfragen (Queries) und enthalten häufig keine historischen Daten.
 Datenbanken für analytische Zwecke sollten hingegen stark auf die Leseoperationen optimiert sein und müssen komplexere Queries in angemessener Zeit durchführen können.
 Bei diesem Einsatzgebiet von Datenbanken spricht man vom \acf{OLAP}~\cite[S.~97f]{kleppmann_datenintensive_2019}.
@@ -66,6 +66,7 @@ So kann ein Zeitpunkt in der Tabelle Werte für Uhrzeit, Tag, Monat, Quartal ode
 Ein Ort kann etwa aus dem Ortsnamen, dem Bundesland, dem Land, dem Kontinent bestehen.
 So lassen sich genaue Abfragen zu Verkäufen einer bestimmten Filiale oder etwa allen Filialen in Europa abfragen~\cite[S.~5]{vaisman_data_2022}.
 
+\begin{comment}
 \subsection{Der OLAP-Cube}
 %TODO: OLAP CUBE Voraggregation bei OLAP -> Kleppmann Seite 109 Kapitel 3
 
@@ -164,6 +165,10 @@ Verschiedene \acs{SQL}-Erweiterungen unterstützen verschiedene Datentypen, mit 
 So bietet die \acs{SQL}-Erweiterung Transact-\acs{SQL} von Microsoft noch den Datentyp TINYINT der einen Wert von 0 bis 255 annehmen kann~\cite{ray_et_al_int_2023} und für die Spalte Quartal gut genutzt werden könnte.
 PostgreSQL bietet hingegen keinen solchen Datentypen~\cite{the_postgresql_global_development_group_81_2023} und da im Verlauf dieser Arbeit mit PostgreSQL gearbeitet wurde, wird auch in diesem Beispiel kein TINYINT verwendet.
 
+\end{comment}
+
+
+
 \subsection{\acf{OLAP}}
 
 \subsection{Key Value Stores in \acs{OLAP}}
@@ -185,7 +190,7 @@ Er verwendet die gleichen Daten, nutzt dafür jedoch ein Sternschema statt eines
 Um die Daten an ein Sternschema anzupassen, wurden die normalisierte Struktur des \ac{TPC-H} denormalisiert.
 Somit wurden einige Tabellen zusammengelegt.
 Außerdem wurden einige, für OLAP unwichtige, Daten entfernt.
-Die genauen Änderungen werden in dem Paper~\cite{oneil_star_2009} zum \ac{SSB} beschrieben.
+Im Paper~\cite{oneil_star_2009} zum \ac{SSB} werden die Änderungen im Detail beschrieben.
 % Hier habe ich mich bewusst dazu entschieden, nicht darauf einzugehen, welche Tabellen aus TPC-H wie verändert wurden, da TPC-H irrelevant für diese Arbeit ist.
 Nach den Anpassungen sind die Daten in einer Faktentabelle namens LINEORDER sowie den Dimensionstabellen CUSTOMER, PART, SUPPLIER und DATE organisiert (siehe Abbildung~\ref{pic:ssb-schema}).
 Die Felder innerhalb der Tabellen beginnen mit einem Präfix, bestehend aus dem Anfangsbuchstaben der Tabelle und einem Unterstrich, also etwa d\_year in der DATE-Tabelle.
@@ -200,7 +205,7 @@ Die Felder innerhalb der Tabellen beginnen mit einem Präfix, bestehend aus dem 
 
 \subsubsection{Queries des \ac{SSB}}
 Die Queries des \ac{SSB} unterscheiden sich von denen des \ac{TPC-H}.
-Der \ac{SSB} nutzt nur Queries, die genau eine SELECT-Anweisung auf der Faktentabelle LINEORDER nutzen und somit keine "self-joins" nutzen. %self-joins bissl weirder Ausdruck
+Der \ac{SSB} nutzt nur Queries, die genau eine SELECT-Anweisung auf der Faktentabelle LINEORDER nutzen und somit keine self-joins nutzen. %self-joins bissl weirder Ausdruck
 Die LINEORDER Tabelle wird dann mit einer oder mehreren Dimensionstabellen gejoint und die Ergebnisse somit gefiltert. 
 %TODO: Alle SSB SQL-Queries in den Anhang packen
 
@@ -315,6 +320,11 @@ ORDER BY
 
 \end{lstlisting}
 \section{Redis}
+
+Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_introduction_nodate}.
+In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Hyperloglogs, georäumliche Indizes und Streams.
+Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON unterstützt werden.
+Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_whos_nodate}.
 
 \section{Scala}
 % TODO: ganz kurzes Kapitel über Scala bzw. warum Scala

@@ -49,10 +49,10 @@ date:19931104
 \subsubsection{Einfügen der Daten mit einem Scala-Programm}
 % TODO: Auf digitalen Anhang verweisen
 Um die Daten in Redis einzufügen, wurde ein Scala-Programm geschrieben.
-Das Programm liest zunächst die .tbl Dateien und generiert aus jeder Zeile einen Array mit Strings, wobei die Strings die Werte der einzelnen Spalten darstellen.
-Anschließend werden diese Arrays unter dem generierten Schlüssel in Redis eingefügt.
-Die LINEORDER-Tabelle nutzt zwei Primärschlüssel, deshalb besteht auch in Redis der Schlüssel aus dem Tabellennamen + Primärschlüssel1 + Primärschlüssel2.
-Dabei wird der Befehl HSET genutzt, der es erlaubt, einen Array in Redis als HASH zu speichern.
+Zunächst liest das Programm die .tbl-Dateien ein und erstellt für jede Zeile ein Array aus Strings, wobei die Strings die Werte der einzelnen Spalten repräsentieren.
+Anschließend werden diese Arrays unter Verwendung des generierten Schlüssels in Redis eingefügt.
+Da die LINEORDER-Tabelle zwei Primärschlüssel verwendet, besteht auch der Schlüssel in Redis aus dem Tabellennamen plus Primärschlüssel1 plus Primärschlüssel2.
+Dabei wird der Befehl HSET verwendet, der das Speichern eines Arrays als HASH in Redis ermöglicht.
 
 \begin{lstlisting}[
     language=scala,
@@ -100,31 +100,31 @@ def insertIntoRedis(
 % TODO: Redis Pipeline in Grundlagen erklären und hie rverlinken
 
 \subsubsection{Denormalisierter Ansatz}
-Der Ansatz mit der tabellenartigen Struktur erfordert das Joinen der Pseudotabellen.
-Es werden mehrere Abfragen benötigt, um anschließend die Daten mit Joins entweder clientseitig oder per LUA-Skript filtern zu können.
-Dieser Umstand macht diesen Ansatz ineffizient und es ist unmöglich, die Berechnungen komplett auf Seite der Datenbank auszuführen.
+Der Ansatz mit der tabellarischen Struktur erfordert das Verbinden von Pseudotabellen (Joins).
+Es sind mehrere Abfragen erforderlich, um die Daten entweder clientseitig oder über ein LUA-Skript filtern zu können.
+Dieser Umstand macht diesen Ansatz ineffizient und es ist unmöglich, die Berechnungen vollständig auf Seiten der Datenbank auszuführen.
 
-In Kontrast zu dem tabellenartigen Ansatz steht dieser denormalisierte Ansatz.
+Im Gegensatz zum tabellarischen Ansatz steht der denormalisierte Ansatz.
 
-Um Joins komplett zu vermeiden und komplett clientseitig arbeiten zu können, werden die Daten komplett denormalisiert.
-Die Tabellen werden komplett aufgelöst.
-Alle Dimensionstabellen (DATE, PART, SUPPLIER, CUSTOMER) werden in die Faktentabelle (LINEORDER) integriert.
+Um Joins vollständig zu vermeiden und eine vollständige clientseitige Verarbeitung zu ermöglichen, werden die Daten vollständig denormalisiert.
+Die Tabellen werden aufgelöst
+und alle Dimensionstabellen (DATE, PART, SUPPLIER, CUSTOMER) in die Faktentabelle (LINEORDER) integriert.
 
 \subsubsection{Denormalisieren der Daten und Einfügen in Redis}
 Um die Daten zu denormalisieren und in Redis zu speichern, wurde das Scala-Programm angepasst.
 
 Das Programm definiert eigene Datentypen für die Daten der verschiedenen Tabellen (ShortenedLineorderObject, ShortenedCustomerObject, ShortenedSupplierObject, ShortenedPartObject, ShortenedDateObject).
 Diese Datentypen enthalten Strings für alle Spalten der ursprünglichen Tabellen, die in den \acs{SSB}-Queries verwendet werden.
-Außerdem wird ein neuer Datentyp (DenormalizedObject) definiert, der die Attribute der anderen Datentypen vereint.
-Dieser Datentyp enthält die denormalisierten Daten.
+Des Weiteren wird im Zuge der Implementierung ein neuer Datentyp namens "DenormalizedObject" definiert,
+der die Attribute anderer Datentypen in sich vereint und somit die denormalisierten Daten enthält.
 
-Im ersten Schritt liest das Programm alle .tbl Dateien, generiert die entsprechenden Objekte mit den zuvor definierten Datentypen und speichert diese als Werte in einer Map, wobei als Schlüssel der Primärschlüssel als String verwendet wird.
+Das Programm liest zunächst alle .tbl-Dateien ein, erzeugt daraus Objekte mit den zuvor definierten Datentypen und speichert diese als Werte in einer Map ab. Als Schlüssel dient dabei der Primärschlüssel in Form eines Strings.
 
-Anschließend wird über alle Elemente der LINEORDER Einträge iteriert.
-Für jeden Fremdschlüssel wird das entsprechende Objekt aus der entsprechenden Map geladen.
-Enthält ein ShortenedLineorderObject also etwa den suppkey X, so wird das ShortenedSupplierObject mit dem Schlüssel X aus der ShortenedSupplierObject-Map geladen.
+Anschließend erfolgt eine Iteration über sämtliche "LINEORDER"-Einträge.
+Für jedes Fremdschlüssel-Attribut wird das zugehörige Objekt aus der entsprechenden Map abgerufen.
+Wenn also ein ShortenedLineorderObject beispielsweise den Wert X für suppkey hat, wird das ShortenedSupplierObject mit dem Schlüssel X aus der ShortenedSupplierObject-Map geladen.
 
-Sind alle Fremdschlüssel aufgelöst, wird aus den Objekten ein DenormalizedObject erstellt und mit den Primärschlüsseln des ShortenedLineorderObject als Schlüssel in Redis gespeichert (siehe \cref{code:ssb-redis-insert-denormalized-snippet}).
+Sobald alle Fremdschlüssel aufgelöst sind, wird ein DenormalizedObject erstellt und zusammen mit den Primärschlüsseln des ShortenedLineorderObject als Schlüssel in Redis gespeichert. (siehe \cref{code:ssb-redis-insert-denormalized-snippet}).
 
 
 \begin{lstlisting}[
