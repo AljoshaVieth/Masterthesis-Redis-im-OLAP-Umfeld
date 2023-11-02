@@ -9,18 +9,19 @@ Hierbei werden .tbl-Dateien generiert, die in eine SQL-basierte Datenbank import
 \subsection{Ausführen des \acl{SSB} in PostgreSQL}
 
 % Zeiten anpassen
-Es existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}, das eine Anleitung und Skripte für das Ausführen des \ac{SSB} in PostgreSQL auf Japanisch bereitstellt.
+Es existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}, das eine Anleitung und Skripte für das Ausführen des \ac{SSB} in PostgreSQL bereitstellt.
 Zur Ausführung wurde ein Docker-Container mit dem Image "postgres-standard" erstellt.
 Dabei wurden die Standardwerte der PostgreSQL-Konfiguration verwendet.
 Anschließend wurden die .tbl-Dateien und Skripte des Repositories in diesen Container geladen. % Deutschen Begriff für gebinded finden
 Nach der Erstellung des Containers wird zunächst das Skript 'tables.sql' ausgeführt, um die Tabellen in der Datenbank anzulegen.
 Danach können die Daten in die Tabellen importiert werden, indem das Skript 'load.sql' ausgeführt wird.
-Abschließend kann der Benchmark durch die Ausführung des Skripts 'explain-analyze.sql' durchgeführt werden.
+Abschließend kann der Benchmark durch die Ausführung des Skripts 'explain-analyze.sql' aus dem Repository durchgeführt werden.
 % Hier ganze Anleitung im Anhang verlinken
 
 % TODO: Ansatz aus Paper beleuchten
 \section{\acs{SSB} in Redis}
-Redis unterstützt, im Gegensatz zu relationalen Datenbanken, keine Verwendung von mehreren Tabellen.
+Im Gegensatz zu relationalen Datenbanken ist das Konzept der Tabelle in Redis unbekannt.
+Daten können daher nicht auf verschiedene Tabellen verteilt werden.
 Es ist möglich, mehrere Datenbanken in Redis zu verwenden. Viele Erweiterungen bieten jedoch nur Unterstützung für die erste Datenbank.
 Die Verwendung von mehreren Datenbanken in Redis wird als Anti-Pattern betrachtet und ist daher nicht empfohlen~\cite{prickett_answer_2022}.
 Stattdessen werden künstliche Namensräume eingeführt, indem Präfixe zu Schlüsseln hinzugefügt werden.
@@ -51,7 +52,7 @@ date:19931104
 Um die Daten in Redis einzufügen, wurde ein Scala-Programm geschrieben.
 Zunächst liest das Programm die .tbl-Dateien ein und erstellt für jede Zeile ein Array aus Strings, wobei die Strings die Werte der einzelnen Spalten repräsentieren.
 Anschließend werden diese Arrays unter Verwendung des generierten Schlüssels in Redis eingefügt.
-Da die LINEORDER-Tabelle zwei Primärschlüssel verwendet, besteht auch der Schlüssel in Redis aus dem Tabellennamen plus Primärschlüssel1 plus Primärschlüssel2.
+Da die LINEORDER-Tabelle einen zusammengesetzten Primärschlüssel verwendet, besteht auch der Schlüssel in Redis aus den Werten zweier Felder.
 Dabei wird der Befehl HSET verwendet, der das Speichern eines Arrays als HASH in Redis ermöglicht.
 
 \begin{lstlisting}[

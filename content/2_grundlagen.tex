@@ -11,17 +11,17 @@ Bei diesem Einsatzgebiet von Datenbanken spricht man vom \acf{OLAP}~\cite[S.~97f
 
 \ac{OLAP} und \ac{OLTP} profitieren von verschiedenen Optimierungen der Datenstrukturen in einer Datenbank.
 Bei Nutzung einer gemeinsamen Datenbank für beide Verfahren würden die \ac{OLAP}-Abfragen außerdem die \ac{OLTP}-Transaktionen verlangsamen oder blockieren.
-Um das zu verhindern, nutzt man für \ac{OLAP} eigene Datenbanksysteme und speichert die Daten in sogenannten \acp{DW}.
+Um das zu verhindern, nutzt man für \ac{OLAP} eigene Datenbanksysteme und speichert die Daten in sogenannten Data Warhouses.
 
 \subsection{\acfp{DW}}
-\acp{DW} wurden entwickelt, um Daten, die für strategische Entscheidungen im Geschäftsumfeld nützlich sein können, zu speichern.
+\acp{DW} wurden entwickelt, um Daten zu speichern, die für strategische Entscheidungen im Geschäftsumfeld nützlich sein können.
 Dazu werden Daten aus Geschäftsprozessen wie etwa Verkäufen extrahiert, für die weitere Verwendung transformiert und in bestimmten Datenbanken gespeichert.
 Klassische  operative oder transaktionale Datenbankansätze, die auf den täglichen Gebrauch durch viele Nutzende optimiert sind, eignen sich nicht für ein \ac{DW} im \ac{OLAP}-Umfeld, da hier üblicherweise keine historischen Daten gespeichert werden.
 Des Weiteren enthalten diese detaillierte Daten, was das Ausführen von komplexen Abfragen erschwert bzw. verlangsamt.
 % Hier ähnliche Inhalte wie im Kapitel weiter oben
 Um aber Entscheidungen aus den Daten ableiten zu können, sind sowohl historische Daten als auch komplexe Abfragen notwendig.
-Um diese Probleme zu lösen, enthält ein \ac{DW} im \ac{OLAP} Umfeld historische Daten und bietet eine optimierte Datenstruktur für komplexere Abfragen.
-In der ursprünglichen Definition nach Inmon werden \acp{DW} als Sammlung von subjektorientierten, integrierten, nicht flüchtigen und zeitvariablen Daten beschrieben. %Hier wäre Originalquelle ganz praktisch
+Um diese Probleme zu lösen, enthält ein \ac{DW} im \ac{OLAP} Umfeld historische Daten und bietet ein optimiertes Datenmodell für komplexere Abfragen.
+In der ursprünglichen Definition nach Inmon werden \acp{DW} als Sammlung von subjektorientierten, integrierten, nicht flüchtigen und zeitvariablen Daten beschrieben. % TODO: Hier wäre Originalquelle ganz praktisch
 Subjektorientiert bedeutet, dass sich die Daten auf bestimmte Aspekte der geforderten Analyse beziehen, also z.~B. Daten über Produktionsmengen und Verkäufen bei Produktionsunternehmen.
 Mit integrierten Daten ist gemeint, dass Daten aus verschiedenen Umgebungen in dem \ac{DW} integriert sind.
 Nicht flüchtig bedeutet, dass die Daten über lange Zeiträume hinweg gespeichert bleiben und somit weder gelöscht noch modifiziert werden.
@@ -47,7 +47,7 @@ Durch Verständnis der Daten können diese in eine sogenannte Faktentabelle und 
 
 In der Faktentabelle befinden sich die zentralen Metriken, die zur Analyse benötigt werden, etwa die Anzahl der Verkäufe eines Produktes.
 Die Dimensionstabellen enthalten Daten, mit denen die Daten der Faktentabelle unter verschiedenen Umständen betrachtet werden können, etwa eine Dimensionstabelle mit Zeitpunkten oder Orten.
-Diese Dimensionstabellen sind in der Faktentabelle verlinkt.
+Diese Dimensionstabellen sind mit der Faktentabelle über Fremdschlüssel verbunden.
 
 In einem Diagramm werden die Dimensionstabellen um die Faktentabelle angeordnet, wodurch das Diagramm einem Stern ähnelt, bei dem die Faktentabelle das Zentrum, und die Dimensionen die Strahlen bilden.
 Deshalb spricht man auch von einem Sternschema.
