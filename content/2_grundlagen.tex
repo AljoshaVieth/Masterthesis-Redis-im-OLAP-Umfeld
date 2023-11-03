@@ -326,5 +326,30 @@ In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehöre
 Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON unterstützt werden.
 Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_whos_nodate}.
 
+
+\section{RediSearch}
+
+\subsubsection{Indizes in RediSearch}
+RedisSearch implementiert invertierte Indexe innerhalb von Redis.
+Es verwendet eine angepasste Datenkodierung (\enquote{Redis String DMA}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
+Darüber hinaus bietet es erweiterte Suchfunktionen~\cite{redis_internal_nodate}.
+
+
+Der Invertierte Index in RediSearch enthält für jedes indizierte Wort bzw. Suchparameter eine Liste an Dokumenten, in denen es vorkommt.
+Zusätzlich werden weitere Daten gespeichert, wie etwa die Häufigkeit und die Stellen, an denen der Suchbegriff im Dokument auftritt (Offset).
+Bei einer Suche kann entweder ein einzelner Index oder eine Verbindung mehrerer Indizes nach dem Suchbegriff durchsucht werden.
+
+\textbf{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
+Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen.
+
+Zusätzlich zu den invertieren Indizes werden weitere Daten in anderen \textit{Redis DMA string keys} gespeichert:\\
+Der sogenannte \textbf{Skip-Index}, eine Tabelle des Index-Offsets von einem Fünfzigstel der Einträge im Index. Dies ermöglicht eine schnellere Suche, wenn mehrere invertierte Indizes überschnitten werden, da nicht die gesamte Liste durchsucht werden muss.\\
+Da bei der Suche nach einzelnen Wörtern nicht alle Treffer durchsucht werden, sondern nur die ersten N Treffer für den Benutzenden relevant sind, wird für jeden Suchbegriff ein Hilfsindex mit den ersten 20 oder mehr Einträgen erstellt, der sogenannte \textbf{Score Index}.
+
+
+Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte.
+
+% Sollte hier mehr ins Detail gegangen werden, wa sgenau gespeichert wird?
+
 \section{Scala}
 % TODO: ganz kurzes Kapitel über Scala bzw. warum Scala
