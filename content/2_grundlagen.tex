@@ -326,6 +326,16 @@ In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehöre
 Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON unterstützt werden.
 Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_whos_nodate}.
 
+Redis ist eine vielseitige Datenbank, die sich nicht streng als herkömmliche Datenbank kategorisieren lässt. Obwohl Redis die grundlegenden Anforderungen an eine traditionelle Datenbank erfüllt, wie das Sammeln und Speichern von Informationen, die dann leicht abgerufen, bearbeitet oder gelöscht werden können, bietet Redis zusätzliche Funktionen, die vor allem durch die Geschwindigkeit aufgrund der vollständigen Ausführung im Arbeitsspeicher und die vielseitigen Datenstrukturen ermöglicht werden.
+Durch die Persistierung der Daten auf der Festplatte kann Redis als konventionelle Datenbank genutzt werden.
+
+Außerdem kann Redis als Cache und Message Broker dienen.
+
+Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit anderen Datenbanken, wodurch Redis als optimale Wahl für den Cache von anderen, oft langsameren Datenbanken gilt. So kann Redis beispeilsweise genutzt werden um in Echtzeit mit Nutzern zu interagieren währen die Historie der Transaktionen in einer anderen Datenbank gespeichert wird.
+
+Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösung, um publizierte Nachrichten effizient über bestimmte Kanäle an Abonnenten zu verteilen. Hierbei hat Redis durch seine vielseitigen Datenstrukturen oft Vorteile gegenüber anderen etablierten Message-Brokern~\cite{joshi_you_nodate}.
+
+% Eventuell Abschnitt umstrukturieren
 
 \section{RediSearch}
 
