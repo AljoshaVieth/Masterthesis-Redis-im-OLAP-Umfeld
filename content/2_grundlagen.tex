@@ -322,18 +322,62 @@ ORDER BY
 \section{Redis}
 
 Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_introduction_nodate}.
-In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Hyperloglogs, georäumliche Indizes und Streams.
-Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON unterstützt werden.
+In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_data_nodate}.
+Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON oder Time series unterstützt werden~\cite{redis_}.
 Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_whos_nodate}.
+Redis wird außerdem immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
+
 
 Redis ist eine vielseitige Datenbank, die sich nicht streng als herkömmliche Datenbank kategorisieren lässt. Obwohl Redis die grundlegenden Anforderungen an eine traditionelle Datenbank erfüllt, wie das Sammeln und Speichern von Informationen, die dann leicht abgerufen, bearbeitet oder gelöscht werden können, bietet Redis zusätzliche Funktionen, die vor allem durch die Geschwindigkeit aufgrund der vollständigen Ausführung im Arbeitsspeicher und die vielseitigen Datenstrukturen ermöglicht werden.
 Durch die Persistierung der Daten auf der Festplatte kann Redis als konventionelle Datenbank genutzt werden.
 
 Außerdem kann Redis als Cache und Message Broker dienen.
 
-Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit anderen Datenbanken, wodurch Redis als optimale Wahl für den Cache von anderen, oft langsameren Datenbanken gilt. So kann Redis beispeilsweise genutzt werden um in Echtzeit mit Nutzern zu interagieren währen die Historie der Transaktionen in einer anderen Datenbank gespeichert wird.
+Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit anderen Datenbanken, wodurch Redis als optimale Wahl für den Cache von anderen, oft langsameren Datenbanken gilt. So kann Redis beispielsweise genutzt werden um in Echtzeit mit Nutzern zu interagieren währen die Historie der Transaktionen in einer anderen Datenbank gespeichert wird.
 
 Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösung, um publizierte Nachrichten effizient über bestimmte Kanäle an Abonnenten zu verteilen. Hierbei hat Redis durch seine vielseitigen Datenstrukturen oft Vorteile gegenüber anderen etablierten Message-Brokern~\cite{joshi_you_nodate}.
+
+
+
+\subsection{Datentypen in Redis}
+\subsubsection{Strings}
+~\cite{redis_strings_nodate}.
+\subsubsection{Hashes}
+~\cite{redis_hashes_nodate}.
+\subsubsection{Listen}
+~\cite{redis_lists_nodate}.
+\subsubsection{Sets}
+~\cite{redis_sets_nodate}.
+\subsubsection{Sortierte Sets}
+~\cite{redis_sorted-sets_nodate}.
+\subsubsection{Bitmaps}
+~\cite{redis_bitmaps_nodate}.
+\subsubsection{Bitfields}
+~\cite{redis_bitfields_nodate}.
+\subsubsection{Georäumliche Indizes}
+~\cite{redis_geospatial_nodate}.
+\subsubsection{Streams}
+~\cite{redis_streams_nodate}.
+\subsubsection{HyperLogLog}
+~\cite{redis_hyperloglog_nodate}.
+\subsubsection{Weitere Datentypen durch zusätzliche Module}
+Durch Module können in Redis zusätzliche Datentypen wie zum Beispiel \emph{JSON} oder \emph{Time-Series}-Daten genutzt werden.
+
+Das \textbf{RedisJSON}-Modul bietet eine Unterstützung für JSON-Daten in Redis.
+JSON-Daten können so direkt in der Redis-Datenbank gespeichert, aktualisiert und wieder abgerufen werden, was eine effiziente Verwaltung von komplexen Datenstrukturen ermöglicht. Hierzu zählen das gezielte Bearbeiten von Subelementen dank der \emph{JSONPath}-Syntax und ein schneller Zugriff auf Unterstrukturen von JSON-Dokumenten.
+Außerdem ermöglicht RedisJSON atomare Operationen auf Datentypen innerhalb der JSON-Dokumente, um die Leistungsfähigkeit bei der Datenaufbereitung zu verbessern.
+Ein wesentlicher Vorteil im Vergleich zur Speicherung von JSON als serialisierte Strings besteht in der Fähigkeit, JSON-Objekte zu indizieren und zu durchsuchen, was im Zusammenspiel mit dem \emph{RediSearch}-Modul ermöglicht wird.
+Dadurch können komplexe Anfragen direkt in Redis ausgeführt werden~\cite{redis_json_nodate, redis_json-use-cases_nodate}.
+
+Durch das \textbf{RedisTimeSeries}-Modul können Zeitreihendaten in Redis gespeichert werden.
+Dabei bietet Redis hohe Einfügeraten und schnelle Lesezugriffe.
+Es ermöglicht Abfragen innerhalb spezifizierter Start- und Endzeiten sowie eine Vielfalt von aggregierten Abfragen, einschließlich, aber nicht beschränkt auf Minimum, Maximum, Durchschnitt und Summe, für beliebige Zeitintervalle.
+Zudem lässt sich ein maximaler Aufbewahrungszeitraum konfigurieren und die Kompaktierung sorgt für automatisch aktualisierte, aggregierte Zeitreihen.
+Durch die Verwendung von sekundären Indizes, welche auf Labels (Feld-Wert-Paare) basieren, können Zeitreiheneinträge gezielt abgefragt werden.
+Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden.
+~\cite{redis_time_nodate}.
+% Hier noch kurz was über Time Series
+
 
 % Eventuell Abschnitt umstrukturieren
 
@@ -341,7 +385,7 @@ Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösu
 
 \subsubsection{Indizes in RediSearch}
 RedisSearch implementiert invertierte Indexe innerhalb von Redis.
-Es verwendet eine angepasste Datenkodierung (\enquote{Redis String DMA}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
+Es verwendet eine angepasste Datenkodierung (\enquote{\emph{Redis String DMA}}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
 Darüber hinaus bietet es erweiterte Suchfunktionen~\cite{redis_internal_nodate}.
 
 
