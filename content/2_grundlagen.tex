@@ -341,10 +341,31 @@ Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösu
 
 \subsection{Datentypen in Redis}
 \subsubsection{Strings}
-~\cite{redis_strings_nodate}.
+Strings in Redis sind grundlegende Datentypen, die eine Folge von Bytes repräsentieren.
+Sie können verschiedene Inhalte wie Text, serialisierte Objekte oder binäre Datenarrays repräsentieren und sind auf eine maximale Größe von 512 MB beschränkt.
+Diese Strings unterstützen bitweise Operationen und Funktionen wie Zähler, die durch atomare Inkremente und Dekremente gegen Race-Conditions bei gleichzeitigem Zugriff mehrerer Clients geschützt sind.
+Die primären Befehle für die Arbeit mit Strings sind \emph{SET} und \emph{GET}, die das Setzen und Abrufen von Werten ermöglichen, während \emph{MSET} und \emph{MGET} das gleichzeitige Setzen oder Abrufen mehrerer Werte erlauben.
+Obwohl die meisten String-Operationen eine konstante Ausführungszeit von O(1) haben und somit sehr effizient sind, benötigen einige Operationen wie \emph{SUBSTR}, \emph{GETRANGE} oder \emph{SETRANGE} eine Ausführungszeit von O(n)~\cite{redis_strings_nodate}.
+
 \subsubsection{Hashes}
+
 ~\cite{redis_hashes_nodate}.
 \subsubsection{Listen}
+Der Listen-Datentyp in Redis besteht aus verketteten Listen von String-Werten. Er wird häufig verwendet, um Stacks und Queues zu implementieren sowie Queue-Management-Systeme für Hintergrundprozesse zu bauen.
+Die grundlegenden Befehle zum Manipulieren von Listen sind `LPUSH` und `RPUSH`, um Elemente am Anfang oder Ende der Liste hinzuzufügen, `LPOP` und `RPOP`, um Elemente von den entsprechenden Enden zu entfernen, und `LLEN`, um die Länge der Liste zu ermitteln.
+`LMOVE` und `LTRIM` erlauben das Verschieben von Elementen zwischen Listen oder das Begrenzen von Listen auf eine bestimmte Anzahl von Elementen.
+In Redis unterstützen Listen blockierende Befehle wie `BLPOP` und `BLMOVE`, die warten, bis Elemente verfügbar sind, bevor sie Operationen ausführen.
+Dies ist besonders nützlich für die Implementierung von Warteschlangen und Prozesskommunikation. So müssen Clients nicht druchgängig neue Anfragen senden falls keine neuen Daten verfügbar sind.
+Bibliotheken wie Resque und Sidekiq nutzen diese Funktionen zur Verwaltung von Hintergrundjobs in Ruby.
+Twitter nutzt Redis-Listen zur Speicherung der neuesten Tweets.
+Redis-Listen sind effizient beim Hinzufügen sowie Entfernen von Elementen an beiden Enden, da diese Operationen unabhängig von der Listenlänge in konstanter Zeit (O(1)) ausgeführt werden.
+Damit eignen sie sich ideal für Echtzeitanwendungen, die schnelle Aktualisierungen erfordern. 
+Operationen wie `LINDEX`, die einen Zugriff auf ein Element mitten in der Liste erfordern, sind langsamer, da die benötigte Zeit mit der Position des Elements in der Liste skaliert (O(n)).
+Redis-Listen bieten jedoch die Möglichkeit, sie als begrenzte Sammlungen für Anwendungen zu verwenden, bei denen nur die letzten N Einträge von Interesse sind.
+In diesem Fall wird die Operation `LTRIM` verwendet, um die Liste auf eine feste Anzahl von Elementen zu beschränken.
+Die maximale Länge einer Redis-Liste beträgt \(2^{32} - 1\) (4 294 967 295) Elemente.
+
+Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen.
 ~\cite{redis_lists_nodate}.
 \subsubsection{Sets}
 ~\cite{redis_sets_nodate}.
