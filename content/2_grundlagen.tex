@@ -327,6 +327,7 @@ Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSO
 Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_whos_nodate}.
 Redis wird außerdem immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
 
+% Hier ist was doppelt, muss überprüft werden (wahrscheinlich untere lassen, obere entfernen)
 
 Redis ist eine vielseitige Datenbank, die sich nicht streng als herkömmliche Datenbank kategorisieren lässt. Obwohl Redis die grundlegenden Anforderungen an eine traditionelle Datenbank erfüllt, wie das Sammeln und Speichern von Informationen, die dann leicht abgerufen, bearbeitet oder gelöscht werden können, bietet Redis zusätzliche Funktionen, die vor allem durch die Geschwindigkeit aufgrund der vollständigen Ausführung im Arbeitsspeicher und die vielseitigen Datenstrukturen ermöglicht werden.
 Durch die Persistierung der Daten auf der Festplatte kann Redis als konventionelle Datenbank genutzt werden.
@@ -344,43 +345,84 @@ Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösu
 Strings in Redis sind grundlegende Datentypen, die eine Folge von Bytes repräsentieren.
 Sie können verschiedene Inhalte wie Text, serialisierte Objekte oder binäre Datenarrays repräsentieren und sind auf eine maximale Größe von 512 MB beschränkt.
 Diese Strings unterstützen bitweise Operationen und Funktionen wie Zähler, die durch atomare Inkremente und Dekremente gegen Race-Conditions bei gleichzeitigem Zugriff mehrerer Clients geschützt sind.
+
 Die primären Befehle für die Arbeit mit Strings sind \emph{SET} und \emph{GET}, die das Setzen und Abrufen von Werten ermöglichen, während \emph{MSET} und \emph{MGET} das gleichzeitige Setzen oder Abrufen mehrerer Werte erlauben.
+
 Obwohl die meisten String-Operationen eine konstante Ausführungszeit von O(1) haben und somit sehr effizient sind, benötigen einige Operationen wie \emph{SUBSTR}, \emph{GETRANGE} oder \emph{SETRANGE} eine Ausführungszeit von O(n)~\cite{redis_strings_nodate}.
 
 \subsubsection{Hashes}
 
+
 ~\cite{redis_hashes_nodate}.
 \subsubsection{Listen}
 Der Listen-Datentyp in Redis besteht aus verketteten Listen von String-Werten. Er wird häufig verwendet, um Stacks und Queues zu implementieren sowie Queue-Management-Systeme für Hintergrundprozesse zu bauen.
-Die grundlegenden Befehle zum Manipulieren von Listen sind `LPUSH` und `RPUSH`, um Elemente am Anfang oder Ende der Liste hinzuzufügen, `LPOP` und `RPOP`, um Elemente von den entsprechenden Enden zu entfernen, und `LLEN`, um die Länge der Liste zu ermitteln.
-`LMOVE` und `LTRIM` erlauben das Verschieben von Elementen zwischen Listen oder das Begrenzen von Listen auf eine bestimmte Anzahl von Elementen.
-In Redis unterstützen Listen blockierende Befehle wie `BLPOP` und `BLMOVE`, die warten, bis Elemente verfügbar sind, bevor sie Operationen ausführen.
-Dies ist besonders nützlich für die Implementierung von Warteschlangen und Prozesskommunikation. So müssen Clients nicht druchgängig neue Anfragen senden falls keine neuen Daten verfügbar sind.
-Bibliotheken wie Resque und Sidekiq nutzen diese Funktionen zur Verwaltung von Hintergrundjobs in Ruby.
+Die maximale Länge einer Redis-Liste beträgt \(2^{32} - 1\) (4.294.967.295) Elemente.
+
+Die grundlegenden Befehle zum Manipulieren von Listen sind \emph{LPUSH} und \emph{RPUSH}, um Elemente am Anfang oder Ende der Liste hinzuzufügen, \emph{LPOP} und \emph{RPOP}, um Elemente von den entsprechenden Enden zu entfernen, und \emph{LLEN}, um die Länge der Liste zu ermitteln.
+\emph{LMOVE} und \emph{LTRIM} erlauben das Verschieben von Elementen zwischen Listen oder das Begrenzen von Listen auf eine bestimmte Anzahl von Elementen.
+
+In Redis unterstützen Listen blockierende Befehle wie \emph{BLPOP} und \emph{BLMOVE}, die warten, bis Elemente verfügbar sind, bevor sie Operationen ausführen.
+Dies ist besonders nützlich für die Implementierung von Warteschlangen und Prozesskommunikation. So müssen Clients nicht durchgängig neue Anfragen senden falls keine neuen Daten verfügbar sind.
+Bibliotheken wie \emph{Resque} und \emph{Sidekiq} nutzen diese Funktionen zur Verwaltung von Hintergrundjobs in Ruby.
 Twitter nutzt Redis-Listen zur Speicherung der neuesten Tweets.
+
 Redis-Listen sind effizient beim Hinzufügen sowie Entfernen von Elementen an beiden Enden, da diese Operationen unabhängig von der Listenlänge in konstanter Zeit (O(1)) ausgeführt werden.
 Damit eignen sie sich ideal für Echtzeitanwendungen, die schnelle Aktualisierungen erfordern. 
-Operationen wie `LINDEX`, die einen Zugriff auf ein Element mitten in der Liste erfordern, sind langsamer, da die benötigte Zeit mit der Position des Elements in der Liste skaliert (O(n)).
+Operationen wie \emph{LINDEX}, die einen Zugriff auf ein Element mitten in der Liste erfordern, sind langsamer, da die benötigte Zeit mit der Position des Elements in der Liste skaliert (O(n)).
 Redis-Listen bieten jedoch die Möglichkeit, sie als begrenzte Sammlungen für Anwendungen zu verwenden, bei denen nur die letzten N Einträge von Interesse sind.
-In diesem Fall wird die Operation `LTRIM` verwendet, um die Liste auf eine feste Anzahl von Elementen zu beschränken.
-Die maximale Länge einer Redis-Liste beträgt \(2^{32} - 1\) (4 294 967 295) Elemente.
+In diesem Fall wird die Operation \emph{LTRIM} verwendet, um die Liste auf eine feste Anzahl von Elementen zu beschränken.
 
-Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen.
+
+Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen
 ~\cite{redis_lists_nodate}.
+
+
 \subsubsection{Sets}
+Sets in Redis sind eine Datenstruktur für ungeordnete Sammlungen einzigartiger Strings.
+Sie eignen sich daher gut für Aufgaben wie das Speichern aller verschiedenen Besucher-IDs einer Webseite oder das Erfassen aller Mitarbeiter einer bestimmten Unternehmensabteilung.
+Des Weiteren erlauben Sets die Ausführung gängiger Mengenoperationen wie Schnittmengen, Vereinigungen und Differenzen.
+Ein Set kann bis zu \(2^{32} - 1\) Elemente enthalten, was 4.294.967.295 Elementen entspricht.
+
+Die Kernbefehle für die Arbeit mit Sets umfassen \emph{SADD}, um ein neues Element hinzuzufügen, \emph{SREM}, um ein bestimmtes Element zu entfernen, \emph{SISMEMBER}, um die Zugehörigkeit eines Strings zu testen, \emph{SINTER}, um die Schnittmenge von zwei oder mehr Sets zu ermitteln, und \emph{SCARD}, um die Größe eines Sets zu bestimmen.
+Zum Entfernen von Elementen aus einem Set kann der Befehl \emph{SREM} verwendet werden, um ein oder mehrere Elemente zu entfernen, oder der Befehl \emph{SPOP}, um ein zufälliges Element zu entfernen.
+Der Befehl \emph{SRANDMEMBER} gibt ein zufälliges Element zurück, ohne es zu entfernen.
+
+Neben trivialen gibt es auch komplexe Operationen, die mit den geeigneten Redis-Befehlen einfach zu implementieren sind.
+Eine Buchhandlung kann zum Beispiel den \emph{SINTER}-Befehl in Redis verwenden, um Kunden herauszufinden, die in verschiedenen Ländern wie Deutschland und Frankreich ein gemeinsames Interesse an einem Genre, zum Beispiel Science-Fiction, haben.
+Zusätzlich zur Schnittmenge können auch Vereinigungs- und Differenzmengen gebildet werden.
+
+Die meisten Operationen wie das Hinzufügen, Entfernen oder Überprüfen der Zugehörigkeit eines Elements zu einem Set sind mit einer Laufzeit von O(1) sehr effizient.
+Der Befehl \emph{SMEMBERS} hingegen ist mit O(n) zu bewerten und kann insbesondere bei großen Sets zu langen Ausführungszeiten führen, da er das gesamte Set zurückgibt.
+Als Alternative bietet sich der Befehl \emph{SSCAN} an, der ein iteratives Abfragen der Set-Inhalte ermöglicht.
+
+Sets werden oft als Index verwendet. Für eine effiziente Verwaltung von Indizes innerhalb von Redis empfiehlt sich aber das \emph{RediSearch}-Modul
 ~\cite{redis_sets_nodate}.
+
+
 \subsubsection{Sortierte Sets}
 ~\cite{redis_sorted-sets_nodate}.
+
+
 \subsubsection{Bitmaps}
 ~\cite{redis_bitmaps_nodate}.
+
+
 \subsubsection{Bitfields}
 ~\cite{redis_bitfields_nodate}.
+
+
 \subsubsection{Georäumliche Indizes}
 ~\cite{redis_geospatial_nodate}.
+
+
 \subsubsection{Streams}
 ~\cite{redis_streams_nodate}.
+
+
 \subsubsection{HyperLogLog}
 ~\cite{redis_hyperloglog_nodate}.
+
+
 \subsubsection{Weitere Datentypen durch zusätzliche Module}
 Durch Module können in Redis zusätzliche Datentypen wie zum Beispiel \emph{JSON} oder \emph{Time-Series}-Daten genutzt werden.
 
@@ -395,7 +437,7 @@ Dabei bietet Redis hohe Einfügeraten und schnelle Lesezugriffe.
 Es ermöglicht Abfragen innerhalb spezifizierter Start- und Endzeiten sowie eine Vielfalt von aggregierten Abfragen, einschließlich, aber nicht beschränkt auf Minimum, Maximum, Durchschnitt und Summe, für beliebige Zeitintervalle.
 Zudem lässt sich ein maximaler Aufbewahrungszeitraum konfigurieren und die Kompaktierung sorgt für automatisch aktualisierte, aggregierte Zeitreihen.
 Durch die Verwendung von sekundären Indizes, welche auf Labels (Feld-Wert-Paare) basieren, können Zeitreiheneinträge gezielt abgefragt werden.
-Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden.
+Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden
 ~\cite{redis_time_nodate}.
 % Hier noch kurz was über Time Series
 
