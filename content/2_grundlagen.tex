@@ -417,7 +417,25 @@ Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, is
 ~\cite{redis_sorted-sets_nodate}.
 
 
+\subsubsection{Streams}
+Redis Streams sind eine Datenstruktur in Redis, die als anhängbares Protokoll (append-only log) fungiert und gleichzeitig mehrere Operationen zur Überwindung der Grenzen typischer anhängbarer Protokolle implementiert. Diese umfassen unter anderem den wahlfreien Zugriff (random access) in O(1)-Zeit und komplexe Konsumstrategien wie Verbrauchergruppen.
+Die Anwendungsbereiche von Redis Streams sind vielfältig und schließen Event Sourcing, Sensorüberwachung und Benachrichtigungssysteme ein.
+
+Falls nicht anders vorgegeben generiert Redis für jeden Eintrag in einem Stream automatisch eine eindeutige ID, die auch Zeitinformationen beinhaltet, was den effizienten Abruf und Bereichsabfragen ermöglicht.
+
+Grundlegende Befehle zur Interaktion mit Redis Streams sind \emph{XADD} für das Hinzufügen, \emph{XREAD} für das Lesen, \emph{XRANGE} für Bereichsabfragen und \emph{XLEN} zur Bestimmung der Länge eines Streams.
+
+Consumer Groups in Redis sorgen für eine effiziente Verteilung von Nachrichten, indem sie sicherstellen, dass jede Nachricht nur einmal an einen Konsumenten geliefert wird. Dies ermöglicht auch die Nachverfolgung von noch nicht bestätigten Nachrichten. Zur Überwachung und Verwaltung dieser Streams und Consumer Groups dienen Befehle wie \emph{XPENDING} und \emph{XINFO}.
+
+Die Begrenzung der Datenspeicherung in Redis Streams wird durch den \emph{MAXLEN}-Parameter im \emph{XADD}-Befehl realisiert.
+
+Wie andere Redis-Datenstrukturen werden Streams asynchron auf Repliken repliziert und in AOF- sowie RDB-Dateien persistiert, einschließlich der Zustände von Consumer Groups.
+
+Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, während der Zugriff auf einzelne Einträge als O(n)-Operation charakterisiert wird, wobei n die Länge der ID darstellt. In der Regel sind diese IDs kurz, was zu einem relativ konstanten Zeitaufwand führt, allerdings kann dieser Aufwand variieren, je nach spezifischer Anwendung und Struktur der IDs
+~\cite{redis_streams_nodate}.
+
 \subsubsection{Bitmaps}
+
 ~\cite{redis_bitmaps_nodate}.
 
 
@@ -429,8 +447,7 @@ Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, is
 ~\cite{redis_geospatial_nodate}.
 
 
-\subsubsection{Streams}
-~\cite{redis_streams_nodate}.
+
 
 
 \subsubsection{HyperLogLog}
