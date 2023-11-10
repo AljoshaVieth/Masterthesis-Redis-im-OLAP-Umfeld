@@ -399,7 +399,21 @@ Sets werden oft als Index verwendet. Für eine effiziente Verwaltung von Indizes
 ~\cite{redis_sets_nodate}.
 
 
-\subsubsection{Sortierte Sets}
+\subsubsection{Sortierte Sets (Sorted Sets}
+% \emph Nutzung überprüfen
+Ein \emph{Sorted Set} in Redis repräsentiert eine Menge an einzigartigen Strings, die basierend auf einer zugehörigen \emph{Score}-Wertung geordnet sind. Diese Datenstruktur eignet sich besonders für Anwendungsfälle wie Ranglisten oder die Implementierung eines \emph{Rate Limiters} mittels eines gleitenden Zeitfensters (\emph{sliding-window}). Der wesentliche Vorteil eines \emph{Sorted Sets} gegenüber einem herkömmlichen Set liegt in der sofortigen Sortierung der Elemente bei der Einfügung und nicht erst bei der Abfrage. % Limiter überprüfen
+
+Jeder \emph{Score} ist als Gleitkommazahl definiert, wobei die Sortierung primär nach dem \emph{Score} erfolgt. Bei identischen \emph{Scores} bestimmt die lexikographische Reihenfolge der Strings die Positionierung der Elemente. Die Einzigartigkeit der Strings garantiert dabei eine klare Ordnung innerhalb des Sets. Es ist möglich, die \emph{Scores} nachträglich zu aktualisieren, und bei erneutem Einfügen eines Elements wird sowohl der \emph{Score} als auch die Position angepasst, mit einem Rechenaufwand von \(O(\log(N))\), wobei \(N\) die Anzahl der Elemente im Set ist.
+
+Die grundlegenden Befehle für die Arbeit mit \emph{Sorted Sets} sind \emph{ZADD} zum Hinzufügen oder Aktualisieren des \emph{Scores} von Elementen, \emph{ZREM} zum Entfernen von Elementen, \emph{ZRANGE} zum Zurückgeben von Mitgliedern in einem bestimmten Bereich (optional mit \emph{Scores} über `WITHSCORES`), \emph{ZRANGEBYSCORE} zum Abrufen von Elementen in einem bestimmten \emph{Score}-Bereich, und \emph{ZRANK} bzw. \emph{ZREVRANK} zur Ermittlung des Rangs eines Elements in aufsteigender oder absteigender Sortierreihenfolge.
+
+Für lexikographische Bereiche stehen Befehle wie \emph{ZRANGEBYLEX}, \emph{ZREVRANGEBYLEX}, \emph{ZREMRANGEBYLEX} und \emph{ZLEXCOUNT} zur Verfügung.
+
+Die meisten Operationen auf \emph{Sorted Sets} haben eine Laufzeit von \(O(\log(n))\), mit Ausnahme von \emph{ZRANGE}, dessen Laufzeit \(O(\log(n) + m)\) beträgt, wobei \(m\) die Anzahl der zurückzugebenden Elemente ist.
+
+Technisch gesehen sind \emph{Sorted Sets} durch eine duale Datenstruktur realisiert, die eine Skip-List und eine Hash-Tabelle kombiniert, sodass jede Einfügung eine \(O(\log(N))\) Operation darstellt. Die vorsortierte Natur der \emph{Sorted Sets} ermöglicht einen effizienten Zugriff ohne zusätzlichen Sortieraufwand bei der Abfrage.
+
+Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, ist für den Aufbau eines effizienten Index in Redis das Modul RediSearch zu empfehlen
 ~\cite{redis_sorted-sets_nodate}.
 
 
