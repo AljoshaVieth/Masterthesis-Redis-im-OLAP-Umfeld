@@ -431,8 +431,20 @@ Wie andere Redis-Datenstrukturen werden Streams asynchron auf Repliken replizier
 Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, während der Zugriff auf einzelne Einträge als O(n)-Operation charakterisiert wird, wobei n die Länge der ID darstellt. In der Regel sind diese IDs kurz, was zu einem relativ konstanten Zeitaufwand führt, allerdings kann dieser Aufwand variieren, je nach spezifischer Anwendung und Struktur der IDs~\cite{redis_streams_nodate}.
 
 \subsubsection{Bitmaps}
+Bitmaps sind in Redis kein eigener Datentyp sondern eine Reihe an bit-orientierten Operationen auf dem String-Datentyp der wie ein Bit-Vektor genutzt wird. Da Strings in Redis binärsicher sind und eine maximale Länge von 512 MB aufweisen, eignen sie sich gut, um bis zu \(2^{32}\) unterschiedliche Bits zu setzen.
+Bitweise Operationen lassen sich sowohl auf einzelne als auch auf mehrere dieser Strings anwenden.
 
-~\cite{redis_bitmaps_nodate}.
+Bitmaps können so für eine effiziente Darstellung von Sets, bei denen die Mitglieder des Sets den ganzen Zahlen von 0 bis N entsprechen, genutzt werden.
+
+Ein praktisches Anwendungsbeispiel für Bitmaps in Redis ist ein Parkhaus-Verwaltungssystem, in dem jeder Parkplatz durch ein Bit repräsentiert wird. Hierbei werden belegte Parkplätze durch ein Bit im Wert 1 und freie Parkplätze durch ein Bit im Wert 0 dargestellt.
+
+Redis bietet einige grundlegende Befehle zur Arbeit mit Bitmaps. Der Befehl \emph{SETBIT} dient dazu, ein Bit an einem bestimmten Offset auf 0 oder 1 zu setzen, während \emph{GETBIT} den Wert eines Bits an einem gegebenen Offset zurückgibt. Mit \emph{BITOP} lassen sich bitweise Operationen an einem oder mehreren Strings durchführen. \emph{BITCOUNT} führt eine Populationszählung durch und berichtet die Anzahl der auf 1 gesetzten Bits. \emph{BITPOS} schließlich findet das erste Bit mit dem spezifizierten Wert von 0 oder 1.
+
+Es gibt zwei Kategorien von Bitoperationen: die konstantzeitigen Einzelbit-Operationen, wie das Setzen oder Abrufen eines Bitwertes, und Operationen auf Bitgruppen, wie das Zählen der Anzahl gesetzter Bits in einem bestimmten Bereich. Diese zweite Kategorie umfasst beispielsweise die Populationszählung.
+
+Bitmaps bieten den großen Vorteil, dass sie häufig erhebliche Speicherplatzersparnisse bei der Speicherung von Informationen ermöglichen.Zum Beispiel kann in einem System, das Benutzer über fortlaufende IDs identifiziert, ein Bit pro Benutzer genutzt werden, um eine einfache Information wie den Wunsch, einen Newsletter zu erhalten, zu speichern. Mit dieser Methode lassen sich solche Daten für bis zu 4 Milliarden Benutzer mit nur 512 MB Speicher verwalten.
+
+Die Performance von Bitmap-Befehlen in Redis variiert je nach Art der Operation. Die Befehle \emph{SETBIT} und \emph{GETBIT} werden in konstanter Zeit, also in O(1), ausgeführt. Der Befehl \emph{BITOP} hat hingegen eine Ausführungszeit von O(n), wobei n die Länge des längsten Strings in der Vergleichsoperation darstellt~\cite{redis_bitmaps_nodate}.
 
 
 \subsubsection{Bitfields}
