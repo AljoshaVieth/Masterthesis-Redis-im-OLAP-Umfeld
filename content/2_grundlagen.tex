@@ -448,7 +448,16 @@ Die Performance von Bitmap-Befehlen in Redis variiert je nach Art der Operation.
 
 
 \subsubsection{Bitfields}
-~\cite{redis_bitfields_nodate}.
+Wie Bitmaps, so werden auch Bitfelder (\emph{\enquote{Bitfields}}) in Redis in Zeichenketten gespeichert. Diese sind jedoch binär kodiert. Bitfelder in Redis ermöglichen es, Ganzzahlen beliebiger Bitlänge zu setzen, zu inkrementieren und abzufragen. Man kann beispielsweise mit Ganzzahlen arbeiten, die von vorzeichenlosen 1-Bit-Integers bis zu vorzeichenbehafteten 63-Bit-Integers reichen.
+
+Bitfelder unterstützen atomare Lese-, Schreib- und Inkrementierungsoperationen, was sie zu einer guten Wahl für die Verwaltung von Zählern und ähnlichen numerischen Werten macht. So können Bitfelder beispielsweise verwendet werden, um einfache Statistiken in einem Videospiel zu führen, wie etwa die Anzahl einer bestimmten Währung, wie Diamanten, oder die Anzahl der Tode.
+
+Die Anzahl der Diamanten könnte beispielsweise am Offset 0 und die Anzahl der Tode am Offset 1 gespeichert werden. Die Breite dieser Zähler könnte auf 32 Bit festgelegt werden.
+
+Der Befehl \emph{BITFIELD} in Redis ermöglicht das atomare Setzen, Inkrementieren und Lesen von Werten, während \emph{BITFIELD\_RO} als schreibgeschützte Variante dient, die speziell für leseintensive Anwendungen optimiert ist.
+
+
+Die Leistung des Befehls \emph{BITFIELD} ist O(n), wobei n die Anzahl der zugegriffenen Zähler darstellt~\cite{redis_bitfields_nodate}.
 
 
 \subsubsection{Geodatenindizes}
