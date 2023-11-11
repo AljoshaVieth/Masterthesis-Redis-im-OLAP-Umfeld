@@ -373,8 +373,7 @@ Redis-Listen bieten jedoch die Möglichkeit, sie als begrenzte Sammlungen für A
 In diesem Fall wird die Operation \emph{LTRIM} verwendet, um die Liste auf eine feste Anzahl von Elementen zu beschränken.
 
 
-Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen
-~\cite{redis_lists_nodate}.
+Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen~\cite{redis_lists_nodate}.
 
 
 \subsubsection{Sets}
@@ -395,11 +394,10 @@ Die meisten Operationen wie das Hinzufügen, Entfernen oder Überprüfen der Zug
 Der Befehl \emph{SMEMBERS} hingegen ist mit O(n) zu bewerten und kann insbesondere bei großen Sets zu langen Ausführungszeiten führen, da er das gesamte Set zurückgibt.
 Als Alternative bietet sich der Befehl \emph{SSCAN} an, der ein iteratives Abfragen der Set-Inhalte ermöglicht.
 
-Sets werden oft als Index verwendet. Für eine effiziente Verwaltung von Indizes innerhalb von Redis empfiehlt sich aber das \emph{RediSearch}-Modul
-~\cite{redis_sets_nodate}.
+Sets werden oft als Index verwendet. Für eine effiziente Verwaltung von Indizes innerhalb von Redis empfiehlt sich aber das \emph{RediSearch}-Modul~\cite{redis_sets_nodate}.
 
 
-\subsubsection{Sortierte Sets (Sorted Sets}
+\subsubsection{Sortierte Sets (Sorted Sets)}
 % \emph Nutzung überprüfen
 Ein \emph{Sorted Set} in Redis repräsentiert eine Menge an einzigartigen Strings, die basierend auf einer zugehörigen \emph{Score}-Wertung geordnet sind. Diese Datenstruktur eignet sich besonders für Anwendungsfälle wie Ranglisten oder die Implementierung eines \emph{Rate Limiters} mittels eines gleitenden Zeitfensters (\emph{sliding-window}). Der wesentliche Vorteil eines \emph{Sorted Sets} gegenüber einem herkömmlichen Set liegt in der sofortigen Sortierung der Elemente bei der Einfügung und nicht erst bei der Abfrage. % Limiter überprüfen
 
@@ -413,12 +411,11 @@ Die meisten Operationen auf \emph{Sorted Sets} haben eine Laufzeit von \(O(\log(
 
 Technisch gesehen sind \emph{Sorted Sets} durch eine duale Datenstruktur realisiert, die eine Skip-List und eine Hash-Tabelle kombiniert, sodass jede Einfügung eine \(O(\log(N))\) Operation darstellt. Die vorsortierte Natur der \emph{Sorted Sets} ermöglicht einen effizienten Zugriff ohne zusätzlichen Sortieraufwand bei der Abfrage.
 
-Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, ist für den Aufbau eines effizienten Index in Redis das Modul RediSearch zu empfehlen
-~\cite{redis_sorted-sets_nodate}.
+Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, ist für den Aufbau eines effizienten Index in Redis das Modul RediSearch zu empfehlen~\cite{redis_sorted-sets_nodate}.
 
 
 \subsubsection{Streams}
-Redis Streams sind eine Datenstruktur in Redis, die als anhängbares Protokoll (append-only log) fungiert und gleichzeitig mehrere Operationen zur Überwindung der Grenzen typischer anhängbarer Protokolle implementiert. Diese umfassen unter anderem den wahlfreien Zugriff (random access) in O(1)-Zeit und komplexe Konsumstrategien wie Verbrauchergruppen.
+Redis Streams sind eine Datenstruktur in Redis, die als anhängbares Protokoll (append-only log) fungiert und gleichzeitig mehrere Operationen zur Überwindung der Grenzen typischer anhängbarer Protokolle implementiert. Diese umfassen unter anderem den wahlfreien Zugriff (\enquote{random access}) in O(1)-Zeit und komplexe Konsumstrategien wie Verbrauchergruppen.
 Die Anwendungsbereiche von Redis Streams sind vielfältig und schließen Event Sourcing, Sensorüberwachung und Benachrichtigungssysteme ein.
 
 Falls nicht anders vorgegeben generiert Redis für jeden Eintrag in einem Stream automatisch eine eindeutige ID, die auch Zeitinformationen beinhaltet, was den effizienten Abruf und Bereichsabfragen ermöglicht.
@@ -431,8 +428,7 @@ Die Begrenzung der Datenspeicherung in Redis Streams wird durch den \emph{MAXLEN
 
 Wie andere Redis-Datenstrukturen werden Streams asynchron auf Repliken repliziert und in AOF- sowie RDB-Dateien persistiert, einschließlich der Zustände von Consumer Groups.
 
-Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, während der Zugriff auf einzelne Einträge als O(n)-Operation charakterisiert wird, wobei n die Länge der ID darstellt. In der Regel sind diese IDs kurz, was zu einem relativ konstanten Zeitaufwand führt, allerdings kann dieser Aufwand variieren, je nach spezifischer Anwendung und Struktur der IDs
-~\cite{redis_streams_nodate}.
+Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, während der Zugriff auf einzelne Einträge als O(n)-Operation charakterisiert wird, wobei n die Länge der ID darstellt. In der Regel sind diese IDs kurz, was zu einem relativ konstanten Zeitaufwand führt, allerdings kann dieser Aufwand variieren, je nach spezifischer Anwendung und Struktur der IDs~\cite{redis_streams_nodate}.
 
 \subsubsection{Bitmaps}
 
@@ -443,8 +439,11 @@ Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, w�
 ~\cite{redis_bitfields_nodate}.
 
 
-\subsubsection{Georäumliche Indizes}
-~\cite{redis_geospatial_nodate}.
+\subsubsection{Geodatenindizes}
+Der Datentyp \enquote{\textbf{Geospatial}} ermöglicht die Speicherung und Abfrage von Koordinaten in Redis. So können z.B. nahegelegene Punkte innerhalb eines bestimmten Radius oder eines definierten Begrenzungsrahmens ermittelt werden.
+Ein praktisches Anwendungsbeispiel für diese Funktionalität wäre eine mobile Anwendung, die dem Benutzer die nächstgelegenen Elektroroller in seiner Umgebung anzeigt.
+
+Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: Der Befehl \emph{GEOADD} fügt einen Standort zu einem gegebenen georäumlichen Index hinzu, wobei zu beachten ist, dass bei diesem Befehl der Längengrad vor dem Breitengrad angegeben wird. Der Befehl \emph{GEOSEARCH} hingegen gibt Standorte innerhalb eines bestimmten Radius oder einer bestimmten Begrenzung zurück~\cite{redis_geospatial_nodate}.
 
 
 
@@ -468,8 +467,7 @@ Dabei bietet Redis hohe Einfügeraten und schnelle Lesezugriffe.
 Es ermöglicht Abfragen innerhalb spezifizierter Start- und Endzeiten sowie eine Vielfalt von aggregierten Abfragen, einschließlich, aber nicht beschränkt auf Minimum, Maximum, Durchschnitt und Summe, für beliebige Zeitintervalle.
 Zudem lässt sich ein maximaler Aufbewahrungszeitraum konfigurieren und die Kompaktierung sorgt für automatisch aktualisierte, aggregierte Zeitreihen.
 Durch die Verwendung von sekundären Indizes, welche auf Labels (Feld-Wert-Paare) basieren, können Zeitreiheneinträge gezielt abgefragt werden.
-Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden
-~\cite{redis_time_nodate}.
+Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden~\cite{redis_time_nodate}.
 % Hier noch kurz was über Time Series
 
 
