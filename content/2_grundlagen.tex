@@ -471,6 +471,19 @@ Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: D
 
 
 \subsubsection{HyperLogLog}
+\ac{HLL} ist eine probabilistische Datenstruktur in Redis, die Schätzung der Kardinalität einer Menge ermöglicht und dabei bis zu 12 KB Speicher verwendet. Diese Implementierung zeichnet sich durch einen Standardfehler von 0,81\% aus und kann Mengen mit bis zu \(2^{64}\) Mitgliedern schätzen.
+
+Im Gegensatz zur traditionellen Zählung einzigartiger Elemente, die einen Speicherplatz proportional zur Elementanzahl erfordert, bietet \ac{HLL} eine Speicherplatz-effiziente Schätzung mit einem geringen Fehleranteil.
+
+Technisch gesehen unterscheidet sich \ac{HLL} von anderen Datenstrukturen in Redis, wird jedoch als Redis-String kodiert, wodurch \emph{GET} zur Serialisierung und \emph{SET} zur Deserialisierung eines \ac{HLL} genutzt werden kann.
+
+Konzeptionell ähnelt die Nutzung von \ac{HLL} in einigen Aspekten dem Einsatz von Sets, insbesondere in der Verwaltung einzigartiger Elemente. Die direkte Speicherung der Elemente erfolgt jedoch nicht, stattdessen wird ein Zustand aufgezeichnet, der für Schätzungen verwendet wird.
+
+Anwendungsbereiche von \ac{HLL} umfassen beispielsweise die Zählung einzigartiger Suchanfragen oder die Bestimmung der Anzahl einzigartiger Besucher einer Webseite.
+
+Bei den grundlegenden Befehlen für die Arbeit mit \ac{HLL} in Redis, erlaubt \emph{PFADD} das Eintragen eines Elements in ein \ac{HLL}. Die Anzahl der Elemente in einem \ac{HLL} lässt sich mit \emph{PFCOUNT} schätzen. Für das Zusammenführen von mehreren HyperLogLogs steht der Befehl \emph{PFMERGE} zur Verfügung.
+
+Hinsichtlich der Leistungsfähigkeit zeichnen sich Schreib- (\emph{PFADD}) und Leseoperationen (\emph{PFCOUNT}) bei HyperLogLogs durch konstante Zeit- und Speicheranforderungen aus. Das Konsolidieren mehrerer HyperLogLogs mittels \emph{PFMERGE} stellt eine O(n)-Operation dar, wobei n die Anzahl der zu vereinenden HLLs repräsentiert.
 ~\cite{redis_hyperloglog_nodate}.
 
 
