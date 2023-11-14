@@ -321,10 +321,10 @@ ORDER BY
 \end{lstlisting}
 \section{Redis}
 
-Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_introduction_nodate}.
-In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_data_nodate}.
-Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON oder Time series unterstützt werden~\cite{redis_}.
-Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_whos_nodate}.
+Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_ltd_introduction_nodate}.
+In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_ltd_data_nodate}.
+Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON oder Time series unterstützt werden.
+Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_ltd_whos_nodate}.
 Redis wird außerdem immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
 
 % Hier ist was doppelt, muss überprüft werden (wahrscheinlich untere lassen, obere entfernen)
@@ -348,12 +348,19 @@ Diese Strings unterstützen bitweise Operationen und Funktionen wie Zähler, die
 
 Die primären Befehle für die Arbeit mit Strings sind \emph{SET} und \emph{GET}, die das Setzen und Abrufen von Werten ermöglichen, während \emph{MSET} und \emph{MGET} das gleichzeitige Setzen oder Abrufen mehrerer Werte erlauben.
 
-Obwohl die meisten String-Operationen eine konstante Ausführungszeit von O(1) haben und somit sehr effizient sind, benötigen einige Operationen wie \emph{SUBSTR}, \emph{GETRANGE} oder \emph{SETRANGE} eine Ausführungszeit von O(n)~\cite{redis_strings_nodate}.
+Obwohl die meisten String-Operationen eine konstante Ausführungszeit von O(1) haben und somit sehr effizient sind, benötigen einige Operationen wie \emph{SUBSTR}, \emph{GETRANGE} oder \emph{SETRANGE} eine Ausführungszeit von O(n)~\cite{redis_ltd_strings_nodate}.
 
 \subsubsection{Hashes}
+Hashes in Redis dienen als essenzielle Strukturen für die Speicherung von Key-Value-Paaren und ähneln in ihrer Funktionsweise den HashMaps in Java oder Dictionaries in Python. Sie eignen sich insbesondere für die Darstellung grundlegender Objekte und das Speichern von Zählergruppierungen. Ein Hash in Redis kann bis zu \(2^{32} - 1\) Felder enthalten, was eine umfangreiche Kapazität für die Datenorganisation bietet.
 
+In Hashes können beispielsweise Daten von Nutzern einer Applikation wie Vorname, Nachname, Emailadresse gespeichert werden.
+Hashes können auch genutzt werden um Daten aus relationalen Datenbanken in Redis darzustellen indem die Spalten als Keys genutzt werden. Jeder Hash stellt so eine Zeile aus einer relationalen Datenbank dar.
 
-~\cite{redis_hashes_nodate}.
+Für die Arbeit mit Hashes stellt Redis verschiedene Befehle bereit. Der Befehl \emph{HSET} ermöglicht das Setzen mehrerer Felder eines Hashes, wohingegen \emph{HGET} für das Abrufen des Wertes eines einzelnen Feldes genutzt wird. \emph{HMGET} bietet eine ähnliche Funktion wie \emph{HGET}, gibt jedoch die Werte mehrerer Felder in Form eines Arrays zurück.
+
+Bei der Betrachtung der Performance von Hash-Befehlen in Redis zeichnen sich die meisten durch eine Effizienz mit einer Komplexität von O(1) aus. Allerdings gibt es auch Befehle wie \emph{HKEYS}, \emph{HVALS} und \emph{HGETALL}, deren Komplexität O(n) beträgt, wobei n für die Anzahl der Feld-Wert-Paare im Hash steht. Diese Differenzierung in der Performance ist bei der Anwendung von Hashes in Redis entscheidend, um eine optimale Effizienz und Leistung zu gewährleisten.
+
+~\cite{redis_ltd_hashes_nodate}.
 \subsubsection{Listen}
 Der Listen-Datentyp in Redis besteht aus verketteten Listen von String-Werten. Er wird häufig verwendet, um Stacks und Queues zu implementieren sowie Queue-Management-Systeme für Hintergrundprozesse zu bauen.
 Die maximale Länge einer Redis-Liste beträgt \(2^{32} - 1\) (4.294.967.295) Elemente.
@@ -373,7 +380,7 @@ Redis-Listen bieten jedoch die Möglichkeit, sie als begrenzte Sammlungen für A
 In diesem Fall wird die Operation \emph{LTRIM} verwendet, um die Liste auf eine feste Anzahl von Elementen zu beschränken.
 
 
-Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen~\cite{redis_lists_nodate}.
+Redis erstellt und entfernt Schlüssel automatisch beim Erstellen oder Leeren von Listen~\cite{redis_ltd_lists_nodate}.
 
 
 \subsubsection{Sets}
@@ -394,7 +401,7 @@ Die meisten Operationen wie das Hinzufügen, Entfernen oder Überprüfen der Zug
 Der Befehl \emph{SMEMBERS} hingegen ist mit O(n) zu bewerten und kann insbesondere bei großen Sets zu langen Ausführungszeiten führen, da er das gesamte Set zurückgibt.
 Als Alternative bietet sich der Befehl \emph{SSCAN} an, der ein iteratives Abfragen der Set-Inhalte ermöglicht.
 
-Sets werden oft als Index verwendet. Für eine effiziente Verwaltung von Indizes innerhalb von Redis empfiehlt sich aber das \emph{RediSearch}-Modul~\cite{redis_sets_nodate}.
+Sets werden oft als Index verwendet. Für eine effiziente Verwaltung von Indizes innerhalb von Redis empfiehlt sich aber das \emph{RediSearch}-Modul~\cite{redis_ltd_sets_nodate}.
 
 
 \subsubsection{Sortierte Sets (Sorted Sets)}
@@ -411,7 +418,7 @@ Die meisten Operationen auf \emph{Sorted Sets} haben eine Laufzeit von \(O(\log(
 
 Technisch gesehen sind \emph{Sorted Sets} durch eine duale Datenstruktur realisiert, die eine Skip-List und eine Hash-Tabelle kombiniert, sodass jede Einfügung eine \(O(\log(N))\) Operation darstellt. Die vorsortierte Natur der \emph{Sorted Sets} ermöglicht einen effizienten Zugriff ohne zusätzlichen Sortieraufwand bei der Abfrage.
 
-Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, ist für den Aufbau eines effizienten Index in Redis das Modul RediSearch zu empfehlen~\cite{redis_sorted-sets_nodate}.
+Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, ist für den Aufbau eines effizienten Index in Redis das Modul RediSearch zu empfehlen~\cite{redis_ltd_sorted-sets_nodate}.
 
 
 \subsubsection{Streams}
@@ -428,7 +435,7 @@ Die Begrenzung der Datenspeicherung in Redis Streams wird durch den \emph{MAXLEN
 
 Wie andere Redis-Datenstrukturen werden Streams asynchron auf Repliken repliziert und in AOF- sowie RDB-Dateien persistiert, einschließlich der Zustände von Consumer Groups.
 
-Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, während der Zugriff auf einzelne Einträge als O(n)-Operation charakterisiert wird, wobei n die Länge der ID darstellt. In der Regel sind diese IDs kurz, was zu einem relativ konstanten Zeitaufwand führt, allerdings kann dieser Aufwand variieren, je nach spezifischer Anwendung und Struktur der IDs~\cite{redis_streams_nodate}.
+Das Hinzufügen eines Eintrags zu einem Redis Stream ist eine O(1)-Operation, während der Zugriff auf einzelne Einträge als O(n)-Operation charakterisiert wird, wobei n die Länge der ID darstellt. In der Regel sind diese IDs kurz, was zu einem relativ konstanten Zeitaufwand führt, allerdings kann dieser Aufwand variieren, je nach spezifischer Anwendung und Struktur der IDs~\cite{redis_ltd_streams_nodate}.
 
 \subsubsection{Bitmaps}
 Bitmaps sind in Redis kein eigener Datentyp sondern eine Reihe an bit-orientierten Operationen auf dem String-Datentyp der wie ein Bit-Vektor genutzt wird. Da Strings in Redis binärsicher sind und eine maximale Länge von 512 MB aufweisen, eignen sie sich gut, um bis zu \(2^{32}\) unterschiedliche Bits zu setzen.
@@ -444,7 +451,7 @@ Es gibt zwei Kategorien von Bitoperationen: die konstantzeitigen Einzelbit-Opera
 
 Bitmaps bieten den großen Vorteil, dass sie häufig erhebliche Speicherplatzersparnisse bei der Speicherung von Informationen ermöglichen.Zum Beispiel kann in einem System, das Benutzer über fortlaufende IDs identifiziert, ein Bit pro Benutzer genutzt werden, um eine einfache Information wie den Wunsch, einen Newsletter zu erhalten, zu speichern. Mit dieser Methode lassen sich solche Daten für bis zu 4 Milliarden Benutzer mit nur 512 MB Speicher verwalten.
 
-Die Performance von Bitmap-Befehlen in Redis variiert je nach Art der Operation. Die Befehle \emph{SETBIT} und \emph{GETBIT} werden in konstanter Zeit, also in O(1), ausgeführt. Der Befehl \emph{BITOP} hat hingegen eine Ausführungszeit von O(n), wobei n die Länge des längsten Strings in der Vergleichsoperation darstellt~\cite{redis_bitmaps_nodate}.
+Die Performance von Bitmap-Befehlen in Redis variiert je nach Art der Operation. Die Befehle \emph{SETBIT} und \emph{GETBIT} werden in konstanter Zeit, also in O(1), ausgeführt. Der Befehl \emph{BITOP} hat hingegen eine Ausführungszeit von O(n), wobei n die Länge des längsten Strings in der Vergleichsoperation darstellt~\cite{redis_ltd_bitmaps_nodate}.
 
 
 \subsubsection{Bitfields}
@@ -457,14 +464,14 @@ Die Anzahl der Diamanten könnte beispielsweise am Offset 0 und die Anzahl der T
 Der Befehl \emph{BITFIELD} in Redis ermöglicht das atomare Setzen, Inkrementieren und Lesen von Werten, während \emph{BITFIELD\_RO} als schreibgeschützte Variante dient, die speziell für leseintensive Anwendungen optimiert ist.
 
 
-Die Leistung des Befehls \emph{BITFIELD} ist O(n), wobei n die Anzahl der zugegriffenen Zähler darstellt~\cite{redis_bitfields_nodate}.
+Die Leistung des Befehls \emph{BITFIELD} ist O(n), wobei n die Anzahl der zugegriffenen Zähler darstellt~\cite{redis_ltd_bitfields_nodate}.
 
 
 \subsubsection{Geodatenindizes}
 Der Datentyp \enquote{\textbf{Geospatial}} ermöglicht die Speicherung und Abfrage von Koordinaten in Redis. So können z.B. nahegelegene Punkte innerhalb eines bestimmten Radius oder eines definierten Begrenzungsrahmens ermittelt werden.
 Ein praktisches Anwendungsbeispiel für diese Funktionalität wäre eine mobile Anwendung, die dem Benutzer die nächstgelegenen Elektroroller in seiner Umgebung anzeigt.
 
-Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: Der Befehl \emph{GEOADD} fügt einen Standort zu einem gegebenen georäumlichen Index hinzu, wobei zu beachten ist, dass bei diesem Befehl der Längengrad vor dem Breitengrad angegeben wird. Der Befehl \emph{GEOSEARCH} hingegen gibt Standorte innerhalb eines bestimmten Radius oder einer bestimmten Begrenzung zurück~\cite{redis_geospatial_nodate}.
+Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: Der Befehl \emph{GEOADD} fügt einen Standort zu einem gegebenen georäumlichen Index hinzu, wobei zu beachten ist, dass bei diesem Befehl der Längengrad vor dem Breitengrad angegeben wird. Der Befehl \emph{GEOSEARCH} hingegen gibt Standorte innerhalb eines bestimmten Radius oder einer bestimmten Begrenzung zurück~\cite{redis_ltd_geospatial_nodate}.
 
 
 
@@ -484,7 +491,7 @@ Anwendungsbereiche von \ac{HLL} umfassen beispielsweise die Zählung einzigartig
 Bei den grundlegenden Befehlen für die Arbeit mit \ac{HLL} in Redis, erlaubt \emph{PFADD} das Eintragen eines Elements in ein \ac{HLL}. Die Anzahl der Elemente in einem \ac{HLL} lässt sich mit \emph{PFCOUNT} schätzen. Für das Zusammenführen von mehreren HyperLogLogs steht der Befehl \emph{PFMERGE} zur Verfügung.
 
 Hinsichtlich der Leistungsfähigkeit zeichnen sich Schreib- (\emph{PFADD}) und Leseoperationen (\emph{PFCOUNT}) bei HyperLogLogs durch konstante Zeit- und Speicheranforderungen aus. Das Konsolidieren mehrerer HyperLogLogs mittels \emph{PFMERGE} stellt eine O(n)-Operation dar, wobei n die Anzahl der zu vereinenden HLLs repräsentiert.
-~\cite{redis_hyperloglog_nodate}.
+~\cite{redis_ltd_hyperloglog_nodate}.
 
 
 \subsubsection{Weitere Datentypen durch zusätzliche Module}
@@ -494,14 +501,14 @@ Das \textbf{RedisJSON}-Modul bietet eine Unterstützung für JSON-Daten in Redis
 JSON-Daten können so direkt in der Redis-Datenbank gespeichert, aktualisiert und wieder abgerufen werden, was eine effiziente Verwaltung von komplexen Datenstrukturen ermöglicht. Hierzu zählen das gezielte Bearbeiten von Subelementen dank der \emph{JSONPath}-Syntax und ein schneller Zugriff auf Unterstrukturen von JSON-Dokumenten.
 Außerdem ermöglicht RedisJSON atomare Operationen auf Datentypen innerhalb der JSON-Dokumente, um die Leistungsfähigkeit bei der Datenaufbereitung zu verbessern.
 Ein wesentlicher Vorteil im Vergleich zur Speicherung von JSON als serialisierte Strings besteht in der Fähigkeit, JSON-Objekte zu indizieren und zu durchsuchen, was im Zusammenspiel mit dem \emph{RediSearch}-Modul ermöglicht wird.
-Dadurch können komplexe Anfragen direkt in Redis ausgeführt werden~\cite{redis_json_nodate, redis_json-use-cases_nodate}.
+Dadurch können komplexe Anfragen direkt in Redis ausgeführt werden~\cite{redis_ltd_json_nodate, redis_json-use-cases_nodate}.
 
 Durch das \textbf{RedisTimeSeries}-Modul können Zeitreihendaten in Redis gespeichert werden.
 Dabei bietet Redis hohe Einfügeraten und schnelle Lesezugriffe.
 Es ermöglicht Abfragen innerhalb spezifizierter Start- und Endzeiten sowie eine Vielfalt von aggregierten Abfragen, einschließlich, aber nicht beschränkt auf Minimum, Maximum, Durchschnitt und Summe, für beliebige Zeitintervalle.
 Zudem lässt sich ein maximaler Aufbewahrungszeitraum konfigurieren und die Kompaktierung sorgt für automatisch aktualisierte, aggregierte Zeitreihen.
 Durch die Verwendung von sekundären Indizes, welche auf Labels (Feld-Wert-Paare) basieren, können Zeitreiheneinträge gezielt abgefragt werden.
-Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden~\cite{redis_time_nodate}.
+Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden~\cite{redis_ltd_time_nodate}.
 % Hier noch kurz was über Time Series
 
 
@@ -509,27 +516,65 @@ Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise
 
 \section{RediSearch}
 
-\subsubsection{Indizes in RediSearch}
+
+
+
+
+
+\subsection{Redis String DMA}
+\emph{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
+Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen.
+
+
+\subsection{Indizes in RediSearch}
 RedisSearch implementiert invertierte Indexe innerhalb von Redis.
 Es verwendet eine angepasste Datenkodierung (\enquote{\emph{Redis String DMA}}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
-Darüber hinaus bietet es erweiterte Suchfunktionen~\cite{redis_internal_nodate}.
+Darüber hinaus bietet es erweiterte Suchfunktionen~\cite{redis_ltd_redisearch-internal-design_nodate}.
 
+Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte.
 
+\subsection{Invertierte Indizes}
 Der Invertierte Index in RediSearch enthält für jedes indizierte Wort bzw. Suchparameter eine Liste an Dokumenten, in denen es vorkommt.
 Zusätzlich werden weitere Daten gespeichert, wie etwa die Häufigkeit und die Stellen, an denen der Suchbegriff im Dokument auftritt (Offset).
 Bei einer Suche kann entweder ein einzelner Index oder eine Verbindung mehrerer Indizes nach dem Suchbegriff durchsucht werden.
-
-\textbf{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
-Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen.
 
 Zusätzlich zu den invertieren Indizes werden weitere Daten in anderen \textit{Redis DMA string keys} gespeichert:\\
 Der sogenannte \textbf{Skip-Index}, eine Tabelle des Index-Offsets von einem Fünfzigstel der Einträge im Index. Dies ermöglicht eine schnellere Suche, wenn mehrere invertierte Indizes überschnitten werden, da nicht die gesamte Liste durchsucht werden muss.\\
 Da bei der Suche nach einzelnen Wörtern nicht alle Treffer durchsucht werden, sondern nur die ersten N Treffer für den Benutzenden relevant sind, wird für jeden Suchbegriff ein Hilfsindex mit den ersten 20 oder mehr Einträgen erstellt, der sogenannte \textbf{Score Index}.
 
-
-Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte.
-
+Beim indizieren konnte früher angegeben werden, dass die Inhalte der Dokumente nicht gespeichert werden. Diese Option ist jedoch seit Version 2.0 von RediSearch nicht mehr verfügbar~\cite{redis_ltd_upgrade_nodate, korland_missing_nodate}.
+% Hier eigentlich "Document and result ranking" aber veraltet ?!
 % Sollte hier mehr ins Detail gegangen werden, wa sgenau gespeichert wird?
 
+
 \section{Scala}
+Scala ist eine moderne Programmiersprache die Merkmale objektorientierter und funktionaler Sprachen aufweist.
+Sie zeichnet sich außerdem durch eine starke Typisierung aus.
+Ihre Syntax zeigt Parallelen zu Java auf, und es ist möglich, Java-Funktionen sowie Java-Libraries in Scala zu verwenden~\cite{epfl_scala_nodate-1, epfl_introduction_nodate}.
+Scala läuft in der JVM, mit JavaScript im Browser oder nativ mit LLVM~\cite{epfl_scala_nodate}.
+
+\subsection{Vorteile von Scala}
+
+
+Besonders zu betonen sind folgende Eigenschaften von Scala im Gegensatz zu Java~\cite{epfl_scala_nodate-1, epfl_scala_nodate-2}: % Quellenangabe hier so okay?
+
+\begin{enumerate}
+    \item \textbf{Kompakterer und ausdrucksstärkerer Code:} Scala ermöglicht oftmals kürzere und prägnantere Codezeilen im Vergleich zu Java. Dies wird durch spezifische Konstrukte in Scala, wie \emph{case}-Klassen und Collections-Operationen (\emph{map} und \texttt{toMap}), sowie durch Pattern Matching erreicht, was den Code weniger umfangreich und einfacher lesbar macht.
+    
+    \item \textbf{Funktionale Programmierung:} Scala, eine Sprache, die objektorientierte und funktionale Programmierstile unterstützt, bietet Vorteile durch funktionale Konzepte wie Higher-Order-Funktionen und effiziente Methoden zur Transformation von Collections. Diese Eigenschaften sind in Java oft weniger elegant umsetzbar oder erfordern mehr Boilerplate-Code.
+    
+    \item \textbf{Immutability und Case Classes:} Der Einsatz von Unveränderlichkeit (Immutability) bei der Definition von Datenstrukturen ist in Scala weniger komplex als in Java. Scala's \emph{case}-Klassen unterstützen Unveränderlichkeit und Pattern Matching, was die Sicherheit und Wartbarkeit des Codes erhöht.
+    
+    \item \textbf{Pattern Matching:} Scalas Implementierung von Pattern Matching ermöglicht eine elegantere und sicherere Handhabung potenziell fehlender Werte, ein Ansatz, der in Java nicht so nativ und leserlich umgesetzt ist.
+    
+    \item \textbf{Typinferenz:} Durch Scala's Typinferenz wird der Bedarf an expliziten Typdeklarationen reduziert, was den Code weniger überladen und besser lesbar macht – ein Aspekt, der in Java oft durch die Notwendigkeit expliziter Typangaben nicht gegeben ist.
+\end{enumerate}
+
+Grundsätzlich gibt es Bibliotheken für die Arbeit mit Redis in vielen Programmiersprachen und der Quellcode, der während dieser Arbeit erstellt wurde, wäre auch in anderen modernen Programmiersprachen wie etwa Java oder Python möglich gewesen.
+Die Entscheidung für Scala in dieser Arbeit basiert auf den oben genannten Vorteilen und der persönlichen Präferenz des Autors.
+
+\subsection{Jedis} %subsection oder subsubsection?
+Jedis ist ein Java-Client für Redis, der sich durch hohe Leistung und einfache Benutzbarkeit auszeichnet. Als Hauptvorteile bietet Jedis fortgeschrittene Unterstützung für verschiedene Redis-Versionen, eine effiziente Handhabung potenziell fehlender Werte durch Pattern Matching sowie eine Unterstützung für Redis-Module wie RediSearch~\cite{redis_inc_jedis_2023}.
+Da Scala mit Java-Bibliotheken kompatibel ist lässt sich Jedis mit wenig Mehraufwand auch in Scala nutzen. % -> Hier Verweis auf Implementierungskapitel wo kurz erklärt wird dass man die scla-java-converter nutzen muss.
+
 % TODO: ganz kurzes Kapitel über Scala bzw. warum Scala
