@@ -325,7 +325,10 @@ Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) a
 In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_ltd_data_nodate}.
 Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON oder Time series unterstützt werden.
 Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_ltd_whos_nodate}.
-Redis wird außerdem immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
+Redis wird immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
+
+Des weiteren besteht mit \enquote{Auto Tiering} die Möglichkeit, Arbeitsspeicher zusammen mit SSD-Speicher zu nutzen was die Infrastrukturkosten um bis zu 70\% senken kann~\cite{redis_ltd_auto_nodate}. Dieses Feature ist jedoch nur mit \enquote{Redis Enterprise} möglich.
+
 
 % Hier ist was doppelt, muss überprüft werden (wahrscheinlich untere lassen, obere entfernen)
 
@@ -516,26 +519,43 @@ Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise
 
 \section{RediSearch}
 
+RediSearch ist ein Redis-Modul, das es ermöglicht, nach Daten in Redis über Indizes zu suchen.
+Es unterstützt die Durchsuchung von HASH- und JSON-Werten, wobei letzteres das zusätzliche Modul \emph{RedisJSON} voraussetzt.
+RediSearch verfügt über eine eigene Abfragesprache, die es auch ermöglicht, komplexere Suchanfragen und Aggregationen durchzuführen~\cite{redis_ltd_search_nodate}. %Wo Zitat hin?
 
+RediSearch bietet verschiedene Such- und Abfragefunktionen.
+So können Abfragen über mehrere Felder hinweg durchgeführt werden.
+Zudem bietet es Aggregationsfunktionen und volltextbasierte Indexierung mehrerer Felder in einem Dokument.
+Eine inkrementelle Indexierung ist ohne Leistungseinbußen möglich, sodass ein Index zuerst erstellt und danach eigenständig von Redis verwaltet sowie an sich ändernde Daten angepasst werden kann.
 
+Weitere Funktionen umfassen logische Abfragen mithilfe von Operatoren wie \emph{AND}, \emph{OR} und \emph{NOT}, optionale Filterklauseln, präfixbasierte Suchen, Feldgewichtungen, Autovervollständigung und vage Präfix-Vorschläge (\enquote{Fuzzy-Prefix-Vorschläge}).
+Es werden exakte Phrasensuchen und Distanzabhängige Suchen (\enquote{slop-basiert}) unterstützt. Darüber hinaus gibt es \emph{Stemming}-basierte Abfrageerweiterungen für viele Sprachen, einschließlich Deutsch und Englisch, mittels \emph{Snowball}.
+RediSearch bietet eine begrenzte Unterstützung für benutzerdefinierte Funktionen zur Erweiterung und Bewertung von Suchanfragen (\enquote{Scoring}).
 
+Zusätzlich dazu umfasst RediSearch numerische Filter und Bereichsabfragen, Geo-Filterung unter Verwendung von Redis-Geo-Befehlen und Suchfunktionen für Vektoren, die für semantische Suchaufgaben sowohl exakte als auch approximative Algorithmen verwenden.
+Es unterstützt Unicode und ermöglicht das Abrufen von vollständigen Dokumentinhalten oder nur deren IDs.
 
+RediSearch kann auch in verteilten Datenbank-Clustern eingesetzt werden.
 
-\subsection{Redis String DMA}
+\subsection{Redis String DMA} % Ist das noch relevant?
 \emph{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
-Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen.
+Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen~\cite{redis_ltd_internal_nodate}.
 
 
 \subsection{Indizes in RediSearch}
-RedisSearch implementiert invertierte Indexe innerhalb von Redis.
-Es verwendet eine angepasste Datenkodierung (\enquote{\emph{Redis String DMA}}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
-Darüber hinaus bietet es erweiterte Suchfunktionen~\cite{redis_ltd_redisearch-internal-design_nodate}.
+Die derzeit verfügbare Dokumentation auf \emph{redis.io}~\cite{redis_ltd_internal_nodate} ist zum Zeitpunkt dieser Arbeit nicht mehr aktuell und bezieht sich auf Versionen vor der Einführung von RediSearch 2.0.
+Mit der Einführung von Version 2.0 wurden erhebliche Änderungen vorgenommen, die von den in der Dokumentation beschriebenen Funktionalitäten wesentlich abweichen.
+Diese Änderungen werden am Ende dieses Kapitels behandelt.
+Es ist jedoch zu beachten, dass die nachfolgenden Informationen hauptsächlich auf der veralteten Dokumentation beruhen.
 
-Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte.
+RediSearch implementiert invertierte Indexe innerhalb von Redis.
+Es verwendet eine angepasste Datenkodierung (\enquote{\emph{Redis String DMA}}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
+
+Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte. Seit Version 2.0 von RediSearch werden die Daten der Indizes separat gespeichert.
 
 \subsection{Invertierte Indizes}
 Der Invertierte Index in RediSearch enthält für jedes indizierte Wort bzw. Suchparameter eine Liste an Dokumenten, in denen es vorkommt.
-Zusätzlich werden weitere Daten gespeichert, wie etwa die Häufigkeit und die Stellen, an denen der Suchbegriff im Dokument auftritt (Offset).
+Zusätzlich werden weitere Daten gespeichert, wie etwa die Häufigkeit und die Stellen, an denen der Suchbegriff im Dokument auftritt (\enquote{Offset}).
 Bei einer Suche kann entweder ein einzelner Index oder eine Verbindung mehrerer Indizes nach dem Suchbegriff durchsucht werden.
 
 Zusätzlich zu den invertieren Indizes werden weitere Daten in anderen \textit{Redis DMA string keys} gespeichert:\\
@@ -544,7 +564,7 @@ Da bei der Suche nach einzelnen Wörtern nicht alle Treffer durchsucht werden, s
 
 Beim indizieren konnte früher angegeben werden, dass die Inhalte der Dokumente nicht gespeichert werden. Diese Option ist jedoch seit Version 2.0 von RediSearch nicht mehr verfügbar~\cite{redis_ltd_upgrade_nodate, korland_missing_nodate}.
 % Hier eigentlich "Document and result ranking" aber veraltet ?!
-% Sollte hier mehr ins Detail gegangen werden, wa sgenau gespeichert wird?
+% Sollte hier mehr ins Detail gegangen werden, was genau gespeichert wird?
 
 
 \section{Scala}
