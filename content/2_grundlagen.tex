@@ -1,5 +1,13 @@
 % TODO: FIX LATEX ERRORS
 \chapter{Technische Grundlagen}
+\section{Beliebtheit von Technologien}
+In der vorliegenden Arbeit wird die Popularität von bestimmten Technologien auf Basis zweier Indizes dargestellt: dem \emph{\acf{PYPL}}~\cite{carbonnelle_pypl_2023} sowie dem \emph{\acf{TOPDB}}~\cite{carbonnelle_topdb_2023}.  Diese Indizes dienen der Einschätzung der Beliebtheit von Programmiersprachen und Datenbanken und basieren hierbei auf der Häufigkeit von Google-Suchen.
+
+Der \emph{\acf{PYPL}} misst die Beliebtheit von Programmiersprachen anhand der Analyse der Häufigkeit von Suchanfragen nach Tutorials auf Google. 
+Dieser Index beruht auf der Annahme, dass eine höhere Anzahl von Suchanfragen nach Tutorials für eine bestimmte Sprache auf eine größere Beliebtheit dieser Sprache hinweist.
+
+Der \emph{\acf{PYPL}} bewertet die Beliebtheit von Datenbanken anhand der Analyse der Suchhäufigkeit nach ihren Namen auf Google.  Eine erhöhte Suchfrequenz nach einer bestimmten Datenbank deutet dabei auf eine größere Popularität hin, ähnlich dem \emph{PYPL}-Index.
+
 \section{\acf{OLAP}}
 Viele Unternehmen verwenden heute große Mengen an Geschäftsdaten für eine strategische Planung.
 Durch eine Analyse der Daten lassen sich Handlungsempfehlungen ableiten.
@@ -567,15 +575,21 @@ Beim indizieren konnte früher angegeben werden, dass die Inhalte der Dokumente 
 % Sollte hier mehr ins Detail gegangen werden, was genau gespeichert wird?
 
 
-\section{Scala}
+\section{Scala} % Todo: Eventuell ausbauen
 Scala ist eine moderne Programmiersprache die Merkmale objektorientierter und funktionaler Sprachen aufweist.
 Sie zeichnet sich außerdem durch eine starke Typisierung aus.
 Ihre Syntax zeigt Parallelen zu Java auf, und es ist möglich, Java-Funktionen sowie Java-Libraries in Scala zu verwenden~\cite{epfl_scala_nodate-1, epfl_introduction_nodate}.
 Scala läuft in der JVM, mit JavaScript im Browser oder nativ mit LLVM~\cite{epfl_scala_nodate}.
 
+\subsection{Einsatzgebiete von Scala}
+Auf dem \emph{\acf{PYPL}} belegt Scala im November 2023 den 20. Platz der beliebtesten Programmiersprachen~\cite{carbonnelle_pypl_2023}.
+Durch die Kompatibilität mit Java eigenet sich Scala auch für alle gängigen Einsatzgebiete von Java. 
+Durch Scalas besondere Eigenschaften eignet es sich jedoch besonders für hochdurchsatzfähige HTTP-Server und -Clients, in Form von Skripten für die Kommandozeile, mit JavaScript im Frontend-Web sowie für die Datenverarbeitung.
+
+Scala wird außerdem häufig mit \emph{Akka}~\cite{lightbend_akka_nodate} für verteilte Anwendungen verwendet.
+
 \subsection{Vorteile von Scala}
-
-
+Scala hat einige Charakteristiken, die ihm im Vergleich zu Java einen Vorteil verschaffen.
 Besonders zu betonen sind folgende Eigenschaften von Scala im Gegensatz zu Java~\cite{epfl_scala_nodate-1, epfl_scala_nodate-2}: % Quellenangabe hier so okay?
 
 \begin{enumerate}
@@ -593,8 +607,46 @@ Besonders zu betonen sind folgende Eigenschaften von Scala im Gegensatz zu Java~
 Grundsätzlich gibt es Bibliotheken für die Arbeit mit Redis in vielen Programmiersprachen und der Quellcode, der während dieser Arbeit erstellt wurde, wäre auch in anderen modernen Programmiersprachen wie etwa Java oder Python möglich gewesen.
 Die Entscheidung für Scala in dieser Arbeit basiert auf den oben genannten Vorteilen und der persönlichen Präferenz des Autors.
 
-\subsection{Jedis} %subsection oder subsubsection?
+\subsection{Redis mit Scala (Jedis)} %subsection oder subsubsection?
 Jedis ist ein Java-Client für Redis, der sich durch hohe Leistung und einfache Benutzbarkeit auszeichnet. Als Hauptvorteile bietet Jedis fortgeschrittene Unterstützung für verschiedene Redis-Versionen, eine effiziente Handhabung potenziell fehlender Werte durch Pattern Matching sowie eine Unterstützung für Redis-Module wie RediSearch~\cite{redis_inc_jedis_2023}.
 Da Scala mit Java-Bibliotheken kompatibel ist lässt sich Jedis mit wenig Mehraufwand auch in Scala nutzen. % -> Hier Verweis auf Implementierungskapitel wo kurz erklärt wird dass man die scla-java-converter nutzen muss.
 
-% TODO: ganz kurzes Kapitel über Scala bzw. warum Scala
+\section{Lua}
+Lua ist eine Programmiersprache, die auf ihrer offiziellen Webseite als mächtige, effiziente, leichtgewichtige und integrierbare Skriptsprache beschrieben wird~\cite{ierusalimschy_lua_nodate}. Die Sprache unterstützt eine Vielzahl von Programmierparadigmen wie prozedurale Programmierung, objektorientierte Programmierung, funktionale Programmierung, datengesteuerte Programmierung und Datenbeschreibung. Die Informationen in den folgenden Abschnitten stammen, sofern nicht anders angegeben, von der offiziellen Lua-Webseite.
+
+\subsection{Einsatzgebiete von Lua}
+Auf dem \emph{\acf{PYPL}} belegt Lua im November 2023 den 21. Platz der beliebtesten Programmiersprachen~\cite{carbonnelle_pypl_2023}.
+
+Aufgrund ihrer geringen Größe wird Lua häufig als Skriptsprache innerhalb von Anwendungen verwendet. Ein Beispiel hierfür ist \emph{Fusion 18}~\cite{blackmagic_design_fusion_nodate}, eine in Hollywood häufig verwendete Compositing-Software. Auch in der Videospielbranche wird Lua häufig für Erweiterungen verwendet, z.B. bei \emph{World of Warcraft}~\cite{wowpedia_lua_2023}.
+
+Lua-Skripte können auch innerhalb von \emph{Redis} ausgeführt werden~\cite{redis_ltd_scripting_nodate}. Die Skripte laufen direkt auf dem Redis-Server, was die Interaktion mit Redis sehr effizient macht.
+Lua ist kompatibel mit allen Unix- und Windows-Systemen, läuft auf eingebetteten Mikroprozessoren sowie auf Smartphones mit iOS und Android.
+
+Die Programmiersprache verfügt über eine einfache und gut dokumentierte API, die eine enge Integration mit in anderen Sprachen geschriebenem Code ermöglicht. Es ist einfach, Lua mit Bibliotheken zu erweitern, die in anderen Sprachen geschrieben wurden. Ebenso ist es einfach, Programme, die in anderen Sprachen geschrieben wurden, mit Lua zu erweitern.
+\subsection{Technische Aspekte}
+Die technischen Aspekte werden im \emph{Reference Manual}~\cite{ierusalimschy_lua_nodate-1} erklärt.
+
+Lua wurde als Bibliothek in \emph{clean C} implementiert. Es ist eine dynamisch typisierte Programmiersprache, die Bytecode durch Interpretation mit einer registrierbasierten virtuellen Maschine verarbeitet.
+
+Lua umfasst nur acht grundlegende Datentypen: \emph{nil}, \emph{boolean}, \emph{number}, \emph{string}, \emph{function}, \emph{userdata}, \emph{thread} und \emph{table}.
+
+Der Datentyp \emph{nil} hat ausschließlich den Zweck, sich von allen anderen Datentypen zu unterscheiden und ähnelt dem Datentyp \emph{null} in Java. Der Datentyp \emph{number} repräsentiert sowohl ganze Zahlen als auch reelle Zahlen und wird in die Untertypen \emph{integer} und \emph{float} unterteilt.
+
+Der Datentyp \emph{string} stellt unveränderliche Bytefolgen dar und kann jeden 8-Bit-Wert enthalten. Der Datentyp \emph{thread} steht zur Implementierung von \emph{Coroutinen} unabhängiger Ausführungsstränge bereit und steht nicht im Zusammenhang mit Betriebssystem-Threads.
+Lua-Funktionen sowie C-Funktionen werden mit dem Datentyp \emph{function} dargestellt.
+Der Datentyp \emph{userdata} dient dazu, C-Daten in Lua-Variablen zu speichern.
+
+In dieser Arbeit findet der Datentyp \emph{table} besondere Beachtung, der assoziative Arrays implementiert, die nicht nur Zahlen, sondern auch beliebige Lua-Werte außer \emph{nil} und \emph{NaN} (ein spezieller Wert nach dem IEEE 754 Standard der undefinierte numerische Ergebnisse wie etwa \enquote{0/0} darstellt) als Indizes haben können.
+Tabellen sind in Lua der einzige Mechanismus zur Strukturierung von Daten. Sie können verwendet werden, um gewöhnliche Arrays, Listen, Symboltabellen, Sets, Records, Graphen, Bäume und andere Datentypen darzustellen.
+
+\subsection{Lua in Redis}
+Redis ermöglicht das direkte Ausführen von Lua-Skripten auf dem Server, wodurch die Redis-Befehle der Skripte effizient verarbeitet werden können, da diese nicht über das Netzwerk übertragen werden müssen. Diese Skripte garantieren eine atomare Ausführung, bei welcher sämtliche Serveraktivitäten während der Laufzeit des Skripts blockiert sind. Die Möglichkeiten von Lua-Skripten in Redis werden in der Online-Dokumentation von Redis erläutert~\cite{redis_ltd_scripting_nodate}.
+
+Durch die Möglichkeit eigene Funktionen für komplexe Aufrufe zu erstellen, wird Redis mittels Skripten leicht erweiterbar. Die meisten \emph{Redis-Befehle} können in \emph{Lua-Skripten} genutzt werden.
+
+Unterschieden werden muss bei der Verwendung von Lua-Skripten in Redis zwischen klassischen Skripten, die mit dem \emph{EVAL}-Befehl ausgeführt werden, und den sogenannten \emph{Redis Functions}~\cite{redis_ltd_redis_nodate-1}. Klassische Skripte erfordern bei jedem Aufruf durch den \emph{EVAL}-Befehl das Senden des Skripts an den Redis-Server, was zu einem Netzwerk- und Kompilierungs-Overhead führt, wenn Skripte mehrfach verwendet werden sollen.
+
+Im Gegensatz dazu bieten \emph{Redis Functions} dieselbe Funktionalität wie klassische Skripte, aber mit dem Vorteil, dass Redis sie als Teil der Datenbank verwaltet und für ihre Verfügbarkeit sorgt.  So werden \emph{Functions} auch auf der Festplatte persistiert. Sie müssen nur einmalig an den Redis-Server gesendet werden und können dann beliebig oft aufgerufen werden. \Die \emph{Functions} werden als so genannte \emph{Library} verwaltet, wobei eine Library mehrere \emph{Functions} enthalten kann, die sich somit auch Code teilen können.
+
+In der Online-Dokumentation von Redis wird auch die Redis-Lua-API~\cite{redis_ltd_redis_nodate} sowie das Debuggen von Lua-Skripten~\cite{redis_ltd_debugging_nodate} erläutert.
+
