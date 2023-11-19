@@ -349,6 +349,8 @@ Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit ande
 
 Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösung, um publizierte Nachrichten effizient über bestimmte Kanäle an Abonnenten zu verteilen. Hierbei hat Redis durch seine vielseitigen Datenstrukturen oft Vorteile gegenüber anderen etablierten Message-Brokern~\cite{joshi_you_nodate}.
 
+\subsection{Module für Redis}
+\subsubsection{Redis Stack}
 
 
 \subsection{Datentypen in Redis}
@@ -520,10 +522,13 @@ Es ermöglicht Abfragen innerhalb spezifizierter Start- und Endzeiten sowie eine
 Zudem lässt sich ein maximaler Aufbewahrungszeitraum konfigurieren und die Kompaktierung sorgt für automatisch aktualisierte, aggregierte Zeitreihen.
 Durch die Verwendung von sekundären Indizes, welche auf Labels (Feld-Wert-Paare) basieren, können Zeitreiheneinträge gezielt abgefragt werden.
 Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise Prometheus oder Grafana, weitergenutzt werden~\cite{redis_ltd_time_nodate}.
-% Hier noch kurz was über Time Series
 
 
 % Eventuell Abschnitt umstrukturieren
+
+\subsection{Redis Cluster}
+% https://learning.oreilly.com/library/view/mastering-redis/9781783988181/ch06.html#ch06lvl1sec42
+% https://learning.oreilly.com/library/view/redis-4-x-cookbook/9781783988167/d590a8d8-2532-4601-9568-a52ccdcbec6f.xhtml
 
 \section{RediSearch}
 
@@ -544,13 +549,13 @@ Zusätzlich dazu umfasst RediSearch numerische Filter und Bereichsabfragen, Geo-
 Es unterstützt Unicode und ermöglicht das Abrufen von vollständigen Dokumentinhalten oder nur deren IDs.
 
 RediSearch kann auch in verteilten Datenbank-Clustern eingesetzt werden.
-
-\subsection{Redis String DMA} % Ist das noch relevant?
+\subsection{Interner Aufbau von RediSearch}
+\subsubsection{Redis String DMA} % Ist das noch relevant?
 \emph{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
 Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen~\cite{redis_ltd_internal_nodate}.
 
 
-\subsection{Indizes in RediSearch}
+\subsubsection{Indizes in RediSearch}
 Die derzeit verfügbare Dokumentation auf \emph{redis.io}~\cite{redis_ltd_internal_nodate} ist zum Zeitpunkt dieser Arbeit nicht mehr aktuell und bezieht sich auf Versionen vor der Einführung von RediSearch 2.0.
 Mit der Einführung von Version 2.0 wurden erhebliche Änderungen vorgenommen, die von den in der Dokumentation beschriebenen Funktionalitäten wesentlich abweichen.
 Diese Änderungen werden am Ende dieses Kapitels behandelt.
@@ -561,7 +566,7 @@ Es verwendet eine angepasste Datenkodierung (\enquote{\emph{Redis String DMA}}),
 
 Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte. Seit Version 2.0 von RediSearch werden die Daten der Indizes separat gespeichert.
 
-\subsection{Invertierte Indizes}
+\subsubsection{Invertierte Indizes}
 Der Invertierte Index in RediSearch enthält für jedes indizierte Wort bzw. Suchparameter eine Liste an Dokumenten, in denen es vorkommt.
 Zusätzlich werden weitere Daten gespeichert, wie etwa die Häufigkeit und die Stellen, an denen der Suchbegriff im Dokument auftritt (\enquote{Offset}).
 Bei einer Suche kann entweder ein einzelner Index oder eine Verbindung mehrerer Indizes nach dem Suchbegriff durchsucht werden.
@@ -573,6 +578,33 @@ Da bei der Suche nach einzelnen Wörtern nicht alle Treffer durchsucht werden, s
 Beim indizieren konnte früher angegeben werden, dass die Inhalte der Dokumente nicht gespeichert werden. Diese Option ist jedoch seit Version 2.0 von RediSearch nicht mehr verfügbar~\cite{redis_ltd_upgrade_nodate, korland_missing_nodate}.
 % Hier eigentlich "Document and result ranking" aber veraltet ?!
 % Sollte hier mehr ins Detail gegangen werden, was genau gespeichert wird?
+
+\subsection{Nutzung von RediSearch} % Das müsste nen Überkapitel sein...
+
+\subsection{Grundstrukturen in RediSearch}
+Die Grundelemente von RediSearch sind in der Online-Dokumentation von Redis beschrieben~\cite{redis_ltd_basic_nodate}.
+Sie bestehen aus \emph{Documents}, \emph{Fields} und dem \emph{Schema}.
+
+\emph{Documents} sind die Basiseinheiten der Information, eindeutig identifizierbar durch ihren Schlüsselnamen, bestehend aus \emph{Hash}- oder \emph{JSON}-Datenobjekten. Jedes \emph{Document} enthält mehrere \emph{Fields}, die spezifische Attribute oder Eigenschaften repräsentieren und unterschiedliche Datentypen enthalten können. Bei einem Hash sind dies die einzelnen Elemente innerhalb des Hash und bei JSON die Felder des Dokuments.
+Das \emph{Schema} definiert die Struktur des Index. Es legt fest, wie die \emph{Fields} gespeichert und indiziert werden.
+
+Für eine effiziente Suche ist es wichtig, nur relevante \emph{Fields} zu indizieren, da die Indizierung aller \emph{Fields} zu unnötigem Overhead führen kann. Nicht indizierte \emph{Fields} tragen nicht zu den Suchergebnissen bei, können aber als Teil der \emph{Document}-Daten beim Abrufen der Suchergebnisse abgerufen werden. Aggregationen (siehe [VERWEIS AUF SPÄTERE KAPITEL]) können nur mit indizierten Feldern arbeiten. % TODO: Verweis auf Aggregation
+
+\subsection{Feldtypen und Optionen}
+RediSearch bietet eine Auswahl an Feldtypen (\emph{field types}) für verschiedene Indexierungszwecke~\cite{redis_ltd_field_nodate}.
+
+\textbf{\emph{Number fields}} speichern zählbare Werte in Ganzzahl- oder Gleitkommazahlen und erlauben sortierbare Bereichsabfragen.
+
+\textbf{\emph{Geo fields}} sind für geografische Koordinaten vorgesehen, die Radiusabfragen für standortbezogene Suchfunktionen ermöglichen.
+
+\textbf{\emph{Geoshape fields}} ermöglichen Polygonabfragen mit WKT-Notationen (\enquote{well-known text}) und unterstützen sowohl geografische (\emph{spherical}) als auch kartesische (\emph{flat}) Koordinaten. Die Koordinaten bestehen aus zwei Werten die die Kanten des Polygon angeben~\cite{redis_ltd_ftcreate_nodate}.
+
+\textbf{\emph{Vector fields}} halten Gleitkommavektoren, die diverse unstrukturierte Daten repräsentieren können, und unterstützen Vektorsimilaritätssuchen. Sie werden oft für externe Machine-Learning Modelle genutzt.
+
+\textbf{\emph{Tag fields}} speichern Textdaten als Tags oder Labels, die ohne Tokenisierung verarbeitet werden, und eignen sich zur Datenorganisation und -kategorisierung.
+
+\textbf{\emph{Text fields}} sind für die Speicherung von menschlicher Sprache konzipiert, mit Funktionen wie Kleinbuchstaben-Umwandlung, Tokenisierung und gewichteter Indexierung für effiziente Volltextsuche.
+
 
 
 \section{Scala} % Todo: Eventuell ausbauen
@@ -604,12 +636,14 @@ Besonders zu betonen sind folgende Eigenschaften von Scala im Gegensatz zu Java~
     \item \textbf{Typinferenz:} Durch Scala's Typinferenz wird der Bedarf an expliziten Typdeklarationen reduziert, was den Code weniger überladen und besser lesbar macht – ein Aspekt, der in Java oft durch die Notwendigkeit expliziter Typangaben nicht gegeben ist.
 \end{enumerate}
 
-Grundsätzlich gibt es Bibliotheken für die Arbeit mit Redis in vielen Programmiersprachen und der Quellcode, der während dieser Arbeit erstellt wurde, wäre auch in anderen modernen Programmiersprachen wie etwa Java oder Python möglich gewesen.
-Die Entscheidung für Scala in dieser Arbeit basiert auf den oben genannten Vorteilen und der persönlichen Präferenz des Autors.
 
 \subsection{Redis mit Scala (Jedis)} %subsection oder subsubsection?
 Jedis ist ein Java-Client für Redis, der sich durch hohe Leistung und einfache Benutzbarkeit auszeichnet. Als Hauptvorteile bietet Jedis fortgeschrittene Unterstützung für verschiedene Redis-Versionen, eine effiziente Handhabung potenziell fehlender Werte durch Pattern Matching sowie eine Unterstützung für Redis-Module wie RediSearch~\cite{redis_inc_jedis_2023}.
 Da Scala mit Java-Bibliotheken kompatibel ist lässt sich Jedis mit wenig Mehraufwand auch in Scala nutzen. % -> Hier Verweis auf Implementierungskapitel wo kurz erklärt wird dass man die scla-java-converter nutzen muss.
+
+Grundsätzlich gibt es Bibliotheken für die Arbeit mit Redis in vielen Programmiersprachen und der Quellcode, der während dieser Arbeit erstellt wurde, wäre auch in anderen modernen Programmiersprachen wie etwa Java oder Python möglich gewesen.
+Die Entscheidung für Scala in dieser Arbeit basiert auf den oben genannten Vorteilen und der persönlichen Präferenz des Autors.
+
 
 \section{Lua}
 Lua ist eine Programmiersprache, die auf ihrer offiziellen Webseite als mächtige, effiziente, leichtgewichtige und integrierbare Skriptsprache beschrieben wird~\cite{ierusalimschy_lua_nodate}. Die Sprache unterstützt eine Vielzahl von Programmierparadigmen wie prozedurale Programmierung, objektorientierte Programmierung, funktionale Programmierung, datengesteuerte Programmierung und Datenbeschreibung. Die Informationen in den folgenden Abschnitten stammen, sofern nicht anders angegeben, von der offiziellen Lua-Webseite.
