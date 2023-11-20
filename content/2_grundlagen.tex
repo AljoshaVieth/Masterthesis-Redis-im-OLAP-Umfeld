@@ -1,6 +1,7 @@
 % TODO: FIX LATEX ERRORS
 \chapter{Technische Grundlagen}
 \section{Beliebtheit von Technologien}
+% Hier durch bessere Quelle austauschen
 In der vorliegenden Arbeit wird die Popularität von bestimmten Technologien auf Basis zweier Indizes dargestellt: dem \emph{\acf{PYPL}}~\cite{carbonnelle_pypl_2023} sowie dem \emph{\acf{TOPDB}}~\cite{carbonnelle_topdb_2023}.  Diese Indizes dienen der Einschätzung der Beliebtheit von Programmiersprachen und Datenbanken und basieren hierbei auf der Häufigkeit von Google-Suchen.
 
 Der \emph{\acf{PYPL}} misst die Beliebtheit von Programmiersprachen anhand der Analyse der Häufigkeit von Suchanfragen nach Tutorials auf Google. 
@@ -552,7 +553,7 @@ RediSearch kann auch in verteilten Datenbank-Clustern eingesetzt werden.
 \subsection{Interner Aufbau von RediSearch}
 \subsubsection{Redis String DMA} % Ist das noch relevant?
 \emph{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
-Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indexen ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen~\cite{redis_ltd_internal_nodate}.
+Durch die Verwendung von \enquote{Redis String DMA} zum Kodieren von invertierten Indizes ermöglicht RediSearch einen schnellen Zugriff auf große Speichermengen~\cite{redis_ltd_internal_nodate}.
 
 
 \subsubsection{Indizes in RediSearch}
@@ -561,7 +562,7 @@ Mit der Einführung von Version 2.0 wurden erhebliche Änderungen vorgenommen, d
 Diese Änderungen werden am Ende dieses Kapitels behandelt.
 Es ist jedoch zu beachten, dass die nachfolgenden Informationen hauptsächlich auf der veralteten Dokumentation beruhen.
 
-RediSearch implementiert invertierte Indexe innerhalb von Redis.
+RediSearch implementiert invertierte Indizes innerhalb von Redis.
 Es verwendet eine angepasste Datenkodierung (\enquote{\emph{Redis String DMA}}), die eine effiziente Speicher- und CPU-Suche ermöglicht.
 
 Früher wurden solche Indizes als Sets direkt in Redis gespeichert, was speicherintensiv war und keine Kodierung von Offsets erlaubte. Seit Version 2.0 von RediSearch werden die Daten der Indizes separat gespeichert.
@@ -591,19 +592,150 @@ Das \emph{Schema} definiert die Struktur des Index. Es legt fest, wie die \emph{
 Für eine effiziente Suche ist es wichtig, nur relevante \emph{Fields} zu indizieren, da die Indizierung aller \emph{Fields} zu unnötigem Overhead führen kann. Nicht indizierte \emph{Fields} tragen nicht zu den Suchergebnissen bei, können aber als Teil der \emph{Document}-Daten beim Abrufen der Suchergebnisse abgerufen werden. Aggregationen (siehe [VERWEIS AUF SPÄTERE KAPITEL]) können nur mit indizierten Feldern arbeiten. % TODO: Verweis auf Aggregation
 
 \subsection{Feldtypen und Optionen}
-RediSearch bietet eine Auswahl an Feldtypen (\emph{field types}) für verschiedene Indexierungszwecke~\cite{redis_ltd_field_nodate}.
+RediSearch bietet eine Auswahl an Feldtypen (\emph{field types}) für verschiedene Indexierungszwecke. Folgend werden die verschiedenen Feldtypen erläutert. Die Informationen stammen dabei, falls nicht anders angegeben, aus der Online-Dokumentation von Redis zu Feldtypen~\cite{redis_ltd_field_nodate} und dem \emph{FT.CREATE}-Befehl~\cite{redis_ltd_ftcreate_nodate}.
 
-\textbf{\emph{Number fields}} speichern zählbare Werte in Ganzzahl- oder Gleitkommazahlen und erlauben sortierbare Bereichsabfragen.
+\subsubsection{\emph{Number fields}}
+Nummernfelder speichern zählbare Werte in Ganzzahl- oder Gleitkommazahlen und erlauben sortierbare Bereichsabfragen. Sie können mit dem \emph{FT.CREATE}-Befehl wie folgt definiert werden:\\
+\texttt{FT.CREATE ... SCHEMA ... {field\_name} NUMBER [SORTABLE] [NOINDEX]}
 
-\textbf{\emph{Geo fields}} sind für geografische Koordinaten vorgesehen, die Radiusabfragen für standortbezogene Suchfunktionen ermöglichen.
+Bedeutung der Optionen \emph{SORTABLE} und \emph{NOINDEX}:
 
-\textbf{\emph{Geoshape fields}} ermöglichen Polygonabfragen mit WKT-Notationen (\enquote{well-known text}) und unterstützen sowohl geografische (\emph{spherical}) als auch kartesische (\emph{flat}) Koordinaten. Die Koordinaten bestehen aus zwei Werten die die Kanten des Polygon angeben~\cite{redis_ltd_ftcreate_nodate}.
+- \emph{SORTABLE}: Ermöglicht die Sortierung des Feldes, nützlich für Bereichsabfragen und Sortierung von Suchergebnissen.
 
-\textbf{\emph{Vector fields}} halten Gleitkommavektoren, die diverse unstrukturierte Daten repräsentieren können, und unterstützen Vektorsimilaritätssuchen. Sie werden oft für externe Machine-Learning Modelle genutzt.
+- \emph{NOINDEX}: Das Feld wird nicht indiziert, nützlich für Texte, die abrufbar, aber nicht durchsuchbar sein sollen.
 
-\textbf{\emph{Tag fields}} speichern Textdaten als Tags oder Labels, die ohne Tokenisierung verarbeitet werden, und eignen sich zur Datenorganisation und -kategorisierung.
+Ein Beispiel für eine Query mit einem numerischen Filter könnte wie folgt sein:\\
+\texttt{FT.SEARCH recipeIndex "@cooking\_time:[10 30]"}
 
-\textbf{\emph{Text fields}} sind für die Speicherung von menschlicher Sprache konzipiert, mit Funktionen wie Kleinbuchstaben-Umwandlung, Tokenisierung und gewichteter Indexierung für effiziente Volltextsuche.
+Queries unterstützen außerdem Syntax die angibt ob der Bereich vollständig einschließend, vollständig ausschließend , mit einer offenen Ober- oder Untergrenze sein soll. Zusätzlich kann auch explizit nach einem bestimmten Wert gesucht werden in dem die Grenzen des Bereichs die gleiche Zahl sind. Außerdem kann eine Filterbedingung auch negiert werden.
+
+\subsubsection{\emph{Geo fields}} Diese Felder sind für geografische Koordinaten vorgesehen, die Radiusabfragen für standortbezogene Suchfunktionen ermöglichen.
+Sie können mit dem \emph{FT.CREATE}-Befehl wie folgt definiert werden:\\
+\texttt{FT.CREATE ... SCHEMA ... \{field\_name\} GEO [SORTABLE] [NOINDEX]}
+
+Die Optionen \emph{SORTABLE} und \emph{NOINDEX} entsprechen denselben Optionen wie bei \emph{numeric fields}. 
+
+Der Syntax zur Abfrage von Geo-Feldern sieht wie folgt aus:\\
+\texttt{@<field\_name>:[<lon> <lat> <radius> <unit>]}
+
+Um etwa Orte im Umkreis von 100 Kilometern um die Position von Furtwangen zu finden kann folgender Befehl genutzt werden:\\
+\texttt{FT.SEARCH cities "@coords:[8.20 48.05 100 km]"}
+
+% TODO: Checken ob der Abschnitt so gut ist.
+\subsubsection{\emph{Geoshape fields}}
+Geosphape-Felder sind die neuesten Feldoptionen in RediSearch. Sie sind noch nicht in allen Dokumentationen vermerkt. Die Informationen beziehen sich auf die Dokumentation des \emph{FT.CREATE}-Befehls~\cite{redis_ltd_ftcreate_nodate} und die Dokumentation über Queries~\cite{redis_ltd_query_nodate}. 
+Geoshapes ermöglichen geografische Abfragen mit der WKT-Notationen (\enquote{well-known text}).
+Es werden sowohl Punkte wie auch Polygone unterstützt. Sie werden in einem Text wie folgt definiert:\\
+\texttt{POINT(2 4)} oder \texttt{POLYGON((2 2, 2 8, 6 11, 10 8, 10 2, 2 2))}
+
+Ein Eintrag kann dann beispielsweise so erstellt werden:\\
+\texttt{HSET shape:1 t "this is my house" g "POLYGON((2 2, 2 8, 6 11, 10 8, 10 2, 2 2))"}
+
+
+Mit den Optionen \emph{FLAT} oder \emph{SPHERICAL} kann angegeben werden, ob die Koordinaten kartesisch  oder  geografisch sind.
+
+Der Syntax für Queries zur Abfrage lautet wie folgt:\\
+\texttt{@field:[{WITHIN|CONTAINS} \$geometry] PARAMS 2 geometry \{geometry\}}
+
+Ein Beispiel, in dem abgefragt wird, ob ein Polygon einen bestimmten Punkt beinhaltet könnte so aussehen:\\
+\texttt{FT.SEARCH polygon\_idx "@g:[CONTAINS \$point]" PARAMS 2 point 'POINT(8 8)' DIALECT 3
+}
+\emph{DIALECT 3} gibt bei mehrwertigen Attributen statt Skalaren JSON zurück.
+Komplexere Beispiele und Erklärungen sind in der Dokumentation zu Queries~\cite{redis_ltd_query_nodate} zu finden.
+
+
+\subsubsection{\emph{Vector fields}} Vektor-Felder halten Gleitkommavektoren, die diverse unstrukturierte Daten wie etwa Text oder Bilder repräsentieren können, und unterstützen Vektorsimilaritätssuchen. Sie werden oft für externe Machine-Learning-Modelle genutzt.
+
+Die Felder können mit dem \emph{FT.CREATE}-Befehl definiert werden:\\
+\texttt{FT.CREATE ... SCHEMA ... {field\_name} VECTOR {algorithm} {count} [{attribute\_name} {attribute\_value} ...]
+}
+
+Mit dem \emph{algorithm}-Attribut wird ein unterstützter Algorithmus für Vektorvergleiche angegeben. Er wird genutzt bei der Suche nach den k ähnlichsten Vektoren im Index oder beim Filtern von Vektoren nach Bereichen. Die unterstützten Algorithmen sind \emph{FLAT} für einen \enquote{brut force} Algorithmus und \emph{HNSM} für einen \enquote{hierarchical, navigable, small world} Algorithmus.
+
+Das \emph{count}-Attribut gibt an, wie viele Attributpaare im Befehl verwendet werden. Wobei die Attributpaare die Algorithmusattribute für die Erstellung des Vektorindexes sind. Jeder Algorithmus hat seine eigenen obligatorischen und optionalen Attribute.
+
+Ein Index kann zum Beispiel so erstellt werden:\\
+\texttt{FT.CREATE my\_idx SCHEMA vec\_field VECTOR FLAT 6 TYPE FLOAT32 DIM 128 DISTANCE\_METRIC L2}
+
+Ein Beispiel für einen Vektorvergleich ist der \enquote{k nearest neighbors}(KNN)-Algorithmus. Die Syntax dazu ist wie folgt aufgebaut:\\
+\texttt{*=>[ KNN {num|\$num} @vector \$query\_vec ]}
+Eine Abfrage nach den zehn nächsten Nachbarn bei denen \enquote{query_vec} am nächsten zum Vektor der in \enquote{@vector_field} gespeichert ist sieht so aus:\\
+\enquote{*=>[KNN 10 @vector_field \$query\_vec]}
+
+Weitere Informationen und komplexere Beispiele sind in der Dokumentation zu Queries~\cite{redis_ltd_query_nodate} und zu Vektoren~\cite{redis_ltd_vectors_nodate} zu finden.
+
+
+\subsubsection{\emph{Tag fields}} In Tag-Feldern werden Textdaten als Tags oder Labels gespeichert, die ohne Tokenisierung verarbeitet werden. Sie eignen sich gut zur Datenorganisation und -kategorisierung.
+
+Tags werden beim Erstellen des Index mit dem \emph{FT.CREATE}-Befehl wie folgt erstellt:\\
+\texttt{FT.CREATE ... SCHEMA ... {field\_name} TAG [SEPARATOR {sep}] [CASESENSITIVE]}
+
+Der \emph{SEPARATOR} kann zur Angabe des Zeichens verwendet werden, das zum Trennen mehrerer Tags in einem Feld verwendet werden soll (Standard ist ein Komma).
+
+\emph{CASESENSITIVE} gibt an, ob bei Tags die Groß- und Kleinschreibung zu beachten ist. Standardmäßig wird bei Tag-Feldern nicht zwischen Groß- und Kleinschreibung unterschieden (\enquote{caseinsensitive}).
+
+Um nach Tags zu suchen wird folgende Syntax verwendet:\\
+\texttt{@<field\_name>:\{<tag>\}}\\
+Um etwa nach Rezepten mit Tomaten als Zutat zu suchen, kann folgender Befehl verwendet werden:\\
+\texttt{FT.SEARCH recipeIndex "@ingredients:\{tomato\}"}
+
+
+\subsubsection{{\emph{Text fields}}}
+Textfelder sind für die Speicherung menschlicher Sprache optimiert. Sie werden zu Kleinbuchstaben umgewandelt und tokenisiert, um effiziente Volltextsuchen zu ermöglichen. Zudem können sie gewichtet und sortiert werden, was eine differenzierte Suchrelevanz und -ordnung ermöglicht.
+Textfelder können mit dem FT.CREATE Befehl wie folgt angegeben werden:\\
+% Hier vllt. nen fancigen codeblock aber ohne untertitel und so
+\texttt{FT.CREATE ... SCHEMA ... \{field\_name\} TEXT [WEIGHT] [NOSTEM] [PHONETIC \{matcher\}] [SORTABLE] [NOINDEX] [WITHSUFFIXTRIE]}
+
+Die Bedeutung der einzelnen Optionen:
+
+- \emph{WEIGHT}: Gewichtet das Feld, um bestimmten Feldern bei der Suche mehr Bedeutung zu geben.
+
+- \emph{NOSTEM}: Verhindert das Stemming des Feldes, nützlich für nicht zu tokenisierende Texte wie URLs.
+
+- \emph{PHONETIC \{matcher\}}: Führt eine phonetische Übereinstimmung durch. Es können verschiedene \emph{matcher} für verschiedene Sprachen angegeben werden.
+
+- \emph{WITHSUFFIXTRIE}: Indiziert das Feld mit einem Suffix-Trie, optimiert für Contains- und Suffix-Anfragen.
+
+- Die Optionen \emph{SORTABLE} und \emph{NOINDEX} haben den gleichen Effekt wie bei \emph{Number fields}.
+
+Die Suche nach Dokumenten mit bestimmten Textwerten ist möglich durch die Verwendung von \emph{<term>} oder \emph{@<field\_name>}:
+\{<term>\} in der Abfragesyntax. Zum Beispiel:
+
+% TODO: LatexProblem fixen, falsche Anführungszeichen (muss "" sein)
+- Suche in allen Textattributen: \texttt{FT.SEARCH recipeIndex \glqq egg\grqq}
+
+- Suche nur im Preparation-attribut: \texttt{FT.SEARCH recipeIndex "@preparation:boil"}
+
+% TODO: Dieses Kapitel ergibt eventuell mehr Sinn vor dem vorherigen, da sich manche Beispiele auf diesen Index beziehen
+\subsection{Anlegen von Indizes}
+Das Indexschema legt die Felder, deren Typen sowie die Indizierungs- und Speicherregeln fest und ist entscheidend für die Effizienz der Suchfunktionalität sowie der Speichernutzung.
+Die Definition des Schemas erfolgt bei der Indexerstellung mit dem Befehl \emph{FT.CREATE}~\cite{redis_ltd_ftcreate_nodate}.
+Im Folgenden wird die Erstellung eines Index anhand eines Beispiels erläutert.
+Der Index soll für das Rezeptverzeichnis eines Kochbuches verwendet werden.
+
+\begin{lstlisting}[
+    language=TEXT,
+    caption=Beispiel eines Befehls zum Anlegen eines Index in RediSearch,
+    label=code:redisearch-creation-of-index-example
+]
+FT.CREATE recipeIndex
+    ON HASH
+    PREFIX 1 recipe:item:
+SCHEMA
+    name TEXT WEIGHT 5.0
+    preparation TEXT
+    ingredients TAG
+    category TAG
+    difficulty TAG
+    cooking_time NUMERIC SORTABLE
+\end{lstlisting}
+
+
+In diesem Fall initiiert der Befehl die Erstellung eines Index mit dem Namen \emph{recipeIndex}, der auf Hash-Dokumente mit dem Schlüsselanfang \emph{recipe:item:} angewendet wird. Das Schema dieses Index enthält die Felder \emph{name}, \emph{preparation}, \emph{ingredients}, \emph{category}, \emph{difficulty} und \emph{cooking\_time}.
+
+Der Datentyp \emph{TEXT} wird für \emph{name} und \emph{preparation} verwendet, um die Textinformationen der Rezeptnamen und Zubereitungsanweisungen zu indizieren. Die Verwendung des Typs \emph{TAG} für \emph{ingredients} und \emph{category} erleichtert die Handhabung kategorisierter Daten wie Zutatenlisten und Rezeptkategorien. \emph{cooking\_time}, klassifiziert als \emph{NUMERIC} und \emph{SORTABLE}, ermöglicht die Suche und Sortierung nach Kochzeit. Das Feld \emph{difficulty} dient zur Angabe des Schwierigkeitsgrades des Rezeptes.
+
+Dem Feld \emph{name} wird ein Gewicht von 5.0 zugewiesen, um seine Relevanz bei Suchanfragen zu erhöhen. Dieser Index ermöglicht eine effiziente Suche im Rezeptverzeichnis und das Filtern der Ergebnisse nach Kriterien wie Zutaten, Kategorie, Kochzeit und Schwierigkeitsgrad.
 
 
 
