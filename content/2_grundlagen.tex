@@ -591,7 +591,71 @@ Das \emph{Schema} definiert die Struktur des Index. Es legt fest, wie die \emph{
 
 Für eine effiziente Suche ist es wichtig, nur relevante \emph{Fields} zu indizieren, da die Indizierung aller \emph{Fields} zu unnötigem Overhead führen kann. Nicht indizierte \emph{Fields} tragen nicht zu den Suchergebnissen bei, können aber als Teil der \emph{Document}-Daten beim Abrufen der Suchergebnisse abgerufen werden. Aggregationen (siehe [VERWEIS AUF SPÄTERE KAPITEL]) können nur mit indizierten Feldern arbeiten. % TODO: Verweis auf Aggregation
 
-\subsection{Feldtypen und Optionen}
+\subsection{Anlegen von Inidizes}
+Indizes werden in RediSearch mithilfe des Befehls \emph{FT.CREATE} erstellt.
+Die Verwendung des Befehls wird in der Online-Dokumentation~\cite{redis_ltd_ftcreate_nodate} von Redis erläutert.
+Die Syntax für die Erstellung lautet wie folgt:
+\begin{lstlisting}[
+    language=TEXT,
+    caption=Syntax des Befehls FT.CREATE in RediSearch,
+    label=code:redisearch-ftcreate-syntax,
+    numbers=none
+]
+FT.CREATE index 
+  [ON HASH | JSON] 
+  [PREFIX count prefix [prefix ...]] 
+  [FILTER {filter}]
+  [LANGUAGE default_lang] 
+  [LANGUAGE_FIELD lang_attribute] 
+  [SCORE default_score] 
+  [SCORE_FIELD score_attribute] 
+  [PAYLOAD_FIELD payload_attribute] 
+  [MAXTEXTFIELDS] 
+  [TEMPORARY seconds] 
+  [NOOFFSETS] 
+  [NOHL] 
+  [NOFIELDS] 
+  [NOFREQS] 
+  [STOPWORDS count [stopword ...]] 
+  [SKIPINITIALSCAN]
+  SCHEMA field_name [AS alias] TEXT | TAG | NUMERIC | GEO | VECTOR | GEOSHAPE [ SORTABLE [UNF]] 
+  [NOINDEX] [ field_name [AS alias] TEXT | TAG | NUMERIC | GEO | VECTOR | GEOSHAPE [ SORTABLE [UNF]] [NOINDEX] ...]
+\end{lstlisting}
+
+Die Erstellung eines Indexes in RedisSearch mittels des Befehls \emph{FT.CREATE} beinhaltet eine Reihe von Konfigurationsoptionen, die es ermöglichen, den Index an spezifische Anforderungen anzupassen.
+Dabei sind nur die Argumente \emph{index} und \emph{SCHEMA} verpflichtend anzugeben. Alle anderen Argumente sind optional und werden im folgenden nur kurz erläutert.
+
+Das Argument \emph{index} dient zur Angabe des Namens des zu erstellenden Indexes.
+
+Innerhalb des \emph{SCHEMA}-Teils des Befehls werden die zu indizierenden Felder definiert. Der \emph{\{identifier\}} legt das Feld im Hash oder den JSON-Pfad-Ausdruck fest, während \emph{AS \{attribute\}} es erlaubt, einem Identifikator einen Aliasnamen zuzuweisen. Die verschiedenen Feldtypen und Optionen des Schemas werden in \ref{sec:redisearch-schema-fieldtypes} erläutert.
+
+
+Das Argument \emph{ON \{data\_type\}} bestimmt die Datentypen, auf die der Index angewendet wird. Standardmäßig wird HASH verwendet, während JSON als alternative Option existiert.
+
+Über \emph{PREFIX \{count\} \{prefix\}} werden die vom Index zu erfassenden Schlüssel bestimmt. Mehrere Präfixe können hinzugefügt werden, standardmäßig werden alle Schlüssel indiziert.
+
+Der Ausdruck \emph{FILTER \{filter\}} erlaubt die Nutzung der RediSearch-Aggregationssprache für spezifische Filterungen.
+
+Durch \emph{LANGUAGE \{default\_lang\}} und \emph{LANGUAGE\_FIELD \{lang\_attribute\}} werden die Standardsprache und das Sprachattribut des Dokuments festgelegt.
+
+\emph{SCORE \{default\_score\}} und \emph{SCORE\_FIELD \{score\_attribute\}} definieren den Standardwert für die Dokumentenbewertung und das Attribut für die Benutzerrangfolge.
+
+\emph{PAYLOAD\_FIELD \{payload\_attribute\}} ermöglicht es, ein Dokument mit einer binär sicheren Nutzlastzeichenfolge zu versehen.
+
+Das Argument \emph{MAXTEXTFIELDS} zwingt RediSearch dazu, Indizes so zu kodieren, als ob sie mehr als 32 Textattribute enthalten, um die Flexibilität bei der Erweiterung zu erhöhen.
+
+\emph{NOOFFSETS} verzichtet auf die Speicherung von Termoffsets, was Speicherplatz spart, aber gewisse Suchfunktionen einschränkt.
+
+\emph{TEMPORARY \{seconds\}} erstellt einen temporären Index, der nach einer vorgegebenen Zeitspanne verfällt.
+
+\emph{NOHL} deaktiviert die Hervorhebungsfunktion, um Speicherplatz zu sparen, während \emph{NOFIELDS} und \emph{NOFREQS} die Speicherung von Attributbits bzw. Häufigkeiten von Begriffen im Index unterbinden.
+
+Mit \emph{STOPWORDS \{count\}} kann eine benutzerdefinierte Stoppwortliste festgelegt werden, und \emph{SKIPINITIALSCAN} vermeidet das sofortige Scannen und Indizieren von Dokumenten.
+
+
+
+
+\subsection{Feldtypen und Optionen des Schemas}\label{sec:redisearch-schema-fieldtypes}
 RediSearch bietet eine Auswahl an Feldtypen (\emph{field types}) für verschiedene Indexierungszwecke. Folgend werden die verschiedenen Feldtypen erläutert. Die Informationen stammen dabei, falls nicht anders angegeben, aus der Online-Dokumentation von Redis zu Feldtypen~\cite{redis_ltd_field_nodate} und dem \emph{FT.CREATE}-Befehl~\cite{redis_ltd_ftcreate_nodate}.
 
 \subsubsection{\emph{Number fields}}
@@ -658,11 +722,11 @@ Ein Index kann zum Beispiel so erstellt werden:\\
 \texttt{FT.CREATE my\_idx SCHEMA vec\_field VECTOR FLAT 6 TYPE FLOAT32 DIM 128 DISTANCE\_METRIC L2}
 
 Ein Beispiel für einen Vektorvergleich ist der \enquote{k nearest neighbors}(KNN)-Algorithmus. Die Syntax dazu ist wie folgt aufgebaut:\\
-\texttt{*=>[ KNN {num|\$num} @vector \$query\_vec ]}
-Eine Abfrage nach den zehn nächsten Nachbarn bei denen \enquote{query_vec} am nächsten zum Vektor der in \enquote{@vector_field} gespeichert ist sieht so aus:\\
-\enquote{*=>[KNN 10 @vector_field \$query\_vec]}
+\texttt{*=>[ KNN {num|\$num} @vector \$query\_vec ]}\\
+Eine Abfrage nach den zehn nächsten Nachbarn bei denen \enquote{query\_vec} am nächsten zum Vektor der in \enquote{@vector\_field} gespeichert ist sieht so aus:\\
+\enquote{*=>[KNN 10 @vector\_field \$query\_vec]}
 
-Weitere Informationen und komplexere Beispiele sind in der Dokumentation zu Queries~\cite{redis_ltd_query_nodate} und zu Vektoren~\cite{redis_ltd_vectors_nodate} zu finden.
+Weitere Informationen und komplexere Beispiele sind in den Dokumentationen zu Queries~\cite{redis_ltd_query_nodate} und zu Vektoren~\cite{redis_ltd_vectors_nodate} zu finden.
 
 
 \subsubsection{\emph{Tag fields}} In Tag-Feldern werden Textdaten als Tags oder Labels gespeichert, die ohne Tokenisierung verarbeitet werden. Sie eignen sich gut zur Datenorganisation und -kategorisierung.
@@ -672,7 +736,7 @@ Tags werden beim Erstellen des Index mit dem \emph{FT.CREATE}-Befehl wie folgt e
 
 Der \emph{SEPARATOR} kann zur Angabe des Zeichens verwendet werden, das zum Trennen mehrerer Tags in einem Feld verwendet werden soll (Standard ist ein Komma).
 
-\emph{CASESENSITIVE} gibt an, ob bei Tags die Groß- und Kleinschreibung zu beachten ist. Standardmäßig wird bei Tag-Feldern nicht zwischen Groß- und Kleinschreibung unterschieden (\enquote{caseinsensitive}).
+\emph{CASESENSITIVE} gibt an, ob bei Tags die Groß- und Kleinschreibung zu beachten ist. Standardmäßig wird bei Tag-Feldern nicht zwischen Groß- und Kleinschreibung unterschieden (\enquote{\emph{caseinsensitive}}).
 
 Um nach Tags zu suchen wird folgende Syntax verwendet:\\
 \texttt{@<field\_name>:\{<tag>\}}\\
@@ -706,8 +770,11 @@ Die Suche nach Dokumenten mit bestimmten Textwerten ist möglich durch die Verwe
 
 - Suche nur im Preparation-attribut: \texttt{FT.SEARCH recipeIndex "@preparation:boil"}
 
+
+
+
 % TODO: Dieses Kapitel ergibt eventuell mehr Sinn vor dem vorherigen, da sich manche Beispiele auf diesen Index beziehen
-\subsection{Anlegen von Indizes}
+\subsection{Anlegen eines Beispielindexes}
 Das Indexschema legt die Felder, deren Typen sowie die Indizierungs- und Speicherregeln fest und ist entscheidend für die Effizienz der Suchfunktionalität sowie der Speichernutzung.
 Die Definition des Schemas erfolgt bei der Indexerstellung mit dem Befehl \emph{FT.CREATE}~\cite{redis_ltd_ftcreate_nodate}.
 Im Folgenden wird die Erstellung eines Index anhand eines Beispiels erläutert.
@@ -730,8 +797,10 @@ SCHEMA
     cooking_time NUMERIC SORTABLE
 \end{lstlisting}
 
-
-In diesem Fall initiiert der Befehl die Erstellung eines Index mit dem Namen \emph{recipeIndex}, der auf Hash-Dokumente mit dem Schlüsselanfang \emph{recipe:item:} angewendet wird. Das Schema dieses Index enthält die Felder \emph{name}, \emph{preparation}, \emph{ingredients}, \emph{category}, \emph{difficulty} und \emph{cooking\_time}.
+Das Attribut\emph{ON HASH} gibt an, dass Hash-Dokumente indexiert werden sollen. Alternativ kann hier noch \emph{ON JSON} für JSON-Dokumente verwendet werden.
+Der Prefix legt fest, dass nur Dokumente, die mit der angegebenen Zeichenfolge beginnen, indexiert werden. Zusätzlich zu diesen Attributen gibt es noch weitere optionale Attribute die in der Dokumentation des \emph{FT.CREATE}-Befehls erläutert werden, auf die hier jedoch nicht weiter eingegangen wird.
+In diesem Fall initiiert der Befehl die Erstellung eines Index mit dem Namen \emph{recipeIndex}, der auf Hash-Dokumente mit dem Schlüsselanfang \emph{recipe:item:} angewendet wird. 
+Das Schema dieses Index enthält die Felder \emph{name}, \emph{preparation}, \emph{ingredients}, \emph{category}, \emph{difficulty} und \emph{cooking\_time}.
 
 Der Datentyp \emph{TEXT} wird für \emph{name} und \emph{preparation} verwendet, um die Textinformationen der Rezeptnamen und Zubereitungsanweisungen zu indizieren. Die Verwendung des Typs \emph{TAG} für \emph{ingredients} und \emph{category} erleichtert die Handhabung kategorisierter Daten wie Zutatenlisten und Rezeptkategorien. \emph{cooking\_time}, klassifiziert als \emph{NUMERIC} und \emph{SORTABLE}, ermöglicht die Suche und Sortierung nach Kochzeit. Das Feld \emph{difficulty} dient zur Angabe des Schwierigkeitsgrades des Rezeptes.
 
