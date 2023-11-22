@@ -806,7 +806,85 @@ Der Datentyp \emph{TEXT} wird für \emph{name} und \emph{preparation} verwendet,
 
 Dem Feld \emph{name} wird ein Gewicht von 5.0 zugewiesen, um seine Relevanz bei Suchanfragen zu erhöhen. Dieser Index ermöglicht eine effiziente Suche im Rezeptverzeichnis und das Filtern der Ergebnisse nach Kriterien wie Zutaten, Kategorie, Kochzeit und Schwierigkeitsgrad.
 
+\subsection{Aggregations}
+Aggregationen (Aggregations) stellen die effektivste Methode dar, um in Redis mit RediSearch Daten abzufragen. Die hier dargestellten Informationen basieren auf den Erklärungen, die in der Online-Dokumentation~\cite{redis_ltd_aggregations_nodate} von Redis zu finden sind.
 
+Aggregationen ermöglichen die Verarbeitung und Analyse von Suchergebnissen durch verschiedene Operationen wie Gruppierung, Sortierung und Daten-Transformation. Ähnlich wie bei anderen Datenbanken sollen diese Verfahren dazu beitragen, analytische Erkenntnisse aus den Daten zu gewinnen. Des Weiteren können mit Aggregationen facettierte Suchanfragen durchgeführt werden. Suchergebnisse können so anhand verschiedener Merkmale oder \enquote{Facetten} gefiltert und verfeinert werden.
+
+Ein Beispiel für den Einsatz einer Aggregation in RediSearch wäre eine OLAP-Abfrage, die berechnet wie oft Rezepte die Tomaten enthalten in den letzten drei Monaten aufgerufen wurden.
+
+\subsubsection{Aufbau einer Aggregation}
+Eine Aggregation-Query ist in zwei Teile unterteilt:\\
+Zu Beginn wird eine Suche durchgeführt, bei der relevante Datensätze ausgewählt und gefiltert werden.
+Anschließend wird eine Verarbeitungspipeline aufgebaut, bei der die Datensätze nach bestimmten Feldern gruppiert, sortiert, transformiert, limitiert und oder gefiltert werden. Die verschiedenen Schritte in einer Verarbeitungspipeline können beliebig oft ausgeführt werden und haben folgende Effekte:
+
+- \emph{Group and reduce}: Gruppierung von Datensätzen nach bestimmten Feldern und Anwendung von Reduktionsfunktionen auf jede Gruppe, um aggregierte Daten zu erhalten.
+    
+- \emph{Sort}: Sortierung von Ergebnissen basierend auf einem oder mehreren Feldern.
+    
+- \emph{Apply transformations}: Anwenden von mathematischen Funktionen und Zeichenkettenfunktionen auf Felder in der Pipeline, wobei optional neue Felder erstellt oder bestehende Felder ersetzt werden können.
+    
+- \emph{Limit}: Begrenzung der Ergebnismenge, unabhängig von der Sortierreihenfolge, um eine handhabbare Datenmenge zu gewährleisten.
+    
+- \emph{Filter}: Nachträgliche Filterung der Ergebnisse auf der Grundlage von Prädikaten, die sich auf die Werte der Datensätze beziehen, um die Daten weiter zu verfeinern.
+
+\subsubsection{Syntax einer Aggregation}
+Aggregationen werden mit dem Befehl \emph{FT.AGGREGATE} ausgeführt der folgende Syntax hat:
+\begin{lstlisting}[
+    language=TEXT,
+    caption=Syntax des Befehls FT.AGGREGATE in RediSearch,
+    label=code:redisearch-ftaggregate-syntax,
+    numbers=none
+]
+FT.AGGREGATE
+  {index_name:string}
+  {query_string:string}
+  [VERBATIM]
+  [LOAD {nargs:integer} {property:string} ...]
+  [GROUPBY
+    {nargs:integer} {property:string} ...
+    REDUCE
+      {FUNC:string}
+      {nargs:integer} {arg:string} ...
+      [AS {name:string}]
+    ...
+  ] ...
+  [SORTBY
+    {nargs:integer} {string} ...
+    [MAX {num:integer}] ...
+  ] ...
+  [APPLY
+    {EXPR:string}
+    AS {name:string}
+  ] ...
+  [FILTER {EXPR:string}] ...
+  [LIMIT {offset:integer} {num:integer} ] ...
+  [PARAMS {nargs} {name} {value} ... ]
+\end{lstlisting}
+
+Bei Parametern, die eine variable Anzahl an Argumenten haben, ist das erste Argument immer die Anzahl der Argumente {nargs:integer}. So werden Mehrdeutigkeiten beim Parsen zu vermieden, wenn eines der Argumente den gleichen Namen wie ein anderer Parameter hat.
+
+Nachfolgend werden die einzelnen Argumente und ihre Parameter erläutert:
+
+\emph{index\_name}: Der Name des zu verwendenden Index.
+
+\emph{query\_string}: Die Basisabfrage. Sie folgt der Syntax der Suchabfrage, inklusive Filter und Operatoren.
+
+\emph{LOAD \{nargs\} \{property\} ...}: Lädt Dokumentfelder aus Hash-Objekten, beeinträchtigt jedoch die Leistung, Felder sollten wenn möglich als SORTABLE gespeichert werden. Es ist jedoch notwendig Felder zu laden, die nicht SORTABLE sind, um sie in weiteren Schritten der Pipeline zu nutzen.
+
+\emph{GROUPBY \{nargs\} \{property\} ...}: Gruppiert Ergebnisse nach einer oder mehrerer Eigenschaften. Jede Gruppe sollte zusätzlich einen \emph{Reducer} haben (siehe nächsten Punkt).
+
+\emph{REDUCE \{func\} \{nargs\} \{arg\} ... [AS \{name\}]}: Reduziert Ergebnisse jeder Gruppe zu einem einzelnen Eintrag mittels einer Reduktionsfunktion wie etwa \emph{COUNT.} Optional kann das so entstandene Feld mit \enquote{AS \{name\}.} benannt werden, andernfalls wird ein Name generiert der sich aus der Reduktionsfunktion und den Gruppeneigenschaften zusammensetzt.
+
+\emph{SORTBY \{nargs\} \{property\} \{ASC|DESC\} [MAX \{num\}]}: Sortiert Ergebnisse nach Eigenschaften. Standardmäßig aufsteigend, umkehrbar mit ASC oder DESC. Mit dem Attribut \emph{MAX} kann die Sortierung optimiert werden in dem sie nur die n-größten Elemente sortiert.
+
+\emph{APPLY {expr} AS {name}}: Führt eine Transformation auf Eigenschaften aus. \emph{expr} beinhaltet Berechnungen oder Funktionen auf numerischen oder anderen Eigenschaftstypen. Das Ergebnis wird als neue Eigenschaft mit \emph{AS {name}} gespeichert und ist in nachfolgenden Operationen verwendbar.
+
+\emph{LIMIT \{offset\} \{num\}}: Begrenzt die Anzahl der Ergebnisse die zurückgegeben werden. Dabei wird die Anzahl der Ergebnisse festgelegt und ab welchem Offset sie ausgewählt werden sollen. Falls die Ergebnisse auch sortiert werden ist es effizienter, sie mit dem Attribut \emph{MAX} des Befehls \emph{SORTBY} zu limitieren.
+
+\emph{FILTER \{expr\}}: Filtert Ergebnisse mit Prädikatausdrücken, bezogen auf aktuelle Pipelinewerte.
+
+\emph{PARAMS \{nargs\} \{name\} \{value\}}: Definiert Parameter für die Abfrage die aus einem Namen und einem Wert bestehen. Parameter können in der Abfrage durch \$-Zeichen und dem Namen referenziert werden. Jede Referenz in der Suchanfrage auf einen Parameternamen wird dann durch den entsprechenden Parameterwert ersetzt.
 
 \section{Scala} % Todo: Eventuell ausbauen
 Scala ist eine moderne Programmiersprache die Merkmale objektorientierter und funktionaler Sprachen aufweist.
