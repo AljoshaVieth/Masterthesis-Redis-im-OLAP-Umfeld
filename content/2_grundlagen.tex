@@ -75,6 +75,19 @@ So kann ein Zeitpunkt in der Tabelle Werte für Uhrzeit, Tag, Monat, Quartal ode
 Ein Ort kann etwa aus dem Ortsnamen, dem Bundesland, dem Land, dem Kontinent bestehen.
 So lassen sich genaue Abfragen zu Verkäufen einer bestimmten Filiale oder etwa allen Filialen in Europa abfragen~\cite[S.~5]{vaisman_data_2022}.
 
+\subsection{OLAP Cubes}
+In \emph{OLAP}-Systemen spielen Aggregatfunktionen wie \emph{COUNT}, \emph{SUM}, \emph{AVG}, \emph{MIN} und \emph{MAX} eine zentrale Rolle. Sie ermöglichen die effiziente Analyse und Aggregation großer Datenmengen. Eine Schlüsselstrategie zur Optimierung der Leistung von OLAP-Abfragen ist die Verwendung von \emph{materialisierten Aggregaten}. Diese entstehen, wenn häufig verwendete Aggregationsabfragen im Voraus berechnet und die Ergebnisse in einem Cache gespeichert werden.
+
+Die Informationen in diesem Abschnitt beruhen auf der Beschreibung von Datenwürfeln durch Martin Kleppmann~\cite[S.~109-111]{kleppmann_datenintensive_2019}.
+
+\emph{Materialisierte Sichten} sind in diesem Zusammenhang von besonderer Bedeutung. Sie dienen als Speicher für diese vorberechneten Daten. Strukturell ähneln sie den üblichen (virtuellen) Sichten (Views) in relationalen Datenbanksystemen und sind als tabellenähnliche Objekte konzipiert, die aggregierte Ergebnisse enthalten. Im Gegensatz zu virtuellen Sichten, die nur die Abfrage selbst speichern, enthalten materialisierte Sichten die tatsächlichen Abfrageergebnisse.
+
+Ein zentrales Element in OLAP-Systemen ist der so genannte \emph{OLAP Cube} oder Datenwürfel, der eine spezialisierte Form der materialisierten Sicht darstellt. In einem OLAP-Würfel werden Daten als ein Gitter von Aggregaten dargestellt, die nach verschiedenen Dimensionen gruppiert sind. Ein solcher Würfel kann aus mehreren Dimensionen bestehen, wobei jede Seite des Würfels eine Dimension darstellt. Betrachtet man nur zwei Dimensionen, so kann man sich den OLAP-Würfel als eine zweidimensionale Tabelle vorstellen. In dieser Tabelle stellt beispielsweise eine Achse die Zeitdimension und die andere Achse die Produktdimension dar. Die Zellen der Tabelle enthalten dann das Aggregat (z.B. \emph{MAX}) eines Attributs (z.B. Verkaufspreis) für alle Fakten, die dieser Kombination von Dimensionen entsprechen. Der Cube ermöglicht es beispielsweise, den höchsten Verkaufspreis eines Produkts zu einem bestimmten Zeitpunkt abzurufen.
+
+Ein weiterer Vorteil von Datenwürfeln ist die Möglichkeit, Aggregate unabhängig von einer bestimmten Dimension zu betrachten, wenn man sich entlang einer Achse des Würfels bewegt. So ist es beispielsweise möglich, den höchsten Verkaufspreis für jedes Produkt unabhängig vom Zeitpunkt oder den höchsten Preis zu bestimmten Zeitpunkten unabhängig vom Produkt zu ermitteln.
+
+Trotz ihrer Effizienz bei der Beantwortung bestimmter Abfragen haben Datenwürfel auch Nachteile. Sie sind auf Abfragen beschränkt, für die die benötigten Daten bereits voraggregiert wurden. Dies führt zu einer eingeschränkten Flexibilität in Bezug auf die Art der Abfragen, die sie unterstützen können. Während sie sich also hervorragend für die schnelle Beantwortung bestimmter Abfragen eignen, ist ihre Anwendung begrenzt, wenn die erforderlichen Daten nicht bereits voraggregiert wurden.
+
 \begin{comment}
 \subsection{Der OLAP-Cube}
 %TODO: OLAP CUBE Voraggregation bei OLAP -> Kleppmann Seite 109 Kapitel 3
@@ -328,6 +341,21 @@ ORDER BY
     d_year, c_nation;
 
 \end{lstlisting}
+
+\section{PostgreSQL}
+\emph{PostgreSQL} ist ein relationales Datenbankmanagementsystem, welches die \emph{SQL}-Sprache verwendet und erweitert. Die folgenden Informationen basieren auf der offiziellen Webseite von \emph{PostgreSQL}~\cite{the_postgresql_global_development_group_postgresql_nodate}. Es handelt sich dabei um ein Open-Source-Projekt, welches seit über 35 Jahren entwickelt wird. Im Jahr 2023 belegt \emph{PostgreSQL} gemäß dem \emph{DB-Engines Ranking}~\cite{db-engines_most_2023} weltweit den vierten Platz unter den beliebtesten Datenbankmanagementsystemen, nach \emph{Oracle}, \emph{MySQL} und dem \emph{Microsoft SQL Server}.
+
+\emph{PostgreSQL} zeichnet sich durch eine bewährte Architektur, Zuverlässigkeit, Datenintegrität, einen robusten Funktionsumfang und Erweiterbarkeit aus. Das System ist auf allen wichtigen Betriebssystemen lauffähig und seit 2001 \emph{ACID}-konform.  Zusätzlich verfügt es über leistungsstarke Zusatzmodule wie zum Beispiel \emph{PostGIS}, ein beliebtes erweiterbares Geodatenbank-System.
+
+Die Erweiterbarkeit von \emph{PostgreSQL} ist ein weiteres Schlüsselfeature. Benutzer können eigene Datentypen definieren, benutzerdefinierte Funktionen erstellen und Code aus verschiedenen Programmiersprachen integrieren, ohne die Datenbank neu kompilieren zu müssen.
+
+\emph{PostgreSQL} strebt danach, dem SQL-Standard zu entsprechen, solange diese Konformität nicht traditionellen Funktionen widerspricht oder zu schlechten Architekturentscheidungen führen würde. Viele der vom SQL-Standard geforderten Funktionen werden unterstützt, auch wenn teilweise mit leicht abweichender Syntax oder Funktion.
+
+Ein weiterer wichtiger Aspekt von \emph{PostgreSQL} ist seine Skalierbarkeit. Es hat sich gezeigt, dass das System sowohl in Bezug auf die Menge der zu verwaltenden Daten als auch auf die Anzahl gleichzeitig aktiver Benutzer sehr skalierbar ist. In Produktionsumgebungen gibt es aktive \emph{PostgreSQL}-Cluster, die mehrere Terabyte an Daten verwalten, sowie spezialisierte Systeme, die Petabyte an Daten bewältigen.
+
+% WARUM POSTGRESQL statt SQL oder so?
+In der vorliegenden Arbeit wird \emph{PostgreSQL} als Vergleichsbasis zu \emph{Redis} im Kontext des \ac{SSB} verwendet. Es ist hervorzuheben, dass der primäre Fokus dieser Arbeit auf der Untersuchung und Analyse von \emph{Redis} liegt. Daher wird \emph{PostgreSQL} als Referenzsystem für Vergleichszwecke verwendet, jedoch nicht in gleichem Maße wie \emph{Redis} behandelt.
+
 \section{Redis}
 
 Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_ltd_introduction_nodate}.
@@ -340,6 +368,7 @@ Des weiteren besteht mit \enquote{Auto Tiering} die Möglichkeit, Arbeitsspeiche
 
 
 % Hier ist was doppelt, muss überprüft werden (wahrscheinlich untere lassen, obere entfernen)
+% Besseren Einleitungssatz mit Quelle
 
 Redis ist eine vielseitige Datenbank, die sich nicht streng als herkömmliche Datenbank kategorisieren lässt. Obwohl Redis die grundlegenden Anforderungen an eine traditionelle Datenbank erfüllt, wie das Sammeln und Speichern von Informationen, die dann leicht abgerufen, bearbeitet oder gelöscht werden können, bietet Redis zusätzliche Funktionen, die vor allem durch die Geschwindigkeit aufgrund der vollständigen Ausführung im Arbeitsspeicher und die vielseitigen Datenstrukturen ermöglicht werden.
 Durch die Persistierung der Daten auf der Festplatte kann Redis als konventionelle Datenbank genutzt werden.
@@ -352,7 +381,17 @@ Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösu
 
 \subsection{Module für Redis}
 \subsubsection{Redis Stack}
+\emph{Redis Stack} erweitert das klassische \emph{Redis} mit Modulen.
+Die Informationen, die diesem Abschnitt zugrunde liegen, stammen von der offiziellen Webseite von Redis~\cite{redis_ltd_about_nodate}.
+\emph{Redis Stack} kombiniert Redis mit den Modulen \emph{RediSearch}, \emph{RedisJSON}, \emph{RedisTimeSeries} und \emph{RedisBloom} zu einem benutzerfreundlichen Paket.
+Dieses Paket ermöglicht erweiterte Funktionen wie die Verwendung probabilistischer Datenstrukturen, Abfragen von JSON-Dokumenten, kombinierte Abfragen von Hashes und JSON-Dokumenten sowie die Verarbeitung und Abfrage von Zeitreihendaten einschließlich Volltextsuche.
 
+Ziel von \emph{Redis Stack} ist es, die Entwicklung von Echtzeitanwendungen zu erleichtern, indem eine Backend-Datenplattform bereitgestellt wird, die Anfragen zuverlässig in Millisekunden oder weniger verarbeiten kann.
+
+Für die vorliegende Arbeit wurde nur das Modul \emph{RediSearch} verwendet, in der Dokumentation werden die Technologien von \emph{Redis Stack} jedoch oft gemeinsam beschrieben. 
+Außerdem wurde das offizielle \emph{Docker-Image} des \emph{Redis Stack}~\cite{redis_ltd_run_nodate} verwendet, da dies der einfachste Weg ist, Redis mit \emph{RediSearch} zu betreiben. 
+
+\emph{RediSearch} wird im weiteren Verlauf dieser Arbeit ausführlich beschrieben.
 
 \subsection{Datentypen in Redis}
 \subsubsection{Strings}
@@ -766,9 +805,11 @@ Die Suche nach Dokumenten mit bestimmten Textwerten ist möglich durch die Verwe
 \{<term>\} in der Abfragesyntax. Zum Beispiel:
 
 % TODO: LatexProblem fixen, falsche Anführungszeichen (muss "" sein)
-- Suche in allen Textattributen: \texttt{FT.SEARCH recipeIndex \glqq egg\grqq}
+- Suche in allen Textattributen:
+ \texttt{FT.SEARCH recipeIndex \glqq egg\grqq}
 
-- Suche nur im Preparation-attribut: \texttt{FT.SEARCH recipeIndex "@preparation:boil"}
+- Suche nur im Preparation-attribut:
+ \texttt{FT.SEARCH recipeIndex "@preparation:boil"}
 
 
 
