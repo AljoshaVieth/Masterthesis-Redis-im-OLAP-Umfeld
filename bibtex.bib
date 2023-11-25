@@ -1,4 +1,35 @@
 
+@inproceedings{loyola_building_2012,
+	address = {Barcelona},
+	title = {Building {OLAP} {Data} {Analytics} by {Storing} {Path}-{Enumeration} {Keys} into {Sorted} {Sets} of {Key}-{Value} {Store} {Databases}},
+	abstract = {In this paper, a novel approach that allows the
+retrieval of OLAP analytics by means of storing multidimensional
+data in key-value databases is described and evaluated.
+The proposed mechanism relies on generated keys based on
+the path-enumeration model built upon a tree representation
+of a relational database. Each key represents a combination of
+OLAP dimension labels and is inserted into a key-value sorted
+set where its associated values are the metrics of interest, i.e.,
+the OLAP facts. Our implementation for a real advertisement
+server system in Redis and its performance comparison with
+a relational OLAP (ROLAP) database running on top of
+MySQL, show that our proposed scheme can answer complex
+multidimensional queries much faster, while keeping a great
+flexibility of the data schema. In contrast with general ROLAP
+schemes, which usually require the pre-computation of tables
+for specific queries, the sorted sets in the proposed system are
+not pre-computed but generated on demand, so no further
+delay is introduced. To the best of the authors’ knowledge,
+this is the first system that deals with mapping relational
+data structures into sorted sets of key-value store databases
+to answer complex queries on multidimensional data.},
+	booktitle = {{DATA} {ANALYTICS} 2012 : {The} {First} {International} {Conference} on {Data} {Analytics}},
+	publisher = {International Academy, Research, and Industry Association (IARIA)},
+	author = {Loyola, Luis and Wong, Fernando and Pereira, Daniel},
+	month = sep,
+	year = {2012},
+}
+
 @misc{redis_ltd_run_nodate,
 	title = {Run {Redis} {Stack} on {Docker} {\textbar} {Redis}},
 	url = {https://redis.io/docs/install/install-stack/docker/},

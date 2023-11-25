@@ -20,6 +20,29 @@ Bei der Entwicklung des praktischen Teils dieser Arbeit wurde \emph{ChatGPT} gen
 \section{Problemstellung}
 \section{Forschungsziel}
 \section{Gliederung der Arbeit}
+
 \section{Verwandte Arbeit}
+\subsection{OLAP Datenanalyse durch Speichern von Path-Enumeration Keys in Redis}
+In der entsprechenden akademischen Literatur zum Thema OLAP in Redis wird in einer Veröffentlichung~\cite{loyola_building_2012} ein neuartiger Ansatz zur Abfrage von OLAP-Daten durch die Autoren präsentiert.
+
+In ihrer Arbeit entwickeln die Autoren einen neuen Ansatz für die Abfrage von \emph{OLAP}-Daten, indem sie \emph{Redis} mit einer relationalen Datenbank wie \emph{MySQL} kombinieren. Der Schwerpunkt liegt auf der effizienten Speicherung und Abfrage multidimensionaler Daten in Redis, basierend auf einem Schlüsselgenerierungsschema, das vom \emph{Path-Enumeration}-Modell inspiriert ist. Dieses Modell baut auf der Baumstruktur einer relationalen Datenbank auf, um multidimensionale OLAP-Daten darzustellen und zu verwalten.
+
+Den Autoren zufolge stellt jeder Schlüssel im Schema eine Kombination von OLAP-Dimensionsbezeichnungen dar. Diese Schlüssel und die zugehörigen Werte, die die relevanten Metriken oder \emph{OLAP-Fakten} darstellen, werden in Redis gespeichert. Dieser Ansatz ermöglicht eine flexible und dynamische Verarbeitung von OLAP-Daten, indem Datensätze direkt und in Echtzeit während einer Anfrage generiert werden. So können Daten dynamisch erstellt und organisiert werden, basierend auf den Anforderungen der aktuellen Anfrage.
+
+Im Vergleich zu einem herkömmlichen, auf MySQL basierenden OLAP-System berichten die Autoren von signifikanten Vorteilen. Sie betonen, dass ihr Schema in der Lage ist, komplexe multidimensionale Abfragen schneller zu beantworten, was durch die effiziente Nutzung von Redis für schnelle Datenabfragen und einer relationalen Datenbank für die persistente Datenspeicherung erreicht wird.
+
+Allerdings sehen die Autoren auch Grenzen ihres Systems, insbesondere bei der Verarbeitung von nicht aggregierten Ereignissen, wie z.B. dem Zählen von Unique Usern, die einen erhöhten Speicherverbrauch verursachen.
+
+Abschließend betonen die Autoren, dass dieser kombinierte Ansatz für kleine und mittlere Unternehmen eine kostengünstige und weniger komplexe Alternative zu traditionellen OLAP-Lösungen darstellen könnte.
+
+\subsubsection{Bewertung dieses Ansatzes}
+Das 2012 von den Autoren verfasste Paper bezieht sich auf eine frühere Version von Redis, die bereits mehr als 10 Jahre alt ist.
+Seitdem hat sich Redis erheblich weiterentwickelt.
+Die in der Studie verwendeten Abfragen sind größtenteils einfache Aggregationen, wie Summenbildung.
+Bei den wenigen komplexeren Abfragen, die sich auf individuelle Benutzer beziehen, erkennen die Autoren selbst die Grenzen ihres Ansatzes.
+Im Gegensatz dazu sind die Abfragen im Star Schema Benchmark wesentlich komplexer.
+Darüber hinaus handelt es sich bei der Lösung der Autoren um eine Kombination aus Redis und einem relationalem Datenbanksystem und nicht um eine eigenständige, vollständige Redis-basierte Lösung.
+
+Das Paper liefert informative Einblicke in die Optimierung eines OLAP-Systems mittels Redis. Jedoch fokussiert sich diese Arbeit auf die vollständige Integration von OLAP in Redis. Daher hat das Paper keine signifikanten Auswirkungen auf das vorliegende Projekt.
 
  

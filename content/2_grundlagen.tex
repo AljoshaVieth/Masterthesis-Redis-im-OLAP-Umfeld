@@ -82,7 +82,7 @@ Die Informationen in diesem Abschnitt beruhen auf der Beschreibung von Datenwür
 
 \emph{Materialisierte Sichten} sind in diesem Zusammenhang von besonderer Bedeutung. Sie dienen als Speicher für diese vorberechneten Daten. Strukturell ähneln sie den üblichen (virtuellen) Sichten (Views) in relationalen Datenbanksystemen und sind als tabellenähnliche Objekte konzipiert, die aggregierte Ergebnisse enthalten. Im Gegensatz zu virtuellen Sichten, die nur die Abfrage selbst speichern, enthalten materialisierte Sichten die tatsächlichen Abfrageergebnisse.
 
-Ein zentrales Element in OLAP-Systemen ist der so genannte \emph{OLAP Cube} oder Datenwürfel, der eine spezialisierte Form der materialisierten Sicht darstellt. In einem OLAP-Würfel werden Daten als ein Gitter von Aggregaten dargestellt, die nach verschiedenen Dimensionen gruppiert sind. Ein solcher Würfel kann aus mehreren Dimensionen bestehen, wobei jede Seite des Würfels eine Dimension darstellt. Betrachtet man nur zwei Dimensionen, so kann man sich den OLAP-Würfel als eine zweidimensionale Tabelle vorstellen. In dieser Tabelle stellt beispielsweise eine Achse die Zeitdimension und die andere Achse die Produktdimension dar. Die Zellen der Tabelle enthalten dann das Aggregat (z.B. \emph{MAX}) eines Attributs (z.B. Verkaufspreis) für alle Fakten, die dieser Kombination von Dimensionen entsprechen. Der Cube ermöglicht es beispielsweise, den höchsten Verkaufspreis eines Produkts zu einem bestimmten Zeitpunkt abzurufen.
+Ein zentrales Element in OLAP-Systemen ist der so genannte \emph{OLAP Cube} oder Datenwürfel, der eine spezialisierte Form der materialisierten Sicht darstellt. In einem OLAP-Würfel werden Daten als ein Gitter von Aggregaten dargestellt, die nach verschiedenen Dimensionen gruppiert sind. Ein solcher Würfel kann aus mehreren Dimensionen bestehen, wobei jede Seite des Würfels eine Dimension darstellt. Betrachtet man nur zwei Dimensionen, so kann man sich den OLAP-Würfel als eine zweidimensionale Tabelle vorstellen. In dieser Tabelle stellt beispielsweise eine Achse die Zeitdimension und die andere Achse die Produktdimension dar. Die Zellen der Tabelle enthalten dann das Aggregat (z.~B. \emph{MAX}) eines Attributs (z.~B. Verkaufspreis) für alle Fakten, die dieser Kombination von Dimensionen entsprechen. Der Cube ermöglicht es beispielsweise, den höchsten Verkaufspreis eines Produkts zu einem bestimmten Zeitpunkt abzurufen.
 
 Ein weiterer Vorteil von Datenwürfeln ist die Möglichkeit, Aggregate unabhängig von einer bestimmten Dimension zu betrachten, wenn man sich entlang einer Achse des Würfels bewegt. So ist es beispielsweise möglich, den höchsten Verkaufspreis für jedes Produkt unabhängig vom Zeitpunkt oder den höchsten Preis zu bestimmten Zeitpunkten unabhängig vom Produkt zu ermitteln.
 
@@ -191,9 +191,7 @@ PostgreSQL bietet hingegen keinen solchen Datentypen~\cite{the_postgresql_global
 
 
 
-\subsection{\acf{OLAP}}
-
-\subsection{Key Value Stores in \acs{OLAP}}
+\subsection{Key Value Stores in \acs{OLAP}} % wahrscheinlich hier nicht nötig
 
 \section{Datenbank-Benchmarks}
 Datenbank-Benchmarks geben einen Überblick über die Leistung von verschiedenen Datenbanksysteme und die Hardware, auf der diese laufen.
@@ -360,7 +358,7 @@ In der vorliegenden Arbeit wird \emph{PostgreSQL} als Vergleichsbasis zu \emph{R
 
 Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_ltd_introduction_nodate}.
 In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_ltd_data_nodate}.
-Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.B. JSON oder Time series unterstützt werden.
+Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.~B. JSON oder Time series unterstützt werden.
 Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_ltd_whos_nodate}.
 Redis wird immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
 
@@ -521,7 +519,7 @@ Die Leistung des Befehls \emph{BITFIELD} ist O(n), wobei n die Anzahl der zugegr
 
 
 \subsubsection{Geodatenindizes}
-Der Datentyp \enquote{\textbf{Geospatial}} ermöglicht die Speicherung und Abfrage von Koordinaten in Redis. So können z.B. nahegelegene Punkte innerhalb eines bestimmten Radius oder eines definierten Begrenzungsrahmens ermittelt werden.
+Der Datentyp \enquote{\textbf{Geospatial}} ermöglicht die Speicherung und Abfrage von Koordinaten in Redis. So können z.~B. nahegelegene Punkte innerhalb eines bestimmten Radius oder eines definierten Begrenzungsrahmens ermittelt werden.
 Ein praktisches Anwendungsbeispiel für diese Funktionalität wäre eine mobile Anwendung, die dem Benutzer die nächstgelegenen Elektroroller in seiner Umgebung anzeigt.
 
 Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: Der Befehl \emph{GEOADD} fügt einen Standort zu einem gegebenen georäumlichen Index hinzu, wobei zu beachten ist, dass bei diesem Befehl der Längengrad vor dem Breitengrad angegeben wird. Der Befehl \emph{GEOSEARCH} hingegen gibt Standorte innerhalb eines bestimmten Radius oder einer bestimmten Begrenzung zurück~\cite{redis_ltd_geospatial_nodate}.
@@ -1074,7 +1072,7 @@ Lua ist eine Programmiersprache, die auf ihrer offiziellen Webseite als mächtig
 \subsection{Einsatzgebiete von Lua}
 Auf dem \emph{\acf{PYPL}} belegt Lua im November 2023 den 21. Platz der beliebtesten Programmiersprachen~\cite{carbonnelle_pypl_2023}.
 
-Aufgrund ihrer geringen Größe wird Lua häufig als Skriptsprache innerhalb von Anwendungen verwendet. Ein Beispiel hierfür ist \emph{Fusion 18}~\cite{blackmagic_design_fusion_nodate}, eine in Hollywood häufig verwendete Compositing-Software. Auch in der Videospielbranche wird Lua häufig für Erweiterungen verwendet, z.B. bei \emph{World of Warcraft}~\cite{wowpedia_lua_2023}.
+Aufgrund ihrer geringen Größe wird Lua häufig als Skriptsprache innerhalb von Anwendungen verwendet. Ein Beispiel hierfür ist \emph{Fusion 18}~\cite{blackmagic_design_fusion_nodate}, eine in Hollywood häufig verwendete Compositing-Software. Auch in der Videospielbranche wird Lua häufig für Erweiterungen verwendet, z.~B. bei \emph{World of Warcraft}~\cite{wowpedia_lua_2023}.
 
 Lua-Skripte können auch innerhalb von \emph{Redis} ausgeführt werden~\cite{redis_ltd_scripting_nodate}. Die Skripte laufen direkt auf dem Redis-Server, was die Interaktion mit Redis sehr effizient macht.
 Lua ist kompatibel mit allen Unix- und Windows-Systemen, läuft auf eingebetteten Mikroprozessoren sowie auf Smartphones mit iOS und Android.
