@@ -1,4 +1,79 @@
 
+@inproceedings{zhao_multidimensional_2014,
+	address = {Cham},
+	series = {Lecture {Notes} in {Computer} {Science}},
+	title = {A {Multidimensional} {OLAP} {Engine} {Implementation} in {Key}-{Value} {Database} {Systems}},
+	isbn = {978-3-319-10596-3},
+	doi = {10.1007/978-3-319-10596-3_12},
+	abstract = {This paper tries to explore the capabilities of MapReduce-like execution engines for multidimensional data analytics through implementing a Multidimensional Online Analytical Processing (MOLAP) engine with cube model on the Hadoop ecosystem. The cube storage module converts dimension members into binary keys and leverages a novel distributed database to provide efficient storage for huge cuboids. The bit encoding sparse index is used to compress the cube data and the dimension bit encoding key with maximum members is used to achieve cube data sharding and distributed aggregation computing. We discuss how to match the star schema with cube model databases, and how to use resilient distributed data-sets for MDX-like queries executing on key-value systems. Finally, some queries of TPC-DS benchmark are adopted to validate the prototype implementation of the MOLAP engine. The results indicate that designed scenarios based on TPC-DS are suitable for various big data analytics operation benchmarking.},
+	language = {en},
+	booktitle = {Advancing {Big} {Data} {Benchmarks}},
+	publisher = {Springer International Publishing},
+	author = {Zhao, Hongwei and Ye, Xiaojun},
+	editor = {Rabl, Tilmann and Raghunath, Nambiar and Poess, Meikel and Bhandarkar, Milind and Jacobsen, Hans-Arno and Baru, Chaitanya},
+	year = {2014},
+	keywords = {Cloud computing, Cube model, Multidimensional on-line analysis processing, TPC-DS benchmark},
+	pages = {155--170},
+}
+
+@inproceedings{franciscus_answering_2017,
+	address = {Cham},
+	series = {Lecture {Notes} in {Computer} {Science}},
+	title = {Answering {Temporal} {Analytic} {Queries} over {Big} {Data} {Based} on {Precomputing} {Architecture}},
+	isbn = {978-3-319-54472-4},
+	doi = {10.1007/978-3-319-54472-4_27},
+	abstract = {Big data explosion brings revolutionary changes to many aspects of our lives. Huge volume of data, along with its complexity poses big challenges to data analytic applications. Techniques proposed in data warehousing and online analytical processing (OLAP), such as precomputed multidimensional cubes, dramatically improve the response time of analytic queries based on relational databases. There are some recent works extending similar concepts into NoSQL such as constructing cubes from NoSQL stores and converting existing cubes into NoSQL stores. However, only few works are studying the precomputing structure deliberately within NoSQL databases. In this paper, we present an architecture for answering temporal analytic queries over big data by precomputing the results of granulated chunks of collections which are decomposed from the original large collection. By using the precomputing structure, we are able to answer the drill-down and roll-up temporal queries over large amount of data within reasonable response time.},
+	language = {en},
+	booktitle = {Intelligent {Information} and {Database} {Systems}},
+	publisher = {Springer International Publishing},
+	author = {Franciscus, Nigel and Ren, Xuguang and Stantic, Bela},
+	editor = {Nguyen, Ngoc Thanh and Tojo, Satoshi and Nguyen, Le Minh and Trawiński, Bogdan},
+	year = {2017},
+	keywords = {Data warehouse, NoSQL, Precompute, Temporal},
+	pages = {281--290},
+}
+
+@article{ly_implementation_2017,
+	title = {An {Implementation} of {Web}-{Enabled} {OLAP} {Server} in {Korean} {HealthCare} {BigData} {Platform}},
+	url = {https://koreascience.kr/article/CFKO201718459284290.page},
+	abstract = {In 2015, Ministry of Health and Welfare of Korea announced a research and development plan of using Korean healthcare data to support decision making, reduce cost and enhance a better treatment. This project relies on the adoption of BigData technology such as Apache Hadoop, Apache Spark to store and process HealthCare Data from various institution. Here we present an approach a design and implementation of OLAP server in Korean HealthCare BigData platform. This approach is used to establish a basis for promoting personalized healthcare research for decision making, forecasting disease and developing customized diagnosis and treatment.},
+	language = {eng},
+	urldate = {2023-11-26},
+	journal = {Proceedings of the Korea Contents Association Conference},
+	author = {Ly, Pichponreay and Kim, Jin-Hyuk and Jung, Seung-Hyun and Lee, kyung-hee Lee and Cho, Wan-Sup},
+	year = {2017},
+	note = {Publisher: The Korea Contents Association},
+	pages = {33--34},
+}
+
+@inproceedings{khalil_key-value_2020,
+	title = {Key-value data warehouse : {Models} and {OLAP} analysis},
+	isbn = {978-1-72816-921-7},
+	abstract = {OLAP is a technology that allows analysts to perform
+multidimensional data analysis, and view business data
+from different angles. It enables users to analyze informations
+from multiple and heterogeneous databases. Over the last few
+years, Not-only-SQL(NoSQL) databases were created and gained
+a lot of interest and popularity in OLTP systems. In despite of
+that, a few works have investigated the possibility to use NoSQL
+technologies to implement big OLAP cubes. Our main goal is
+to propose a new model for managing cubes into NoSQL key
+value stores, for this purpose, we present in this paper two
+approaches which allow cubes to be implemented under key value
+model, and we show how these structures can then be used to
+support decision making by responding to OLAP basic analytical
+operations. The first approach discusses how to match the star
+schema with key value model based on a tabular structure layered
+on top of the distributed key-value model. The second approach
+performs OLAP cube computation named CV-CUBE operator
+by converting dimension members into binary keys.
+Index Terms—Multidimensional on-line analysis processing,
+Cube model,Decision support systems,Big Data.},
+	booktitle = {{IEEE} 2nd {International} {Conference} on {Electronics}, {Control}, {Optimization} and {Computer} {Science} ({ICECOCS})},
+	author = {Khalil, Abdelhak and Belaissaoui, Mustapha},
+	year = {2020},
+}
+
 @inproceedings{loyola_building_2012,
 	address = {Barcelona},
 	title = {Building {OLAP} {Data} {Analytics} by {Storing} {Path}-{Enumeration} {Keys} into {Sorted} {Sets} of {Key}-{Value} {Store} {Databases}},
