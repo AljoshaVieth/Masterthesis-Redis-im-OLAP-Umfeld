@@ -2,15 +2,12 @@
 Für diese Arbeit wurde der \acl{SSB} sowohl in PostgreSQL als auch in einer angepassten Form in Redis durchgeführt.
 \section{\acl{SSB} in PostgreSQL}
 \subsection{Generierung der \acs{SSB}-Daten}
-% Hier ganze Anleitung im Anhang verlinken
-Es ist möglich, die Daten für den \acl{SSB} mit dem Programm ssb-dbgen~\cite{phillips_electrumssb-dbgen_2023} zu generieren.
-Mit diesem Programm können verschiedene Datenskalierungen erzeugt werden.
-Hierbei werden .tbl-Dateien generiert, die in eine SQL-basierte Datenbank importiert werden können.
+
 \subsection{Ausführen des \acl{SSB} in PostgreSQL}
 
 % Zeiten anpassen
 Es existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}, das eine Anleitung und Skripte für das Ausführen des \ac{SSB} in PostgreSQL bereitstellt.
-Zur Ausführung wurde ein Docker-Container mit dem Image "postgres-standard" erstellt.
+Zur Ausführung wurde ein Docker-Container mit dem Image \enquote{postgres-standard} erstellt.
 Dabei wurden die Standardwerte der PostgreSQL-Konfiguration verwendet.
 Anschließend wurden die .tbl-Dateien und Skripte des Repositories in diesen Container geladen. % Deutschen Begriff für gebinded finden
 Nach der Erstellung des Containers wird zunächst das Skript 'tables.sql' ausgeführt, um die Tabellen in der Datenbank anzulegen.
@@ -31,24 +28,7 @@ Jede Zeile wurde unter einem einzigartigen Schlüssel mit dem Datentyp HASH in R
 
 Im Rahmen dieser Forschung wurden verschiedene Ansätze zur Speicherung von Daten in Redis gewählt.
 
-\subsection{Wahl des Datentyps in Redis}
-Von den gängigen Datentypen in Redis unterstützen nur Hashes, JSON und Sorted Sets eine Key-Value-Struktur. Theoretisch können Daten auch in Strings gespeichert werden und durch die Volltextsuche von Redisearch ist es auch möglich nach Daten zu suchen, jedoch ist dies wesentlich komplizierter als bei Hashes und JSON.
-In Sorted Sets können nur begrenzte numerische Werte gespeichert werden was sie für die SSB-Daten nicht nutzbar macht, da dort unter anderem auch Texte gespeichert werden müssen.
-Hashes und JSON bieten beide die Möglichkeit, beliebige Daten in einer Key-Value-Struktur zu speichern und dann mir RediSearch auch nach diesen Daten zu suchen.
-Hashes benötigen dafür jedoch erheblich weniger Speicherplatz als JSON.
-JSON wird in einer deserialisierten Form gespeichert und benötigt etwas Overhead zusätzlich zu den eigentlichen Daten~\cite{redis_json-ram-usage_nodate}.
-Hashes sind dagegen optimiert um Speicher zu sparen~\cite{redis_memory-optimization_nodate}.
-Mit dem Befehl \emph{MEMORY USAGE} kann der Speicherverbrauch eines Elements in Redis angezeigt werden~\cite{redis_memory-usage-command-redis_nodate}.
 
-% Dafür sorgen dass Abbildung an richitger Stelle ist...
-% Abbildung statt Figure bei \Cref
-In \Cref{pic:redis-hash-vs-json-memory} wird der Vergleich der Speicherplatznutzung dargestellt, wobei dieselben Informationen einmal in Form eines Hash und einmal in Form von JSON gespeichert sind. In diesem Beispiel belegt das JSON-Format 694 Byte, während das Hash-Format nur 288 Byte benötigt, was einer Reduzierung um 58,5\% entspricht.
-\begin{figure}[!h]  % force the figure to be placed here
-    \centering
-    \includegraphics[width=1\textwidth]{pictures/redis/redis_hash_vs_json_memory.png}
-    \caption{Vergleich des Speicherplatznutzung zwischen HASH und JSON}
-    \label{pic:redis-hash-vs-json-memory}
-\end{figure}
 
 
 \subsection{RediSearch für Abfragen}
