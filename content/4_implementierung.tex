@@ -36,68 +36,6 @@ Im Rahmen dieser Forschung wurden verschiedene Ansätze zur Speicherung von Date
 
 % Ab hier alles mit deepl write überarbeiten
 
-\subsection{Speichern der Daten in Pseudotabellen}
-In diesem Ansatz werden die Daten nach den Tabellen kategorisiert.
-Die Schlüssel der Einträge bestehen dabei aus einer Kombination des Tabellennamens und der ursprünglichen Primärschlüssel (siehe \cref{code:ssb-redis-structur-example}).
-
-\begin{lstlisting}[
-    language=java,
-    caption=Aufbau der Schlüssel der \ac{SSB}-Daten in Redis,
-    label=code:ssb-redis-structur-example
-]
-date:19931104
-\end{lstlisting}
-
-\subsubsection{Einfügen der Daten mit einem Scala-Programm}
-% TODO: Auf digitalen Anhang verweisen
-Um die Daten in Redis einzufügen, wurde ein Scala-Programm geschrieben.
-Zunächst liest das Programm die .tbl-Dateien ein und erstellt für jede Zeile ein Array aus Strings, wobei die Strings die Werte der einzelnen Spalten repräsentieren.
-Anschließend werden diese Arrays unter Verwendung des generierten Schlüssels in Redis eingefügt.
-Da die LINEORDER-Tabelle einen zusammengesetzten Primärschlüssel verwendet, besteht auch der Schlüssel in Redis aus den Werten zweier Felder.
-Dabei wird der Befehl HSET verwendet, der das Speichern eines Arrays als HASH in Redis ermöglicht.
-
-\begin{lstlisting}[
-    language=scala,
-    float,
-    caption=Einfügen der Daten in Pseudotabellen in Redis,
-    label=code:ssb-redis-insert-pseudotables-snippet
-]
-// This method processes several lines in one go in order to use the redis pipeline,
-// hence it receives a Sequence of lines as input
-def insertIntoRedis(
-    data: Seq[String],
-    databaseName: String,
-    dataStructure: Array[String],
-    isLineOrder: Boolean,
-    pipeline: Pipeline
-): Unit = {
-  data.foreach { line =>
-    val values = line.split("\\|") // Splitting the pipe-separated lines
-    val valueIterator = values.iterator
-    dataStructure.foreach { key =>
-      // Check if key needs to consist of one or two primary keys
-      if (valueIterator.hasNext) {
-        if (isLineOrder) {
-          pipeline.hset(
-            (databaseName + ":" + values(0) + ":" + values(1)).getBytes,
-            key.getBytes,
-            valueIterator.next().getBytes()
-          )
-        } else {
-          pipeline.hset(
-            (databaseName + ":" + values(0)).getBytes,
-            key.getBytes,
-            valueIterator.next().getBytes()
-          )
-        }
-      }
-    }
-  }
-  pipeline.sync()
-}
-
-
-\end{lstlisting}
 % Darauf achten, dass Listing an richtiger Stelle ist
 % TODO: Redis Pipeline in Grundlagen erklären und hie rverlinken
 

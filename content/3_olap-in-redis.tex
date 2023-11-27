@@ -113,8 +113,52 @@ val lineorderStructure: Array[String] =
 
 
 Der SSB Inserter liest zuerst jede \emph{.tbl}-Datei mit der Methode \texttt{readLines} ein. Dabei wird der Tabellenname aus dem Dateinamen extrahiert und die Datei in Zeilen gelesen. Die gelesenen Zeilen werden in Gruppen zu je 1000 Stück gebündelt. Für jede Gruppe wird die Funktion \texttt{insertIntoRedis} aufgerufen, die die Daten in die Redis-Datenbank einfügt. Dabei wird der Tabellenname, ein Array mit den Spaltennamen, ein Jedis-Pipeline-Objekt und ein Boolean übergeben, der angibt, ob der Tabellenname \emph{lineorder} ist.
+Zusätzlich wird die Zeit gemessen, die zum lesen und Einfügen der Daten benötigt wird.
 
-Die Methode \texttt{insertIntoRedis} arbeitet wie folgt: Zunächst werden die vorliegenden Daten, die aus einer Folge von Zeilen bestehen, verarbeitet. Jede Zeile wird dabei anhand des Trennzeichen (\enquote{|}) in einzelne Werte aufgeteilt. Anschließend wird für jedes Schlüsselelement im Array \emph{dataStructure} ein entsprechender Wert aus der aufgeteilten Zeile ausgewählt. Dann wird geprüft, ob die Option \emph{isLineOrder} aktiviert ist. Falls zutreffend, wird der Schlüssel für die Redis-Datenbank aus dem Namen der Datenbank und den ersten beiden Werten der Zeile gebildet. Andernfalls wird der Schlüssel lediglich aus dem Datenbanknamen und dem ersten Wert der Zeile erzeugt. Jedes Schlüssel-Wert-Paar wird dann in der Redis-Pipeline mit einem \emph{hset}-Befehl erzeugt, um den Wert unter dem jeweiligen Schlüssel in der Datenbank zu speichern.
+\begin{lstlisting}[
+    caption=Die Funktion readLines des SSB Inserter,
+    label=code:ssb-inserter-readlines,
+    language=Scala
+]
+def readLines(fileName: String, dataStructure: Array[String], pipeline: Pipeline): Unit = {
+	val tableName: String = fileName.split("\\.")(0);
+	val startTime = System.nanoTime
+	Try(Source.fromFile(fileName)) match {
+		case Success(file) =>
+			file.getLines().grouped(1000).foreach(s => insertIntoRedis(s, tableName, dataStructure, tableName == "lineorder", pipeline))
+			println("Inserted data into " + tableName + " in " + (System.nanoTime() - startTime) + " nanoseconds")
+			file.close()
+		case Failure(exception) =>
+			println("Could not read file `" + fileName + "`. It should be placed into the same folder as the .jar")
+			println(exception.getMessage)
+	}
+}
+\end{lstlisting}
+
+Die Funktion \texttt{insertIntoRedis} arbeitet wie folgt: Zunächst werden die vorliegenden Daten, die aus einer Folge von Zeilen bestehen, verarbeitet. Jede Zeile wird dabei anhand des Trennzeichen (\enquote{|}) in einzelne Werte aufgeteilt. Anschließend wird für jedes Schlüsselelement im Array \emph{dataStructure} ein entsprechender Wert aus der aufgeteilten Zeile ausgewählt. Dann wird geprüft, ob die Option \emph{isLineOrder} aktiviert ist. Falls zutreffend, wird der Schlüssel für die Redis-Datenbank aus dem Namen der Datenbank und den ersten beiden Werten der Zeile gebildet. Andernfalls wird der Schlüssel lediglich aus dem Datenbanknamen und dem ersten Wert der Zeile erzeugt. Jedes Schlüssel-Wert-Paar wird dann in der Redis-Pipeline mit einem \emph{hset}-Befehl erzeugt, um den Wert unter dem jeweiligen Schlüssel in der Datenbank zu speichern.
+
+\begin{lstlisting}[
+    caption=Die Funktion insertIntoRedis des SSB Inserter,
+    label=code:ssb-inserter-insertIntoRedis,
+    language=Scala
+]
+def insertIntoRedis(data: Seq[String], databaseName: String, dataStructure: Array[String], isLineOrder: Boolean, pipeline: Pipeline): Unit = {
+	data.foreach(line => {
+		val values = line.split("\\|")
+		val valueIterator = values.iterator
+		dataStructure.foreach(key => {
+			if (valueIterator.hasNext) {
+				if (isLineOrder) {
+					pipeline.hset((databaseName + ":" + values(0) + ":" + values(1)).getBytes, key.getBytes, valueIterator.next().getBytes())
+				} else {
+					pipeline.hset((databaseName + ":" + values(0)).getBytes, key.getBytes, valueIterator.next().getBytes)
+				}
+			}
+		})
+	})
+	pipeline.sync()
+}
+\end{lstlisting}
 
 Um eindeutige Schlüsselnamen zu generieren, wird der Wert, der normalerweise als Primärschlüssel in relationalen Datenbanken verwendet wird, dem Tabellennamen angehängt. In der \emph{lineorder}-Tabelle ist dies ein zusammengesetzter Schlüssel, der aus zwei Feldern besteht. Aus diesem Grund ist es im Code notwendig, zwischen der \emph{lineorder}-Tabelle und den anderen Tabellen zu unterscheiden.
 
