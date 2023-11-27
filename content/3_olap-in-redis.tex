@@ -87,6 +87,41 @@ jedis.configSet("save", "3600 1")
 \end{lstlisting}
 
 
+\subsubsection{Einfügen der Daten mit künstlichen Namensräumen}
+% TODO: bissl drumrum ausbauen...
+Um die Daten des \emph{SSB} in \emph{Redis} zu integrieren, ist es notwendig, zunächst die generierten \emph{.tbl}-Dateien zu lesen. Da in diesen Dateien keine Informationen zu den Spaltennamen enthalten sind, muss das Programm diese vergeben. Die benötigten Spaltennamen wurden aus dem SQL-Import-Skript entnommen, welches normalerweise zur Erstellung der Tabellen in \emph{PostgreSQL} verwendet wird.
+
+Die Namen der Spalten sind in einem \emph{String}-Array innerhalb des \emph{Scala}-Programms gespeichert, wie in \Cref{code:ssb-inserter-datastructures} dargestellt:
+
+\begin{lstlisting}[
+    caption=Arrays mit den Namen der Spalten der SSB-Tabellen,
+    label=code:ssb-inserter-datastructures,
+    language=Scala
+]
+val customerStructure: Array[String] =
+  Array("c_custkey", "c_name", "c_address", "c_city", "c_nation", "c_region", "c_phone", "c_mktsegment")
+val partStructure: Array[String] =
+  Array("p_partkey", "p_name", "p_mfgr", "p_category", "p_brand1", "p_color", "p_type", "p_size", "p_container")
+val dateStructure: Array[String] =
+  Array("d_datekey", "d_date", "d_dayofweek", "d_month", "d_year", "d_yearmonthnum", "d_yearmonth", "d_daynuminweek", "d_daynuminmonth", "d_daynuminyear", "d_monthnuminyear", "d_weeknuminyear", "d_sellingseason", "d_lastdayinweekfl", "d_lastdayinmonthfl", "d_holidayfl", "d_weekdayfl")
+val supplierStructure: Array[String] =
+  Array("s_suppkey", "s_name", "s_address", "s_city", "s_nation", "s_region", "s_phone")
+val lineorderStructure: Array[String] =
+  Array("lo_orderkey", "lo_linenumber", "lo_custkey", "lo_partkey", "lo_suppkey", "lo_orderdate", "lo_orderpriority", "lo_shippriority", "lo_quantity", "lo_extendedprice", "lo_ordtotalprice", "lo_discount", "lo_revenue", "lo_supplycost", "lo_tax", "lo_commitdate", "lo_shipmod")
+
+\end{lstlisting}
+
+
+Der SSB Inserter liest zuerst jede \emph{.tbl}-Datei mit der Methode \texttt{readLines} ein. Dabei wird der Tabellenname aus dem Dateinamen extrahiert und die Datei in Zeilen gelesen. Die gelesenen Zeilen werden in Gruppen zu je 1000 Stück gebündelt. Für jede Gruppe wird die Funktion \texttt{insertIntoRedis} aufgerufen, die die Daten in die Redis-Datenbank einfügt. Dabei wird der Tabellenname, ein Array mit den Spaltennamen, ein Jedis-Pipeline-Objekt und ein Boolean übergeben, der angibt, ob der Tabellenname \emph{lineorder} ist.
+
+Die Methode \texttt{insertIntoRedis} arbeitet wie folgt: Zunächst werden die vorliegenden Daten, die aus einer Folge von Zeilen bestehen, verarbeitet. Jede Zeile wird dabei anhand des Trennzeichen (\enquote{|}) in einzelne Werte aufgeteilt. Anschließend wird für jedes Schlüsselelement im Array \emph{dataStructure} ein entsprechender Wert aus der aufgeteilten Zeile ausgewählt. Dann wird geprüft, ob die Option \emph{isLineOrder} aktiviert ist. Falls zutreffend, wird der Schlüssel für die Redis-Datenbank aus dem Namen der Datenbank und den ersten beiden Werten der Zeile gebildet. Andernfalls wird der Schlüssel lediglich aus dem Datenbanknamen und dem ersten Wert der Zeile erzeugt. Jedes Schlüssel-Wert-Paar wird dann in der Redis-Pipeline mit einem \emph{hset}-Befehl erzeugt, um den Wert unter dem jeweiligen Schlüssel in der Datenbank zu speichern.
+
+Um eindeutige Schlüsselnamen zu generieren, wird der Wert, der normalerweise als Primärschlüssel in relationalen Datenbanken verwendet wird, dem Tabellennamen angehängt. In der \emph{lineorder}-Tabelle ist dies ein zusammengesetzter Schlüssel, der aus zwei Feldern besteht. Aus diesem Grund ist es im Code notwendig, zwischen der \emph{lineorder}-Tabelle und den anderen Tabellen zu unterscheiden.
+
+Die Daten werden gebündelt und in einer Pipeline an Redis übermittelt. Durch diese Bündelung auf maximal 1000 Elemente pro Pipeline wird die Häufigkeit der Kommunikation mit Redis reduziert. Das wiederum verbessert die Effizienz und Leistung, da weniger einzelne Anfragen nötig sind.
+
+
+
 \section{SSB in Redis ausführen}\label{sec:ssb-use-in-redis}
 
 \subsection{Redis OLAP Client}
