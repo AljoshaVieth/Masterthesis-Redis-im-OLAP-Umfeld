@@ -73,7 +73,7 @@ Jedis hat außerdem einen Timeout für Anfragen. Um sicherzustellen, dass dieser
 \begin{lstlisting}[
     caption=Optimierung beim Einfügen von Daten,
     label=code:ssb-inserter-redis-config,
-    language=Scala
+    language=Java
 ]
 // before inserting
 jedis.configSet("appendonly", "no")
@@ -96,7 +96,7 @@ Die Namen der Spalten sind in einem \emph{String}-Array innerhalb des \emph{Scal
 \begin{lstlisting}[
     caption=Arrays mit den Namen der Spalten der SSB-Tabellen,
     label=code:ssb-inserter-datastructures,
-    language=Scala
+    language=Java
 ]
 val customerStructure: Array[String] =
   Array("c_custkey", "c_name", "c_address", "c_city", "c_nation", "c_region", "c_phone", "c_mktsegment")
@@ -118,7 +118,7 @@ Zusätzlich wird die Zeit gemessen, die zum lesen und Einfügen der Daten benöt
 \begin{lstlisting}[
     caption=Die Funktion readLines des SSB Inserter,
     label=code:ssb-inserter-readlines,
-    language=Scala
+    language=Java
 ]
 def readLines(fileName: String, dataStructure: Array[String], pipeline: Pipeline): Unit = {
 	val tableName: String = fileName.split("\\.")(0);
@@ -140,7 +140,7 @@ Die Funktion \texttt{insertIntoRedis} arbeitet wie folgt: Zunächst werden die v
 \begin{lstlisting}[
     caption=Die Funktion insertIntoRedis des SSB Inserter,
     label=code:ssb-inserter-insertIntoRedis,
-    language=Scala
+    language=Java
 ]
 def insertIntoRedis(data: Seq[String], databaseName: String, dataStructure: Array[String], isLineOrder: Boolean, pipeline: Pipeline): Unit = {
 	data.foreach(line => {
@@ -177,7 +177,7 @@ Gleiches gilt für den Timeout von Jedis auf der Clientseite.
 \begin{lstlisting}[
     caption=Konfiguration von RediSearch,
     label=code:redis-olap-client-config,
-    language=Scala
+    language=Java
 ]
 jedisPooled.sendCommand(SearchCommand.CONFIG, "SET", "MAXSEARCHRESULTS", "-1")
 jedisPooled.sendCommand(SearchCommand.CONFIG, "SET", "MAXAGGREGATERESULTS", "-1")

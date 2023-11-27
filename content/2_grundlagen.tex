@@ -37,7 +37,7 @@ Nicht flüchtig bedeutet, dass die Daten über lange Zeiträume hinweg gespeiche
 Zur Analyse ist es wichtig, Daten im zeitlichen Verlauf miteinander zu vergleichen, etwa um herauszufinden, wie sich die Verkäufe im letzten Quartal entwickelt haben.
 Zeitvariabel beschriebt daher, dass Daten aus verschiedenen Zeitpunkten gespeichert werden~\cite[S.~3f]{vaisman_data_2022}.
 
-\subsection{Datenstruktur in Data Warehouses im \ac{OLAP} Umfeld}
+\subsection{Datenstruktur in Data Warehouses im OLAP Umfeld}
 Die Mehrheit der am häufigsten verwendeten Datenbanken nutzt ein relationales Datenbankmodell~\cite{db-engines_most_2023}. 
 In einem solchen Modell können die Daten in verschiedenen Schemata aufgebaut sein.
 
@@ -88,115 +88,115 @@ Ein weiterer Vorteil von Datenwürfeln ist die Möglichkeit, Aggregate unabhäng
 
 Trotz ihrer Effizienz bei der Beantwortung bestimmter Abfragen haben Datenwürfel auch Nachteile. Sie sind auf Abfragen beschränkt, für die die benötigten Daten bereits voraggregiert wurden. Dies führt zu einer eingeschränkten Flexibilität in Bezug auf die Art der Abfragen, die sie unterstützen können. Während sie sich also hervorragend für die schnelle Beantwortung bestimmter Abfragen eignen, ist ihre Anwendung begrenzt, wenn die erforderlichen Daten nicht bereits voraggregiert wurden.
 
-\begin{comment}
-\subsection{Der OLAP-Cube}
-%TODO: OLAP CUBE Voraggregation bei OLAP -> Kleppmann Seite 109 Kapitel 3
-
-
-% Tabelle überdenken
-\begin{table}[htbp] 
-    \centering
-    \footnotesize
-    \begin{tabular}{ccccc}
-        \toprule  
-        Id & Umsatz & Stückzahl & Zeit & Ort \\
-        \midrule
-        1 & 100,00 € & 50 & 1 & 1 \\
-        2 & 200,00 € & 100 & 2 & 2 \\
-        3 & 150,00 € & 75 & 3 & 3 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Faktentabelle mit Umsatz, Stückzahl, Zeit und Ort}
-    \label{tab:faktentabelle}
-\end{table}
-
-\begin{table}[htbp] 
-    \centering
-    \footnotesize
-    \begin{tabular}{cccccc}
-        \toprule  
-        Id & Ortsname & Postleitzahl & Landkreis & Bundesland & Land \\
-        \midrule
-        1 & Furtwangen & 78120 & Schwarzwald-Baar-Kreis & Baden-Württemberg & Deutschland \\
-        2 & Schömberg & 75328 & Landkreis Calw & Baden-Württemberg & Deutschland \\
-        3 & Pforzheim & 75173 & Enzkreis & Baden-Württemberg & Deutschland \\
-        \bottomrule
-    \end{tabular}
-    \caption{Ortstabelle mit Ortsname, Postleitzahl, Landkreis, Bundesland und Land}
-    \label{tab:ortstabelle}
-\end{table}
-
-\begin{table}[htbp] 
-    \centering
-    \footnotesize
-    \begin{tabular}{cccccc}
-        \toprule  
-        Id & Timestamp & Datum & Monat & Quartal & Jahr \\
-        \midrule
-        1 & 02.12.1998 12:00 & 02.12.1998 & Dezember & 4 & 1998 \\
-        2 & 28.12.2007 12:00 & 02.01.2007 & Januar & 1 & 2007 \\
-        3 & 03.01.2023 16:00 & 03.01.2023 & Januar & 1 & 2023 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Zeittabelle mit Timestamp, Datum, Monat, Quartal und Jahr}
-    \label{tab:zeittabelle}
-\end{table}
-
-
-% Eventuell Kapitel über Query Languages schreiben
-\subsection{Die \acs{SQL}-Sprache} % Titel verbessern
-% Code Listing ist auf englisch, zu deutsch ändern
-\begin{lstlisting}[
-    language=SQL,
-    caption=SQL Befehle zum Anlegen der Tabellen,
-    label=code:sql-creation-of-tables
-]
-CREATE TABLE Ortstabelle (
-    Id INT PRIMARY KEY,
-    Ortsname VARCHAR(255),
-    Postleitzahl CHAR(5),
-    Landkreis VARCHAR(255),
-    Bundesland VARCHAR(255),
-    Land VARCHAR(255)
-);
-
-CREATE TABLE Zeittabelle (
-    Id INT PRIMARY KEY,
-    Timestamp TIMESTAMP,
-    Datum DATE,
-    Monat VARCHAR(255),
-    Quartal SMALLINT,
-    Jahr SMALLINT
-);
-
-CREATE TABLE Faktentabelle (
-    Id INT PRIMARY KEY,
-    Umsatz VARCHAR(255),
-    Stueckzahl INT,
-    Zeit INT,
-    Ort INT,
-    FOREIGN KEY (Zeit) REFERENCES Zeittabelle(Id),
-    FOREIGN KEY (Ort) REFERENCES Ortstabelle(Id)
-);
-
-\end{lstlisting}
-
-In \cref{code:sql-creation-of-tables} werden \acs{SQL}-Befehle zum Erstellen der Beispieltabellen dargestellt.
-In den Befehlen werden die einzelnen Spalten der Tabelle mit ihren Datentypen angelegt.
-Verschiedene \acs{SQL}-Erweiterungen unterstützen verschiedene Datentypen, mit denen Daten teilweise effizienter gespeichert werden können.
-So bietet die \acs{SQL}-Erweiterung Transact-\acs{SQL} von Microsoft noch den Datentyp TINYINT der einen Wert von 0 bis 255 annehmen kann~\cite{ray_et_al_int_2023} und für die Spalte Quartal gut genutzt werden könnte.
-PostgreSQL bietet hingegen keinen solchen Datentypen~\cite{the_postgresql_global_development_group_81_2023} und da im Verlauf dieser Arbeit mit PostgreSQL gearbeitet wurde, wird auch in diesem Beispiel kein TINYINT verwendet.
-
-\end{comment}
+%\begin{comment}
+%\subsection{Der OLAP-Cube}
+%%TODO: OLAP CUBE Voraggregation bei OLAP -> Kleppmann Seite 109 Kapitel 3
+%
+%
+%% Tabelle überdenken
+%\begin{table}[htbp] 
+%    \centering
+%    \footnotesize
+%    \begin{tabular}{ccccc}
+%        \toprule  
+%        Id & Umsatz & Stückzahl & Zeit & Ort \\
+%        \midrule
+%        1 & 100,00 € & 50 & 1 & 1 \\
+%        2 & 200,00 € & 100 & 2 & 2 \\
+%        3 & 150,00 € & 75 & 3 & 3 \\
+%        \bottomrule
+%    \end{tabular}
+%    \caption{Faktentabelle mit Umsatz, Stückzahl, Zeit und Ort}
+%    \label{tab:faktentabelle}
+%\end{table}
+%
+%\begin{table}[htbp] 
+%    \centering
+%    \footnotesize
+%    \begin{tabular}{cccccc}
+%        \toprule  
+%        Id & Ortsname & Postleitzahl & Landkreis & Bundesland & Land \\
+%        \midrule
+%        1 & Furtwangen & 78120 & Schwarzwald-Baar-Kreis & Baden-Württemberg & Deutschland \\
+%        2 & Schömberg & 75328 & Landkreis Calw & Baden-Württemberg & Deutschland \\
+%        3 & Pforzheim & 75173 & Enzkreis & Baden-Württemberg & Deutschland \\
+%        \bottomrule
+%    \end{tabular}
+%    \caption{Ortstabelle mit Ortsname, Postleitzahl, Landkreis, Bundesland und Land}
+%    \label{tab:ortstabelle}
+%\end{table}
+%
+%\begin{table}[htbp] 
+%    \centering
+%    \footnotesize
+%    \begin{tabular}{cccccc}
+%        \toprule  
+%        Id & Timestamp & Datum & Monat & Quartal & Jahr \\
+%        \midrule
+%        1 & 02.12.1998 12:00 & 02.12.1998 & Dezember & 4 & 1998 \\
+%        2 & 28.12.2007 12:00 & 02.01.2007 & Januar & 1 & 2007 \\
+%        3 & 03.01.2023 16:00 & 03.01.2023 & Januar & 1 & 2023 \\
+%        \bottomrule
+%    \end{tabular}
+%    \caption{Zeittabelle mit Timestamp, Datum, Monat, Quartal und Jahr}
+%    \label{tab:zeittabelle}
+%\end{table}
+%
+%
+%% Eventuell Kapitel über Query Languages schreiben
+%\subsection{Die \acs{SQL}-Sprache} % Titel verbessern
+%% Code Listing ist auf englisch, zu deutsch ändern
+%\begin{lstlisting}[
+%    language=SQL,
+%    caption=SQL Befehle zum Anlegen der Tabellen,
+%    label=code:sql-creation-of-tables
+%]
+%CREATE TABLE Ortstabelle (
+%    Id INT PRIMARY KEY,
+%    Ortsname VARCHAR(255),
+%    Postleitzahl CHAR(5),
+%    Landkreis VARCHAR(255),
+%    Bundesland VARCHAR(255),
+%    Land VARCHAR(255)
+%);
+%
+%CREATE TABLE Zeittabelle (
+%    Id INT PRIMARY KEY,
+%    Timestamp TIMESTAMP,
+%    Datum DATE,
+%    Monat VARCHAR(255),
+%    Quartal SMALLINT,
+%    Jahr SMALLINT
+%);
+%
+%CREATE TABLE Faktentabelle (
+%    Id INT PRIMARY KEY,
+%    Umsatz VARCHAR(255),
+%    Stueckzahl INT,
+%    Zeit INT,
+%    Ort INT,
+%    FOREIGN KEY (Zeit) REFERENCES Zeittabelle(Id),
+%    FOREIGN KEY (Ort) REFERENCES Ortstabelle(Id)
+%);
+%
+%\end{lstlisting}
+%
+%In \cref{code:sql-creation-of-tables} werden \acs{SQL}-Befehle zum Erstellen der Beispieltabellen dargestellt.
+%In den Befehlen werden die einzelnen Spalten der Tabelle mit ihren Datentypen angelegt.
+%Verschiedene \acs{SQL}-Erweiterungen unterstützen verschiedene Datentypen, mit denen Daten teilweise effizienter gespeichert werden können.
+%So bietet die \acs{SQL}-Erweiterung Transact-\acs{SQL} von Microsoft noch den Datentyp TINYINT der einen Wert von 0 bis 255 annehmen kann~\cite{ray_et_al_int_2023} und für die Spalte Quartal gut genutzt werden könnte.
+%PostgreSQL bietet hingegen keinen solchen Datentypen~\cite{the_postgresql_global_development_group_81_2023} und da im Verlauf dieser Arbeit mit PostgreSQL gearbeitet wurde, wird auch in diesem Beispiel kein TINYINT verwendet.
+%
+%\end{comment}
 
 
 
 \subsection{Key Value Stores in \acs{OLAP}} % wahrscheinlich hier nicht nötig
 
 \section{Datenbank-Benchmarks}
-Datenbank-Benchmarks geben einen Überblick über die Leistung von verschiedenen Datenbanksysteme und die Hardware, auf der diese laufen.
+Datenbank-Benchmarks geben einen Überblick über die Leistung von verschiedenen Datenbank\-systeme und die Hardware, auf der diese laufen.
 %Datenbank-Benchmark oder Datenbankbenchmark ?
-Die Non-Profit-Organisation \acf{TPC} hat verschiedene Datenbank-Benchmarks entwickelt, die bei der Wahl des Datenbanksystems oder der Hardware helfen können~\cite[s. 619]{barata_overview_2015}.
+Die Non-Profit-Organisation \acf{TPC} hat verschiedene Datenbank-Benchmarks entwickelt, die bei der Wahl des Datenbank\-systems oder der Hardware helfen können~\cite[s. 619]{barata_overview_2015}.
 
 \subsection{\acf{TPC-H}}
 Der \acf{TPC-H} wurde zum Testen von analytischen Datenbanken entwickelt.
@@ -218,7 +218,7 @@ Die Felder innerhalb der Tabellen beginnen mit einem Präfix, bestehend aus dem 
 \begin{figure}[ht]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/ssb/ssb-schema.png}
-    \caption{Schema des \ac{SSB}~\cite{oneil_star_2009}}      % caption the image
+    \caption{Schema des \ac{SSB} aus dem originalen Paper~\cite{oneil_star_2009}}      % caption the image
     \label{pic:ssb-schema}    % label the image for internal referencing
 \end{figure}
 
@@ -316,6 +316,7 @@ Die Queries von Q4 schränken die Daten basierend auf drei Dimensionen (\textbf{
 Auch hier wird wieder der Umsatz berechnet.
 Dieses Mal wird er durch \emph{d\_year} und \emph{c\_nation} gruppiert und sortiert.
 Hier werden erstmals alle fünf Tabellen (\emph{LINEORDER}, \emph{CUSTOMER}, \emph{SUPPLIER}, \emph{PART} und \emph{DATE}) gejoint.
+
 \begin{lstlisting}[
     language=SQL,
     caption=SQL Query-Struktur für Q4 des \ac{SSB},
@@ -552,7 +553,7 @@ Das \textbf{RedisJSON}-Modul bietet eine Unterstützung für JSON-Daten in Redis
 JSON-Daten können so direkt in der Redis-Datenbank gespeichert, aktualisiert und wieder abgerufen werden, was eine effiziente Verwaltung von komplexen Datenstrukturen ermöglicht. Hierzu zählen das gezielte Bearbeiten von Subelementen dank der \emph{JSONPath}-Syntax und ein schneller Zugriff auf Unterstrukturen von JSON-Dokumenten.
 Außerdem ermöglicht RedisJSON atomare Operationen auf Datentypen innerhalb der JSON-Dokumente, um die Leistungsfähigkeit bei der Datenaufbereitung zu verbessern.
 Ein wesentlicher Vorteil im Vergleich zur Speicherung von JSON als serialisierte Strings besteht in der Fähigkeit, JSON-Objekte zu indizieren und zu durchsuchen, was im Zusammenspiel mit dem \emph{RediSearch}-Modul ermöglicht wird.
-Dadurch können komplexe Anfragen direkt in Redis ausgeführt werden~\cite{redis_ltd_json_nodate, redis_json-use-cases_nodate}.
+Dadurch können komplexe Anfragen direkt in Redis ausgeführt werden~\cite{redis_ltd_json_nodate, redis_ltd_json-use-cases_nodate}.
 
 Durch das \textbf{RedisTimeSeries}-Modul können Zeitreihendaten in Redis gespeichert werden.
 Dabei bietet Redis hohe Einfügeraten und schnelle Lesezugriffe.
@@ -633,7 +634,6 @@ Indizes werden in RediSearch mithilfe des Befehls \emph{FT.CREATE} erstellt.
 Die Verwendung des Befehls wird in der Online-Dokumentation~\cite{redis_ltd_ftcreate_nodate} von Redis erläutert.
 Die Syntax für die Erstellung lautet wie folgt:
 \begin{lstlisting}[
-    language=TEXT,
     caption=Syntax des Befehls FT.CREATE in RediSearch,
     label=code:redisearch-ftcreate-syntax,
     numbers=none
@@ -697,7 +697,7 @@ RediSearch bietet eine Auswahl an Feldtypen (\emph{field types}) für verschiede
 
 \subsubsection{\emph{Number fields}}
 Nummernfelder speichern zählbare Werte in Ganzzahl- oder Gleitkommazahlen und erlauben sortierbare Bereichsabfragen. Sie können mit dem \emph{FT.CREATE}-Befehl wie folgt definiert werden:\\
-\texttt{FT.CREATE ... SCHEMA ... {field\_name} NUMBER [SORTABLE] [NOINDEX]}
+\lstinline|FT.CREATE ... SCHEMA ... {field\_name} NUMBER [SORTABLE] [NOINDEX]|
 
 Bedeutung der Optionen \emph{SORTABLE} und \emph{NOINDEX}:
 
@@ -706,41 +706,40 @@ Bedeutung der Optionen \emph{SORTABLE} und \emph{NOINDEX}:
 - \emph{NOINDEX}: Das Feld wird nicht indiziert, nützlich für Texte, die abrufbar, aber nicht durchsuchbar sein sollen.
 
 Ein Beispiel für eine Query mit einem numerischen Filter könnte wie folgt sein:\\
-\texttt{FT.SEARCH recipeIndex "@cooking\_time:[10 30]"}
+\lstinline|FT.SEARCH recipeIndex "@cooking\_time:[10 30]"|
 
 Queries unterstützen außerdem Syntax die angibt ob der Bereich vollständig einschließend, vollständig ausschließend , mit einer offenen Ober- oder Untergrenze sein soll. Zusätzlich kann auch explizit nach einem bestimmten Wert gesucht werden in dem die Grenzen des Bereichs die gleiche Zahl sind. Außerdem kann eine Filterbedingung auch negiert werden.
 
 \subsubsection{\emph{Geo fields}} Diese Felder sind für geografische Koordinaten vorgesehen, die Radiusabfragen für standortbezogene Suchfunktionen ermöglichen.
 Sie können mit dem \emph{FT.CREATE}-Befehl wie folgt definiert werden:\\
-\texttt{FT.CREATE ... SCHEMA ... \{field\_name\} GEO [SORTABLE] [NOINDEX]}
+\lstinline|FT.CREATE ... SCHEMA ... \{field\_name\} GEO [SORTABLE] [NOINDEX]|
 
 Die Optionen \emph{SORTABLE} und \emph{NOINDEX} entsprechen denselben Optionen wie bei \emph{numeric fields}. 
 
 Der Syntax zur Abfrage von Geo-Feldern sieht wie folgt aus:\\
-\texttt{@<field\_name>:[<lon> <lat> <radius> <unit>]}
+\lstinline|@<field\_name>:[<lon> <lat> <radius> <unit>]|
 
 Um etwa Orte im Umkreis von 100 Kilometern um die Position von Furtwangen zu finden kann folgender Befehl genutzt werden:\\
-\texttt{FT.SEARCH cities "@coords:[8.20 48.05 100 km]"}
+\lstinline|FT.SEARCH cities "@coords:[8.20 48.05 100 km]"|
 
 % TODO: Checken ob der Abschnitt so gut ist.
 \subsubsection{\emph{Geoshape fields}}
 Geosphape-Felder sind die neuesten Feldoptionen in RediSearch. Sie sind noch nicht in allen Dokumentationen vermerkt. Die Informationen beziehen sich auf die Dokumentation des \emph{FT.CREATE}-Befehls~\cite{redis_ltd_ftcreate_nodate} und die Dokumentation über Queries~\cite{redis_ltd_query_nodate}. 
 Geoshapes ermöglichen geografische Abfragen mit der WKT-Notationen (\enquote{well-known text}).
 Es werden sowohl Punkte wie auch Polygone unterstützt. Sie werden in einem Text wie folgt definiert:\\
-\texttt{POINT(2 4)} oder \texttt{POLYGON((2 2, 2 8, 6 11, 10 8, 10 2, 2 2))}
+\lstinline|POINT(2 4)| oder \lstinline|POLYGON((2 2, 2 8, 6 11, 10 8, 10 2, 2 2))|
 
 Ein Eintrag kann dann beispielsweise so erstellt werden:\\
-\texttt{HSET shape:1 t "this is my house" g "POLYGON((2 2, 2 8, 6 11, 10 8, 10 2, 2 2))"}
+\lstinline|HSET shape:1 t "this is my house" g "POLYGON((2 2, 2 8, 6 11, 10 8, 10 2, 2 2))"|
 
 
 Mit den Optionen \emph{FLAT} oder \emph{SPHERICAL} kann angegeben werden, ob die Koordinaten kartesisch  oder  geografisch sind.
 
 Der Syntax für Queries zur Abfrage lautet wie folgt:\\
-\texttt{@field:[{WITHIN|CONTAINS} \$geometry] PARAMS 2 geometry \{geometry\}}
+\lstinline+@field:[{WITHIN|CONTAINS} \$geometry] PARAMS 2 geometry \{geometry\}+
 
 Ein Beispiel, in dem abgefragt wird, ob ein Polygon einen bestimmten Punkt beinhaltet könnte so aussehen:\\
-\texttt{FT.SEARCH polygon\_idx "@g:[CONTAINS \$point]" PARAMS 2 point 'POINT(8 8)' DIALECT 3
-}
+\lstinline|FT.SEARCH polygon\_idx "@g:[CONTAINS \$point]" PARAMS 2 point 'POINT(8 8)' DIALECT 3|
 \emph{DIALECT 3} gibt bei mehrwertigen Attributen statt Skalaren JSON zurück.
 Komplexere Beispiele und Erklärungen sind in der Dokumentation zu Queries~\cite{redis_ltd_query_nodate} zu finden.
 
@@ -748,20 +747,19 @@ Komplexere Beispiele und Erklärungen sind in der Dokumentation zu Queries~\cite
 \subsubsection{\emph{Vector fields}} Vektor-Felder halten Gleitkommavektoren, die diverse unstrukturierte Daten wie etwa Text oder Bilder repräsentieren können, und unterstützen Vektorsimilaritätssuchen. Sie werden oft für externe Machine-Learning-Modelle genutzt.
 
 Die Felder können mit dem \emph{FT.CREATE}-Befehl definiert werden:\\
-\texttt{FT.CREATE ... SCHEMA ... {field\_name} VECTOR {algorithm} {count} [{attribute\_name} {attribute\_value} ...]
-}
+\lstinline|FT.CREATE ... SCHEMA ... {field\_name} VECTOR {algorithm} {count} [{attribute\_name} {attribute\_value} ...]|
 
 Mit dem \emph{algorithm}-Attribut wird ein unterstützter Algorithmus für Vektorvergleiche angegeben. Er wird genutzt bei der Suche nach den k ähnlichsten Vektoren im Index oder beim Filtern von Vektoren nach Bereichen. Die unterstützten Algorithmen sind \emph{FLAT} für einen \enquote{brut force} Algorithmus und \emph{HNSM} für einen \enquote{hierarchical, navigable, small world} Algorithmus.
 
 Das \emph{count}-Attribut gibt an, wie viele Attributpaare im Befehl verwendet werden. Wobei die Attributpaare die Algorithmusattribute für die Erstellung des Vektorindexes sind. Jeder Algorithmus hat seine eigenen obligatorischen und optionalen Attribute.
 
 Ein Index kann zum Beispiel so erstellt werden:\\
-\texttt{FT.CREATE my\_idx SCHEMA vec\_field VECTOR FLAT 6 TYPE FLOAT32 DIM 128 DISTANCE\_METRIC L2}
+\lstinline|FT.CREATE my\_idx SCHEMA vec\_field VECTOR FLAT 6 TYPE FLOAT32 DIM 128 DISTANCE\_METRIC L2|
 
 Ein Beispiel für einen Vektorvergleich ist der \enquote{k nearest neighbors}(KNN)-Algorithmus. Die Syntax dazu ist wie folgt aufgebaut:\\
-\texttt{*=>[ KNN {num|\$num} @vector \$query\_vec ]}\\
+\lstinline+*=>[ KNN {num|\$num @vector \$query\_vec ]+\\
 Eine Abfrage nach den zehn nächsten Nachbarn bei denen \enquote{query\_vec} am nächsten zum Vektor der in \enquote{@vector\_field} gespeichert ist sieht so aus:\\
-\enquote{*=>[KNN 10 @vector\_field \$query\_vec]}
+\lstinline+*=>[KNN 10 @vector\_field \$query\_vec]+
 
 Weitere Informationen und komplexere Beispiele sind in den Dokumentationen zu Queries~\cite{redis_ltd_query_nodate} und zu Vektoren~\cite{redis_ltd_vectors_nodate} zu finden.
 
@@ -769,23 +767,23 @@ Weitere Informationen und komplexere Beispiele sind in den Dokumentationen zu Qu
 \subsubsection{\emph{Tag fields}} In Tag-Feldern werden Textdaten als Tags oder Labels gespeichert, die ohne Tokenisierung verarbeitet werden. Sie eignen sich gut zur Datenorganisation und -kategorisierung.
 
 Tags werden beim Erstellen des Index mit dem \emph{FT.CREATE}-Befehl wie folgt erstellt:\\
-\texttt{FT.CREATE ... SCHEMA ... {field\_name} TAG [SEPARATOR {sep}] [CASESENSITIVE]}
+\lstinline|FT.CREATE ... SCHEMA ... {field\_name} TAG [SEPARATOR {sep}] [CASESENSITIVE]|
 
 Der \emph{SEPARATOR} kann zur Angabe des Zeichens verwendet werden, das zum Trennen mehrerer Tags in einem Feld verwendet werden soll (Standard ist ein Komma).
 
 \emph{CASESENSITIVE} gibt an, ob bei Tags die Groß- und Kleinschreibung zu beachten ist. Standardmäßig wird bei Tag-Feldern nicht zwischen Groß- und Kleinschreibung unterschieden (\enquote{\emph{caseinsensitive}}).
 
 Um nach Tags zu suchen wird folgende Syntax verwendet:\\
-\texttt{@<field\_name>:\{<tag>\}}\\
+\lstinline|@<field\_name>:\{<tag>\}|\\
 Um etwa nach Rezepten mit Tomaten als Zutat zu suchen, kann folgender Befehl verwendet werden:\\
-\texttt{FT.SEARCH recipeIndex "@ingredients:\{tomato\}"}
+\lstinline|FT.SEARCH recipeIndex "@ingredients:\{tomato\}"|
 
 
 \subsubsection{{\emph{Text fields}}}
 Textfelder sind für die Speicherung menschlicher Sprache optimiert. Sie werden zu Kleinbuchstaben umgewandelt und tokenisiert, um effiziente Volltextsuchen zu ermöglichen. Zudem können sie gewichtet und sortiert werden, was eine differenzierte Suchrelevanz und -ordnung ermöglicht.
 Textfelder können mit dem FT.CREATE Befehl wie folgt angegeben werden:\\
 % Hier vllt. nen fancigen codeblock aber ohne untertitel und so
-\texttt{FT.CREATE ... SCHEMA ... \{field\_name\} TEXT [WEIGHT] [NOSTEM] [PHONETIC \{matcher\}] [SORTABLE] [NOINDEX] [WITHSUFFIXTRIE]}
+\lstinline|FT.CREATE ... SCHEMA ... \{field\_name\} TEXT [WEIGHT] [NOSTEM] [PHONETIC \{matcher\}] [SORTABLE] [NOINDEX] [WITHSUFFIXTRIE]|
 
 Die Bedeutung der einzelnen Optionen:
 
@@ -804,10 +802,10 @@ Die Suche nach Dokumenten mit bestimmten Textwerten ist möglich durch die Verwe
 
 % TODO: LatexProblem fixen, falsche Anführungszeichen (muss "" sein)
 - Suche in allen Textattributen:
- \texttt{FT.SEARCH recipeIndex \glqq egg\grqq}
+ \lstinline|FT.SEARCH recipeIndex \glqq egg\grqq|
 
 - Suche nur im Preparation-attribut:
- \texttt{FT.SEARCH recipeIndex "@preparation:boil"}
+ \lstinline|FT.SEARCH recipeIndex "@preparation:boil"|
 
 
 
@@ -820,7 +818,6 @@ Im Folgenden wird die Erstellung eines Index anhand eines Beispiels erläutert.
 Der Index soll für das Rezeptverzeichnis eines Kochbuches verwendet werden.
 
 \begin{lstlisting}[
-    language=TEXT,
     caption=Beispiel eines Befehls zum Anlegen eines Index in RediSearch,
     label=code:redisearch-creation-of-index-example
 ]
@@ -870,7 +867,6 @@ Anschließend wird eine Verarbeitungspipeline aufgebaut, bei der die Datensätze
 \subsubsection{Syntax einer Aggregation}\label{sec:redisearch-aggregation-syntax}
 Aggregationen werden mit dem Befehl \emph{FT.AGGREGATE} ausgeführt der folgende Syntax hat:
 \begin{lstlisting}[
-    language=TEXT,
     caption=Syntax des Befehls FT.AGGREGATE in RediSearch,
     label=code:redisearch-ftaggregate-syntax,
     numbers=none
@@ -945,7 +941,7 @@ Im Folgenden werden unterschiedliche Beispiele für Aggregationsabfragen präsen
 Dabei wird von einem Datensatz von Rezepten in Form von HASH-Dokumenten ausgegangen (siehe \cref{pic:redisearch-aggregation-example-entry}).
 
 % Dafür sorgen dass Abbildung an richtiger Stelle im Text ist!
-\begin{figure}[!h]  % figure position
+\begin{figure}[hp]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/redis/redisearch_aggregation_example_entry.png}
     \caption{Beispieleintrag in der Rezeptdatenbank}      % caption the image
@@ -962,33 +958,33 @@ Die Beispiele werden anhand von Screenshots aus der CLI in RedisInsight dargeste
 \paragraph{Die drei Rezepte mit den längsten Kochzeiten}
 \cref{pic:redisearch-aggregation-example-1} Zeigt ein Aggregationsbeispiel das die drei Rezepte mit den längsten Kochzeiten findet.\\
 % Dafür sorgen dass Abbildung an richtiger Stelle im Text ist!
-\begin{figure}[!h]  % figure position
+\begin{figure}[ht]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/redis/redisearch_aggregation_example_1.png}
     \caption{Aggregationsbeispiel 1: Top 3 Rezete mit längster Kochdauer}      % caption the image
     \label{pic:redisearch-aggregation-example-1}    % label the image for internal referencing
 \end{figure}
 
-RediSearch sucht zunächst mit \enquote{\emph{\texttt{*}}} nach allen Dokumenten.\\
-Anschließend werden die die beiden Felder \emph{\texttt{@name @cooking\_time}} mit \enquote{\emph{\texttt{LOAD 2 @name @cooking\_time}}}  geladen. Für die restliche Pipeline ist dies nicht zwingend notwendig, da \emph{\texttt{SORTBY}} auch bei nicht geladenen Feldern funktioniert, solange diese \emph{sortable} sind (siehe \ref{sec:redisearch-aggregation-syntax}). Jedoch würden ohne diese Anweisung die Namen der Rezepte nicht im Ergebnis der Abfrage zurückgegeben werden.\\
-Als letzter Schritt werden die Ergebnisse anhand der Kochzeit sortiert: \enquote{\emph{\texttt{SORTBY 2 @cooking\_time DESC MAX 3}}}. \emph{\texttt{DESC}} gibt hierbei an, dass die Ergebnisse absteigend sortiert werden. Die Anweisung \emph{\texttt{MAX 3}} sorgt dafür, dass nur die ersten drei Dokumente zurückgegeben werden.
+RediSearch sucht zunächst mit \lstinline|*| nach allen Dokumenten.\\
+Anschließend werden die die beiden Felder \lstinline|@name @cooking\_time| mit \lstinline|LOAD 2 @name @cooking\_time|  geladen. Für die restliche Pipeline ist dies nicht zwingend notwendig, da \lstinline|SORTBY| auch bei nicht geladenen Feldern funktioniert, solange diese \emph{sortable} sind (siehe \ref{sec:redisearch-aggregation-syntax}). Jedoch würden ohne diese Anweisung die Namen der Rezepte nicht im Ergebnis der Abfrage zurückgegeben werden.\\
+Als letzter Schritt werden die Ergebnisse anhand der Kochzeit sortiert: \lstinline|SORTBY 2 @cooking\_time DESC MAX 3|. \lstinline|DESC| gibt hierbei an, dass die Ergebnisse absteigend sortiert werden. Die Anweisung \lstinline|MAX 3| sorgt dafür, dass nur die ersten drei Dokumente zurückgegeben werden.
 
 
 % Schauen, ob zuerst Text oder Bild kommen soll
 \paragraph{Anzahl der Rezepte pro Schwierigkeitsgrad}
-Die in \cref{pic:redisearch-aggregation-example-2} dargestellte Abfrage ermittelt, wie viele Rezepte es pro Schwirigkeitsgrad gibt.
+Die in \cref{pic:redisearch-aggregation-example-2} dargestellte Abfrage ermittelt, wie viele Rezepte es pro Schwierigkeitsgrad gibt.
 
 % Dafür sorgen dass Abbildung an richtiger Stelle im Text ist!
-\begin{figure}[!h]  % figure position
+\begin{figure}[ht]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/redis/redisearch_aggregation_example_2.png}
     \caption{Aggregationsbeispiel 1: Anzahl der Rezepte pro Schwierigkeitsgrad}      % caption the image
     \label{pic:redisearch-aggregation-example-2}    % label the image for internal referencing
 \end{figure}
 
-Als erster Schritt wird mit (\enquote{\emph{\texttt{*}}}) nach allen Dokumenten im Index gesucht.\\
-Anschließend werden mit \enquote{\emph{\texttt{GROUPBY 1 @difficulty}}} alle Dokumente anhand der Schwierigkeit gruppiert.\\ 
-Außerdem wird mit \emph{\texttt{COUNT 0 AS num\_recipes}} ein neues Feld namens \enquote{\emph{num\_recipes}} hinzugefügt, das angibt, wie viele Rezepte in jeder Schwierigkeitskategorie vorhanden sind.
+Als erster Schritt wird mit (\lstinline|*|) nach allen Dokumenten im Index gesucht.\\
+Anschließend werden mit \lstinline|GROUPBY 1 @difficulty| alle Dokumente anhand der Schwierigkeit gruppiert.\\ 
+Außerdem wird mit \lstinline|COUNT 0 AS num\_recipes| ein neues Feld namens \enquote{\emph{num\_recipes}} hinzugefügt, das angibt, wie viele Rezepte in jeder Schwierigkeitskategorie vorhanden sind.
 
 
 
@@ -996,7 +992,7 @@ Außerdem wird mit \emph{\texttt{COUNT 0 AS num\_recipes}} ein neues Feld namens
 \cref{pic:redisearch-aggregation-example-3} zeigt eine Abfrage, die die durchschnittliche Kochzeit pro Kategorie ermittelt.
 
 % Dafür sorgen dass Abbildung an richtiger Stelle im Text ist!
-\begin{figure}[!h]  % figure position
+\begin{figure}[ht]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/redis/redisearch_aggregation_example_3.png}
     \caption{Aggregationsbeispiel 2: Durchschnittliche Kochzeit nach Kategorie (Ausschnitt)}      % caption the image
@@ -1004,9 +1000,9 @@ Außerdem wird mit \emph{\texttt{COUNT 0 AS num\_recipes}} ein neues Feld namens
 \end{figure}
 
 Zu Beginn wird nach allen Dokumenten gesucht.\\
-Anschließend werden die Dokumente nach Schwierigkeitsgrad gruppiert und ein neues Feld \emph{\texttt{avg\_cooking\_time}} eingefügt, das die berechnete durchschnittliche Kochzeit der Rezepte nach Kategorie beinhaltet.\\
-Anschließend werden die Kategorien mit \emph{\texttt{SORTBY 2 @avg\_cooking\_time ASC}} nach durchschnittlicher Kochzeit sortiert.
-\emph{\texttt{ASC}} steht hierbei für \enquote{ascending} (aufsteigend). Da es sich  bei der Kochzeit um ein Feld handelt, muss ein \enquote{@} vorangestellt werden. In der \emph{REDUCE}-Anweisung weiter vorne wird der Name des zu erstellenden Felde ohne \enquote{@} angegeben.
+Anschließend werden die Dokumente nach Schwierigkeitsgrad gruppiert und ein neues Feld \lstinline|avg\_cooking\_time| eingefügt, das die berechnete durchschnittliche Kochzeit der Rezepte nach Kategorie beinhaltet.\\
+Anschließend werden die Kategorien mit \lstinline|SORTBY 2 @avg\_cooking\_time ASC| nach durchschnittlicher Kochzeit sortiert.
+\lstinline|ASC| steht hierbei für \enquote{ascending} (aufsteigend). Da es sich  bei der Kochzeit um ein Feld handelt, muss ein \enquote{@} vorangestellt werden. In der \emph{REDUCE}-Anweisung weiter vorne wird der Name des zu erstellenden Felde ohne \enquote{@} angegeben.
 
 
 
@@ -1101,7 +1097,7 @@ Durch die Möglichkeit eigene Funktionen für komplexe Aufrufe zu erstellen, wir
 
 Unterschieden werden muss bei der Verwendung von Lua-Skripten in Redis zwischen klassischen Skripten, die mit dem \emph{EVAL}-Befehl ausgeführt werden, und den sogenannten \emph{Redis Functions}~\cite{redis_ltd_redis_nodate-1}. Klassische Skripte erfordern bei jedem Aufruf durch den \emph{EVAL}-Befehl das Senden des Skripts an den Redis-Server, was zu einem Netzwerk- und Kompilierungs-Overhead führt, wenn Skripte mehrfach verwendet werden sollen.
 
-Im Gegensatz dazu bieten \emph{Redis Functions} dieselbe Funktionalität wie klassische Skripte, aber mit dem Vorteil, dass Redis sie als Teil der Datenbank verwaltet und für ihre Verfügbarkeit sorgt.  So werden \emph{Functions} auch auf der Festplatte persistiert. Sie müssen nur einmalig an den Redis-Server gesendet werden und können dann beliebig oft aufgerufen werden. \Die \emph{Functions} werden als so genannte \emph{Library} verwaltet, wobei eine Library mehrere \emph{Functions} enthalten kann, die sich somit auch Code teilen können.
+Im Gegensatz dazu bieten \emph{Redis Functions} dieselbe Funktionalität wie klassische Skripte, aber mit dem Vorteil, dass Redis sie als Teil der Datenbank verwaltet und für ihre Verfügbarkeit sorgt.  So werden \emph{Functions} auch auf der Festplatte persistiert. Sie müssen nur einmalig an den Redis-Server gesendet werden und können dann beliebig oft aufgerufen werden. Die \emph{Functions} werden als so genannte \emph{Library} verwaltet, wobei eine Library mehrere \emph{Functions} enthalten kann, die sich somit auch Code teilen können.
 
 In der Online-Dokumentation von Redis wird auch die Redis-Lua-API~\cite{redis_ltd_redis_nodate} sowie das Debuggen von Lua-Skripten~\cite{redis_ltd_debugging_nodate} erläutert.
 

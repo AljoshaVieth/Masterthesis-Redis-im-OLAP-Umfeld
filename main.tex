@@ -1,44 +1,19 @@
-% Licence:  Creative Commons Attribution (CC BY 4.0)
-% Author: Tim Träris (2022)
-% Author: Valentin Weber (2023)
-\documentclass{hfubook} % remove `english` for german language
+\documentclass[
+    fontsize=12pt,          % default font size 12pt
+    paper=a4,               % DIN A4 page format
+    numbers=noenddot,       % remove dots behind chapter numbers (e.g. 1.5 not 1.5.)
+    listof=totoc,           % add list of figures, tables, etc. to ToC
+    listof=entryprefix,     % add entry name to figures, tables, etc.
+    listof=nochaptergap,    % no chapter gap for figures, tables, etc.
+    bibliography=totoc,     % add bibliography to ToC but without a chapter number
+    parskip=half            % half line spacing between paragraphs
+]{scrbook}
 
-\usepackage{comment} % for multiline comments
-
-% rename "Code Listing" to "Codebeispiel"
-\renewcommand{\lstlistingname}{Quellcode-Beispiel} 
-% rename cref for "listing" to "Quellcode-Beispiel"
-\crefname{listing}{Quellcode-Beispiel}{Quellcode-Beispiele}
-\Crefname{listing}{Quellcode-Beispiel}{Quellcode-Beispiele}
-
-
-
-% rename cref for "figure" to "Abbildung"
-\crefname{figure}{Abbildung}{Abbildungen}
-\Crefname{figure}{Abbildung}{Abbildungen}
-
-
-
-
-
+\input{preamble}                      % load preamble
 
 \begin{document}
 
-\author{Aljosha Justin Vieth}
-\matriculationnumber{271401}
-\studyprogram{Informatik}
-\streetname{Zollernstraße 87}
-\postalcode{75328}
-\city{Schömberg}
-\email{mail@aljoshavieth.de}
-\title{Redis im OLAP Umfeld}
-\subtitle{Ist Redis im OLAP Umfeld nützlich?}     % optional
-\type{Master Thesis}
-\supervisor{Prof. Dr. Piepmeyer}
-\cosupervisor{Dr. Weininger}
-\date{30.11.2023}
-
-\maketitle
+\include{framework/titlepage}           % title page
 
 % Roman numbering
 \frontmatter
@@ -49,17 +24,16 @@
 \listoffigures                          % List of Figures
 \listoftables                           % List of Tables
 \lstlistoflistings                      % List of Code Listings
-\abbrtitle
 \include{framework/abbreviations}       % Abbreviations
 
 % Content
 \mainmatter
+\lstset{breaklines=true}
 \include{content/1_einleitung}
 \include{content/2_grundlagen}
-\include{content/3_olap-in-redis}
-\include{content/4_implementierung}
-\include{content/5_fazit}
-
+\include{content/3_olap_in_redis}
+%\include{content/4_implementation}
+%\include{content/5_conclusion}
 
 % Bibliography
 \begin{singlespace}
@@ -67,14 +41,14 @@
 \end{singlespace}
 
 % Declaration of Authorship (in German)
-\eidesstattlicheerkaerung
+\include{framework/declaration_of_authorship}   
 
 % Appendices
 \appendix
 
 \begin{appendices}
-    \include{appendix/anleitungen/ssb_daten_generieren}
-    \include{appendix/anleitungen/ssb_in_postgresql}
+    \include{appendix/A_monthly_reports}
+    \include{appendix/B_another_important_appendix}
 \end{appendices}
 
 \end{document}

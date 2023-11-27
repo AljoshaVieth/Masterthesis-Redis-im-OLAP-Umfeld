@@ -1,0 +1,80 @@
+% Licence:  Creative Commons Attribution (CC BY 4.0)
+% Author: Tim Träris (2022)
+% Author: Valentin Weber (2023)
+\documentclass{hfubook} % remove `english` for german language
+
+\usepackage{comment} % for multiline comments
+
+% rename "Code Listing" to "Codebeispiel"
+\renewcommand{\lstlistingname}{Quellcode-Beispiel} 
+% rename cref for "listing" to "Quellcode-Beispiel"
+\crefname{listing}{Quellcode-Beispiel}{Quellcode-Beispiele}
+\Crefname{listing}{Quellcode-Beispiel}{Quellcode-Beispiele}
+
+
+
+% rename cref for "figure" to "Abbildung"
+\crefname{figure}{Abbildung}{Abbildungen}
+\Crefname{figure}{Abbildung}{Abbildungen}
+
+
+
+
+
+
+\begin{document}
+
+\author{Aljosha Justin Vieth}
+\matriculationnumber{271401}
+\studyprogram{Informatik}
+\streetname{Zollernstraße 87}
+\postalcode{75328}
+\city{Schömberg}
+\email{mail@aljoshavieth.de}
+\title{Redis im OLAP Umfeld}
+\subtitle{Ist Redis im OLAP Umfeld nützlich?}     % optional
+\type{Master Thesis}
+\supervisor{Prof. Dr. Piepmeyer}
+\cosupervisor{Dr. Weininger}
+\date{30.11.2023}
+
+\maketitle
+
+% Roman numbering
+\frontmatter
+\pagenumbering{Roman}
+
+\include{framework/abstract}            % Abstract
+\tableofcontents                        % Contents
+\listoffigures                          % List of Figures
+\listoftables                           % List of Tables
+\lstlistoflistings                      % List of Code Listings
+\abbrtitle
+\include{framework/abbreviations}       % Abbreviations
+
+% Content
+\mainmatter
+\include{content/1_einleitung}
+\include{content/2_grundlagen}
+\include{content/3_olap-in-redis}
+\include{content/4_implementierung}
+\include{content/5_fazit}
+
+
+% Bibliography
+\begin{singlespace}
+    \printbibliography
+\end{singlespace}
+
+% Declaration of Authorship (in German)
+\eidesstattlicheerkaerung
+
+% Appendices
+\appendix
+
+\begin{appendices}
+    \include{appendix/anleitungen/ssb_daten_generieren}
+    \include{appendix/anleitungen/ssb_in_postgresql}
+\end{appendices}
+
+\end{document}

@@ -1,44 +1,44 @@
 \appendixchapter{\acs{SSB} in PostgreSQL}
 
 \section{Docker Container erstellen}
-\begin{lstlisting}[language=terminal, caption=Ohne Config, label=code:ohneconfig]
+\begin{lstlisting}[caption=Ohne Config, label=code:ohneconfig]
 docker run --name postgres-scale-2 -p 5502:5432 -v C:\\Users\\Aljosha\\Documents\\Programming\\HFU\\INM3\\StartSchemaBenchmark\\generated\\scale-2:/tmp -v C:\\Users\\Aljosha\\Documents\\Programming\\HFU\\INM3\\StartSchemaBenchmark\\Postgres\\ssb-postgres:/scripts -e POSTGRES_PASSWORD=pw postgres:latest
 \end{lstlisting}
 
 \subsection{Gemountete Daten}
 \noindent \textbf{scripts:}
-\begin{lstlisting}[language=terminal, caption=Scripts im Verzeichnis, label=code:scriptfiles]
+\begin{lstlisting}[caption=Scripts im Verzeichnis, label=code:scriptfiles]
 explain-analyze.sql  explain.sql  import-date.sql  load.sql  README.md  tables.sql
 \end{lstlisting}
 Zusätzlich gibt es ein weiteres Skript "get-results.sql" das eine modifizierte Version von "explain-analyze.sql" ist und die Ergebnisse der Queries ausgibt.
 
 \noindent \textbf{tmp:}
-\begin{lstlisting}[language=terminal, caption=Temporäre Dateien, label=code:tmpfiles]
+\begin{lstlisting}[caption=Temporäre Dateien, label=code:tmpfiles]
 customer.tbl  date.tbl  lineorder.tbl  part.tbl  supplier.tbl
 \end{lstlisting}
 
 \section{In Container verbinden}
-\begin{lstlisting}[language=terminal, caption=In Container verbinden, label=code:connectcontainer]
+\begin{lstlisting}[caption=In Container verbinden, label=code:connectcontainer]
 docker exec -it postgres-standard sh
 \end{lstlisting}
 
 \section{Postgres shell öffnen}
-\begin{lstlisting}[language=terminal, caption=Postgres Shell öffnen, label=code:postgresopen]
+\begin{lstlisting}[caption=Postgres Shell öffnen, label=code:postgresopen]
 psql -U postgres
 \end{lstlisting}
 
-\begin{lstlisting}[language=terminal, caption=Verbindungsinformationen, label=code:conninfo]
+\begin{lstlisting}[caption=Verbindungsinformationen, label=code:conninfo]
 \conninfo
 You are connected to database "postgres" as user "postgres" via socket in "/var/run/postgresql" at port "5432"
 \end{lstlisting}
 
 \section{Datenbank erstellen}
-\begin{lstlisting}[language=terminal, caption=Datenbank erstellen, label=code:createdb]
+\begin{lstlisting}[caption=Datenbank erstellen, label=code:createdb]
 use ssb
 \end{lstlisting}
 
 \section{Tabellen erstellen}
-\begin{lstlisting}[language=terminal, caption=Tabellen erstellen, label=code:createtables]
+\begin{lstlisting}[caption=Tabellen erstellen, label=code:createtables]
 \i /scripts/tables.sql
 
 DROP TABLE
@@ -49,7 +49,7 @@ CREATE TABLE
 CREATE TABLE
 \end{lstlisting}
 
-\begin{lstlisting}[language=terminal, caption=Liste der Tabellen, label=code:listtables]
+\begin{lstlisting}[caption=Liste der Tabellen, label=code:listtables]
 \dt
            List of relations
  Schema |   Name    | Type  |  Owner
@@ -63,7 +63,7 @@ CREATE TABLE
 \end{lstlisting}
 
 \section{Tabellen mit Daten befüllen}
-\begin{lstlisting}[language=terminal, caption=Tabellen mit Daten befüllen, label=code:loaddata]
+\begin{lstlisting}[caption=Tabellen mit Daten befüllen, label=code:loaddata]
 postgres-# \i /scripts/load.sql
 
 TRUNCATE TABLE
@@ -75,12 +75,12 @@ COPY 6001171
 \end{lstlisting}
 
 \section{Benchmark ausführen}
-\begin{lstlisting}[language=terminal, caption=Benchmark ausführen, label=code:runbenchmark]
+\begin{lstlisting}[caption=Benchmark ausführen, label=code:runbenchmark]
 \i /scripts/explain-analyze.sql
 \end{lstlisting}
 
 \section{Ergebnisse der Queries}
-\begin{lstlisting}[language=terminal, caption=Ergebnisse der Queries abrufen, label=code:getresults]
+\begin{lstlisting}[caption=Ergebnisse der Queries abrufen, label=code:getresults]
 \i /scripts/get-results.sql
 \end{lstlisting}
 
