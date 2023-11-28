@@ -201,7 +201,7 @@ case class ShortenedCustomerObject(
 
 Es ist zu berücksichtigen, dass ausschließlich die für die Queries notwendigen Felder enthalten sind. Die anderen Felder wurden entfernt, um Platz zu sparen und die Performance zu verbessern.
 
-Für jede Tabelle wird eine Map definiert, die aus einem String als Key und der jeweiligen \emph{case class} als Value besteht.
+Für jede Tabelle wird eine Map definiert, die aus einem \emph{String} als Key und der jeweiligen \emph{case class} als Value besteht.
 
 Für jede Tabelle gibt es eine eigene Funktion, um die entsprechende Map zu füllen. Diese Funktionen folgen einem einheitlichen Schema: Sie verarbeiten die übergebenen Zeilen aus der gelesenen Datei, um eine Map zu erstellen, die anschließend einer der zuvor definierten Maps zugeordnet wird. Dabei besteht der Prozess darin, jede Zeile anhand des Trennzeichens \enquote{\lstinline+|+} in ihre einzelnen Attribute zu gliedern. Aus diesen Attributen werden spezifische Objekte generiert, wobei nur die relevanten Teile der Zeilen verwendet werden. Dadurch entfallen sämtliche Werte, die nicht für die Abfrage benötigt werden. \cref{code:ssb-inserter-createCustomerMap} zeigt als Beispiel für eine solche Funktion die Funktion  \lstinline|createCustomerMap|, die genutzt wird, um die \emph{customer}-Map zu befüllen.
 
@@ -377,6 +377,7 @@ private def insertDenormalizedObjectsIntoRedis(pipeline: Pipeline): Unit = {
 }
 \end{lstlisting}
 
+% TODO: Zeigen, dass Strings oder bytes egal sind.
 
 
 
@@ -410,7 +411,10 @@ jedis.getClient.setTimeoutInfinite()
 
 
 \subsection{Ansatz 2: Clientseitige Joins}
+Dieser Ansatz nutzt eine Datenstruktur, die der Struktur von relationalen Datenbanken möglichst ähnlich ist. Da SSB-Abfragen in einer solchen Struktur zwingend Joins erfordern und Redis keine Joins unterstützt, werden in diesem Ansatz clientseitige Joins eingesetzt. Die verschiedenen Daten werden zunächst von Redis abgefragt und anschließend in einem Scala-Programm gejoint und weiterverarbeitet.
 
+Dieses Kapitel ist wie folgt aufgebaut:
+Zunächst wird die verwendete Datenstruktur betrachtet. Anschließend wird ausführlich erläutert, wie die Abfragen in Scala strukturiert und umgesetzt wurden. Im dritten Abschnitt werden die Ergebnisse untersucht und im vierten Abschnitt wird ein vorläufiges Fazit gezogen.
 \subsubsection{Aufbau der Daten}\label{sec:client-approach-datastructure}
 Dieser Ansatz beruht auf einer Struktur, in der die Daten so nah wie möglich an der ursprünglichen Datenstruktur gehalten werden, was durch die Verwendung künstlicher Namensräume erreicht wird. Konkret bedeutet dies, dass jede Zeile aller \emph{.tbl}-Dateien mit einem spezifischen Präfix in die Datenbank eingefügt wurde. Für jeden dieser Namensräume wurde ein dedizierter Index erstellt. Bei der Erstellung dieser Indizes wurden nur die notwendigen Felder für den jeweiligen Kontext berücksichtigt.
 
@@ -490,7 +494,7 @@ Im Anschluss wird ein Query-String für die \emph{lineorder}-Daten erzeugt, inde
 
 \begin{lstlisting}[
     caption=Erstellen eines Query-Strings mit Datumsbereichen für Q1.1,
-    label=code:redis-olap-server-q1-1-query-string,
+    label=code:redis-olap-client-q1-1-query-string,
     language=Java
 ]
 val d_datekeys = dateDocuments.flatMap { doc =>
@@ -584,9 +588,141 @@ Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enth
 % Warum nur bis Q2.2
 
 \subsection{Ansatz 3: Serverseitige Joins}
+Der Hauptgedanke dieses Ansatzes besteht darin, die Anzahl an Anfragen des \emph{Scala}-Programms an Redis zu minimieren, um somit schneller Ergebnisse zu erzielen.
+Hierfür wird das Joinen und die weitere Verarbeitung der Daten vom Client auf den Redis-Server verlagert. Dies wird durch \emph{Lua}-Skripte, die auf dem Server laufen, ermöglicht.
+
+Dieses Kapitel ist in der gleichen Struktur wie das vorherige aufgebaut:
+Zuerst wird die eingesetzte Datenstruktur analysiert. Daraufhin folgt eine detaillierte Beschreibung der Strukturierung und Implementierung der Abfragen in \emph{Scala} und in \emph{Lua}. Im dritten Teil erfolgt die Betrachtung der Ergebnisse, worauf im vierten Teil ein vorläufiges Fazit gezogen wird.
+
 \subsubsection{Aufbau der Daten}
 Der Aufbau der Daten entspricht dem Aufbau der Daten im Client-Ansatz (siehe \cref{sec:client-approach-datastructure}). Dieser Ansatz unterscheidet sich lediglich in den Abfragen.
+
 \subsubsection{Aufbau der Abfragen}
+Es ist in Redis möglich, Lua-Skripte auf den Server zu laden und diese dann von Client-Seite aus zu verwenden (siehe \cref{sec:lua-in-redis}).
+Um die Anzahl der Anfragen zwischen Client und Server zu reduzieren, wird die gesamte Logik zur Ausführung der Abfragen auf den Server verlagert. Hierfür wurden mehrere Funktionen in Lua geschrieben, die in diesem Abschnitt erläutert werden.
+
+Die Lua-Funktionen sind in einer .lua-Datei zusammengefasst, welche zu Beginn des Programms einmalig an Redis gesendet wird. Dafür wird die gesamte Datei zunächst mit einer Scala-Funktion eingelesen und als \emph{String} zurückgegeben (siehe \cref{code:redis-olap-server-load-lua}).\\
+Anschließend wird sie mit der Funktion \lstinline|functionLoadReplace| der \emph{Jedis}-Bibliothek an Redis gesendet.
+
+\begin{lstlisting}[
+    caption=Einlesen der .lua-Datei und senden an Redis in Scala,
+    label=code:redis-olap-server-load-lua,
+    language=Java
+]
+def loadLuaScript(functionFilePath: String): String = {
+	val source = scala.io.Source.fromFile(functionFilePath)
+	val functionContent = try source.mkString finally source.close()
+	functionContent
+}
+// send to redis
+jedisPooled.functionLoadReplace(LuaScriptLoader.loadLuaScript("src/main/resources/olaplibrary.lua"))
+\end{lstlisting}
+
+
+
+
+
+Wie beim Client-Ansatz werden auch hier zunächst nur die date-Daten abgefragt. Aus diesen Daten wird dann ein Filterstring erzeugt, um in einer weiteren Query die lineorder-Dokumente nach den Werten des Feldes \emph{lo\_orderdate} zu filtern. Dazu wurde die Lua-Funktion \lstinline|queryFilterCriteria| geschrieben.
+
+Die Funktion \lstinline|queryFilterCriteria| wird verwendet, um einen Index nach bestimmten Kriterien zu durchsuchen und aus den Ergebnissen einen Query-String für numerische Werte zu erzeugen. Die Funktion ist das Äquivalent zu \cref{code:redis-olap-client-q1-1-query-string,} in Scala.
+Sie führt eine Suche mit RediSearch anhand der übergebenen Query durch und verarbeitet die Ergebnisse. Aus den gefundenen Dokumenten wird dann ein Filterstring für eine weitere Abfrage erzeugt und zurückgegeben. Dabei nutzt sie auch die Funktion \lstinline|flattenTable|.
+
+\begin{lstlisting}[
+    caption=Die Funktion queryFilterCriteria in Lua,
+    label=code:redis-olap-server-lua-queryFilterCriteria,
+    language=Ada
+]
+-- This function is used to perform a RediSearch query and build part of a new query-string based on the results
+-- args[1] = index-name
+-- args[2] = query
+-- args[3] = the field to return
+-- args[4] = the field to search for
+local function queryFilterCriteria(keys, args)
+    local query_result = redis.call("FT.SEARCH", args[1], args[2], "RETURN", 1, args[3], "LIMIT", 0, 2147483647) -- setting the limit to highest 32-bit int
+    local result = ""
+    local flattened = flattenTable(query_result)
+    for i = 1, #flattened do
+        if flattened[i] == args[3] then
+            result = result .. "@" .. args[4] .. ":[" .. flattened[i + 1] .. " " .. flattened[i + 1] .. "] | "
+            -- build search string for lineorder...
+        end
+    end
+    result = string.sub(result, 1, -3)
+    return result
+end
+\end{lstlisting}
+
+Die Funktion \lstinline|runQ1_1_a| wird zur Ausführung der Query Q1.1 genutzt. Am Anfang wird die Funktion \lstinline|queryFilterCriteria| verwendet, um den Filter-String aus den \emph{date}-Daten zu erzeugen. Anschließend wird dieser Filter-String in einer weiteren Query, diesmal auf den \emph{lineorder}-index, genutzt. Dabei werden auch passende Filter für \emph{lo\_discount} und \emph{lo\_quantity} verwendet.
+
+Die Ergebnisse dieser Abfrage werden dann mit der Funktion \lstinline|flattenTable| in einen eindimensionalen Array umgewandelt. Das Skript durchläuft diesen Array und sucht nach den Schlüsseln \emph{lo\_extendedprice} und \emph{lo\_discount}. Für jeden gefundenen Eintrag wird der \emph{lo\_extendedprice} gespeichert und wenn der \emph{lo\_discount} gefunden wird, berechnet die Funktion den Umsatz, indem sie das Produkt aus \emph{lo\_discount} und dem zuletzt gefundenen \emph{lo\_extendedprice} zum Gesam\-tumsatz hinzufügt.
+Schließlich gibt die Funktion den berechneten Gesamt\-umsatz zurück.
+
+\begin{lstlisting}[
+    caption=Die SSB-Query Q1.1 in Lua,
+    label=code:redis-olap-server-lua-q-1-1,
+    language=Ada
+]
+local function runQ1_1_a(keys, args)
+    -- Apply additional query filters based on provided arguments.
+    local queryFilter = queryFilterCriteria(keys, args)
+    -- Search in 'lineorder-index' with specified discount & quantity ranges and the queryFilter
+    local query_result = redis.call("FT.SEARCH", "lineorder-index", "@lo_discount:[1 3] @lo_quantity:[0 24]" ..queryFilter, "LIMIT", 0, 2147483647)
+    local flattened = flattenTable(query_result)
+    local currentLoExtendedPrice = 0
+    local currentLoDiscount = 0
+    local revenue = 0
+    -- Calculate revenue by iterating over flattened results.
+    for i = 1, #flattened do
+        if flattened[i] == "lo_extendedprice" then
+            currentLoExtendedPrice = flattened[i + 1]
+        elseif flattened[i] == "lo_discount" then
+            currentLoDiscount = flattened[i + 1]
+            revenue = revenue + currentLoDiscount * currentLoExtendedPrice
+        end
+    end
+    return "revenue: " .. revenue
+end
+\end{lstlisting}
+
+Das Scala-Programm ruft schließlich die Lua-Funktion \lstinline|runQ1_1_a| auf und gibt das Ergebnis aus.
+
+\begin{lstlisting}[
+    caption=Aufruf der Lua-Funktion auf dem Redis-Server aus Scala heraus,
+    label=code:redis-olap-server-scala-call-lua-1-1,
+    language=Java
+]
+println(jedisPooled.fcall("runQ1_1_a", List[String]().asJava, List("date-index", "@d_year:[1993 1993]", "d_datekey", "lo_orderdate").asJava))
+\end{lstlisting}
+
+
+
+
+Hinweis: Bei Redis-Abfragen speichert Lua die Ergebnisse immer in der Datenstruktur table. Dabei werden die Daten verschachtelt, was die Weiterverarbeitung erschwert. Aus diesem Grund wurde die Hilfsfunktion \lstinline|flattenTable| entwickelt, die diese Verschachtelung aufhebt.
+
+\begin{lstlisting}[
+    caption=Die Funktion flattenTable in Lua,
+    label=code:redis-olap-server-lua-flattentable,
+    language=Ada
+]
+-- This function takes a nested table as input and returns a flattened version of it
+local function flattenTable(tbl)
+    local flattened = {}  -- Create an empty table to store the flattened values
+    local index = 1  -- Initialize the index for the flattened table
+    local function flatten(value)
+        if type(value) == "table" then  -- If the value is a table, recursively flatten its elements
+            for _, nestedValue in ipairs(value) do
+                flatten(nestedValue)
+            end
+        else  -- If the value is not a table, store it in the flattened table
+            flattened[index] = value
+            index = index + 1
+        end
+    end
+    flatten(tbl)  -- Call the flatten function to start flattening the table
+    return flattened  -- Return the flattened table
+end
+\end{lstlisting}
+
 \subsubsection{Ergebnisse}
 
 % TODO: Position fixen

@@ -1093,7 +1093,7 @@ Der Datentyp \emph{userdata} dient dazu, C-Daten in Lua-Variablen zu speichern.
 In dieser Arbeit findet der Datentyp \emph{table} besondere Beachtung, der assoziative Arrays implementiert, die nicht nur Zahlen, sondern auch beliebige Lua-Werte außer \emph{nil} und \emph{NaN} (ein spezieller Wert nach dem IEEE 754 Standard der undefinierte numerische Ergebnisse wie etwa \enquote{0/0} darstellt) als Indizes haben können.
 Tabellen sind in Lua der einzige Mechanismus zur Strukturierung von Daten. Sie können verwendet werden, um gewöhnliche Arrays, Listen, Symboltabellen, Sets, Records, Graphen, Bäume und andere Datentypen darzustellen.
 
-\subsection{Lua in Redis}
+\subsection{Lua in Redis}\label{sec:lua-in-redis}
 Redis ermöglicht das direkte Ausführen von Lua-Skripten auf dem Server, wodurch die Redis-Befehle der Skripte effizient verarbeitet werden können, da diese nicht über das Netzwerk übertragen werden müssen. Diese Skripte garantieren eine atomare Ausführung, bei welcher sämtliche Serveraktivitäten während der Laufzeit des Skripts blockiert sind. Die Möglichkeiten von Lua-Skripten in Redis werden in der Online-Dokumentation von Redis erläutert~\cite{redis_ltd_scripting_nodate}.
 
 Durch die Möglichkeit eigene Funktionen für komplexe Aufrufe zu erstellen, wird Redis mittels Skripten leicht erweiterbar. Die meisten \emph{Redis-Befehle} können in \emph{Lua-Skripten} genutzt werden.
