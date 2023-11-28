@@ -196,7 +196,7 @@ Trotz ihrer Effizienz bei der Beantwortung bestimmter Abfragen haben Datenwürfe
 \section{Datenbank-Benchmarks}
 Datenbank-Benchmarks geben einen Überblick über die Leistung von verschiedenen Datenbank\-systeme und die Hardware, auf der diese laufen.
 %Datenbank-Benchmark oder Datenbankbenchmark ?
-Die Non-Profit-Organisation \acf{TPC} hat verschiedene Datenbank-Benchmarks entwickelt, die bei der Wahl des Datenbank\-systems oder der Hardware helfen können~\cite[s. 619]{barata_overview_2015}.
+Die Non-Profit-Or\-ga\-ni\-sa\-tion \acf{TPC} hat verschiedene Datenbank-Benchmarks entwickelt, die bei der Wahl des Datenbank\-systems oder der Hardware helfen können~\cite[s. 619]{barata_overview_2015}.
 
 \subsection{\acf{TPC-H}}
 Der \acf{TPC-H} wurde zum Testen von analytischen Datenbanken entwickelt.
@@ -235,7 +235,7 @@ Die Queries des \ac{SSB} sind in vier Kategorien aufgeteilt (query flights): % q
 
 \paragraph{Q1}
 %ausbauen
-Queries in Q1 schränken die Daten über nur eine Dimension, \textbf{DATE}, ein.
+Queries in Q1 schränken die Daten über nur eine Dimension, \emph{DATE}, ein.
 Die Faktentabelle \emph{LINEORDER} wird mit der Dimensionstabelle\emph{DATE} gejoint und die Daten anhand einer Zeitspanne aus der DATE-Tabelle und den Bereichen der Felder \emph{lo\_discount} und \emph{lo\_quantity} aus der LINEORDER-Tabelle gefiltert.
 Anschließend wird der Umsatz als Summe der Produkte der Felder \emph{lo\_extendedprice} und \emph{lo\_discount} berechnet und als \emph{revenue} zurückgegeben \cite{oneil_star_2009}.
 
@@ -258,7 +258,7 @@ WHERE
 \end{lstlisting}
 
 \paragraph{Q2}
-In Q2 schränken die Queries die Daten über zwei Dimensionen ein: \textbf{PART} und \textbf{SUPPLIER}.
+In Q2 schränken die Queries die Daten über zwei Dimensionen ein: \emph{PART} und \emph{SUPPLIER}.
 Anschließend wird wie in Q1 der Umsatz gebildet, wobei die Ergebnisse hier noch nach \emph{d\_year} und \emph{p\_brand1} gruppiert und sortiert werden.  
 In Q2 werden insgesamt vier Tabellen (\emph{LINEORDER}, \emph{PART}, \emph{SUPPLIER}, \emph{DATE}) gejoint.
 \begin{lstlisting}[
@@ -284,7 +284,7 @@ ORDER BY
 \end{lstlisting}
 
 \paragraph{Q3}
-In Q3 schränken die Queries die Daten über drei Dimensionen ein: \textbf{DATE}, \textbf{SUPPLIER} und \textbf{CUSTOMER}.
+In Q3 schränken die Queries die Daten über drei Dimensionen ein: \emph{DATE}, \emph{SUPPLIER} und \emph{CUSTOMER}.
 Wie in Q1 und Q2 werden auch hier die Umsätze gebildet.
 Anschließend werden sie nach \emph{c\_nation}, \emph{s\_region} und \emph{d\_year} gruppiert und nach \emph{d\_year} sortiert.
 Es werden insgesamt vier Tabellen (\emph{LINEORDER}, \emph{DATE}, \emph{SUPPLIER} und \emph{CUSTOMER}) gejoint.
@@ -312,7 +312,7 @@ ORDER BY
 \end{lstlisting}
 
 \paragraph{Q4}
-Die Queries von Q4 schränken die Daten basierend auf drei Dimensionen (\textbf{CUSTOMER}, \textbf{SUPPLIER} und \textbf{PART}) ein.
+Die Queries von Q4 schränken die Daten basierend auf drei Dimensionen\\ (\emph{CUSTOMER}, \emph{SUPPLIER} und \emph{PART}) ein.
 Auch hier wird wieder der Umsatz berechnet.
 Dieses Mal wird er durch \emph{d\_year} und \emph{c\_nation} gruppiert und sortiert.
 Hier werden erstmals alle fünf Tabellen (\emph{LINEORDER}, \emph{CUSTOMER}, \emph{SUPPLIER}, \emph{PART} und \emph{DATE}) gejoint.
@@ -342,7 +342,7 @@ ORDER BY
 \end{lstlisting}
 
 \section{PostgreSQL}
-\emph{PostgreSQL} ist ein relationales Datenbankmanagementsystem, welches die \emph{SQL}-Sprache verwendet und erweitert. Die folgenden Informationen basieren auf der offiziellen Webseite von \emph{PostgreSQL}~\cite{the_postgresql_global_development_group_postgresql_nodate}. Es handelt sich dabei um ein Open-Source-Projekt, welches seit über 35 Jahren entwickelt wird. Im Jahr 2023 belegt \emph{PostgreSQL} gemäß dem \emph{DB-Engines Ranking}~\cite{db-engines_most_2023} weltweit den vierten Platz unter den beliebtesten Datenbankmanagementsystemen, nach \emph{Oracle}, \emph{MySQL} und dem \emph{Microsoft SQL Server}.
+\emph{PostgreSQL} ist ein relationales Datenbankmanagementsystem, welches die \emph{SQL}-Spra\-che ver\-wen\-det und erweitert. Die folgenden Informationen basieren auf der offiziellen Webseite von \emph{PostgreSQL}~\cite{the_postgresql_global_development_group_postgresql_nodate}. Es handelt sich dabei um ein Open-Source-Projekt, welches seit über 35 Jahren entwickelt wird. Im Jahr 2023 belegt \emph{PostgreSQL} gemäß dem \emph{DB-Engines Ranking}~\cite{db-engines_most_2023} weltweit den vierten Platz unter den beliebtesten Datenbankmanagementsystemen, nach \emph{Oracle}, \emph{MySQL} und dem \emph{Microsoft SQL Server}.
 
 \emph{PostgreSQL} zeichnet sich durch eine bewährte Architektur, Zuverlässigkeit, Datenintegrität, einen robusten Funktionsumfang und Erweiterbarkeit aus. Das System ist auf allen wichtigen Betriebssystemen lauffähig und seit 2001 \emph{ACID}-konform.  Zusätzlich verfügt es über leistungsstarke Zusatzmodule wie zum Beispiel \emph{PostGIS}, ein beliebtes erweiterbares Geodatenbank-System.
 
@@ -474,7 +474,7 @@ Obwohl \emph{Sorted Sets} auch für die Indizierung verwendet werden können, is
 
 
 \subsubsection{Streams}
-Redis Streams sind eine Datenstruktur in Redis, die als anhängbares Protokoll (append-only log) fungiert und gleichzeitig mehrere Operationen zur Überwindung der Grenzen typischer anhängbarer Protokolle implementiert. Diese umfassen unter anderem den wahlfreien Zugriff (\enquote{random access}) in O(1)-Zeit und komplexe Konsumstrategien wie Verbrauchergruppen.
+Redis Streams sind eine Datenstruktur in Redis, die als anhängbares Protokoll (ap\-pend-on\-ly log) fungiert und gleichzeitig mehrere Operationen zur Überwindung der Grenzen typischer anhängbarer Protokolle implementiert. Diese umfassen unter anderem den wahlfreien Zugriff (\enquote{random access}) in O(1)-Zeit und komplexe Konsumstrategien wie Verbrauchergruppen.
 Die Anwendungsbereiche von Redis Streams sind vielfältig und schließen Event Sourcing, Sensorüberwachung und Benachrichtigungssysteme ein.
 
 Falls nicht anders vorgegeben generiert Redis für jeden Eintrag in einem Stream automatisch eine eindeutige ID, die auch Zeitinformationen beinhaltet, was den effizienten Abruf und Bereichsabfragen ermöglicht.
@@ -495,11 +495,12 @@ Bitweise Operationen lassen sich sowohl auf einzelne als auch auf mehrere dieser
 
 Bitmaps können so für eine effiziente Darstellung von Sets, bei denen die Mitglieder des Sets den ganzen Zahlen von 0 bis N entsprechen, genutzt werden.
 
-Ein praktisches Anwendungsbeispiel für Bitmaps in Redis ist ein Parkhaus-Verwaltungssystem, in dem jeder Parkplatz durch ein Bit repräsentiert wird. Hierbei werden belegte Parkplätze durch ein Bit im Wert 1 und freie Parkplätze durch ein Bit im Wert 0 dargestellt.
+Ein praktisches Anwendungsbeispiel für Bitmaps in Redis ist ein Park\-haus-Ver\-wal\-tungs\-system, in dem jeder Parkplatz durch ein Bit repräsentiert wird. Hierbei werden belegte Parkplätze durch ein Bit im Wert 1 und freie Parkplätze durch ein Bit im Wert 0 dargestellt.
 
 Redis bietet einige grundlegende Befehle zur Arbeit mit Bitmaps. Der Befehl \emph{SETBIT} dient dazu, ein Bit an einem bestimmten Offset auf 0 oder 1 zu setzen, während \emph{GETBIT} den Wert eines Bits an einem gegebenen Offset zurückgibt. Mit \emph{BITOP} lassen sich bitweise Operationen an einem oder mehreren Strings durchführen. \emph{BITCOUNT} führt eine Populationszählung durch und berichtet die Anzahl der auf 1 gesetzten Bits. \emph{BITPOS} schließlich findet das erste Bit mit dem spezifizierten Wert von 0 oder 1.
 
-Es gibt zwei Kategorien von Bitoperationen: die konstantzeitigen Einzelbit-Operationen, wie das Setzen oder Abrufen eines Bitwertes, und Operationen auf Bitgruppen, wie das Zählen der Anzahl gesetzter Bits in einem bestimmten Bereich. Diese zweite Kategorie umfasst beispielsweise die Populationszählung.
+% TODO: Was ist denn konstantzeitigen
+Es gibt zwei Kategorien von Bitoperationen: die konstantzeitigen Ein\-zel\-bit-O\-pe\-ra\-ti\-o\-nen, wie das Setzen oder Abrufen eines Bitwertes, und Operationen auf Bitgruppen, wie das Zählen der Anzahl gesetzter Bits in einem bestimmten Bereich. Diese zweite Kategorie umfasst beispielsweise die Populationszählung.
 
 Bitmaps bieten den großen Vorteil, dass sie häufig erhebliche Speicherplatzersparnisse bei der Speicherung von Informationen ermöglichen.Zum Beispiel kann in einem System, das Benutzer über fortlaufende IDs identifiziert, ein Bit pro Benutzer genutzt werden, um eine einfache Information wie den Wunsch, einen Newsletter zu erhalten, zu speichern. Mit dieser Methode lassen sich solche Daten für bis zu 4 Milliarden Benutzer mit nur 512 MB Speicher verwalten.
 
@@ -520,7 +521,7 @@ Die Leistung des Befehls \emph{BITFIELD} ist O(n), wobei n die Anzahl der zugegr
 
 
 \subsubsection{Geodatenindizes}
-Der Datentyp \enquote{\textbf{Geospatial}} ermöglicht die Speicherung und Abfrage von Koordinaten in Redis. So können z.~B. nahegelegene Punkte innerhalb eines bestimmten Radius oder eines definierten Begrenzungsrahmens ermittelt werden.
+Der Datentyp \enquote{\emph{Geospatial}} ermöglicht die Speicherung und Abfrage von Koordinaten in Redis. So können z.~B. nahegelegene Punkte innerhalb eines bestimmten Radius oder eines definierten Begrenzungsrahmens ermittelt werden.
 Ein praktisches Anwendungsbeispiel für diese Funktionalität wäre eine mobile Anwendung, die dem Benutzer die nächstgelegenen Elektroroller in seiner Umgebung anzeigt.
 
 Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: Der Befehl \emph{GEOADD} fügt einen Standort zu einem gegebenen georäumlichen Index hinzu, wobei zu beachten ist, dass bei diesem Befehl der Längengrad vor dem Breitengrad angegeben wird. Der Befehl \emph{GEOSEARCH} hingegen gibt Standorte innerhalb eines bestimmten Radius oder einer bestimmten Begrenzung zurück~\cite{redis_ltd_geospatial_nodate}.
@@ -532,13 +533,13 @@ Zwei grundlegende Befehle sind in diesem Zusammenhang von zentraler Bedeutung: D
 \subsubsection{HyperLogLog}
 \ac{HLL} ist eine probabilistische Datenstruktur in Redis, die Schätzung der Kardinalität einer Menge ermöglicht und dabei bis zu 12 KB Speicher verwendet. Diese Implementierung zeichnet sich durch einen Standardfehler von 0,81\% aus und kann Mengen mit bis zu \(2^{64}\) Mitgliedern schätzen.
 
-Im Gegensatz zur traditionellen Zählung einzigartiger Elemente, die einen Speicherplatz proportional zur Elementanzahl erfordert, bietet \ac{HLL} eine Speicherplatz-effiziente Schätzung mit einem geringen Fehleranteil.
+Im Gegensatz zur traditionellen Zählung einzigartiger Elemente, die einen Spei\-cher\-platz proportional zur Element\-an\-zahl erfordert, bietet \ac{HLL} eine Spei\-cher\-platz-ef\-fi\-zi\-en\-te Schätzung mit einem geringen Fehleranteil.
 
 Technisch gesehen unterscheidet sich \ac{HLL} von anderen Datenstrukturen in Redis, wird jedoch als Redis-String kodiert, wodurch \emph{GET} zur Serialisierung und \emph{SET} zur Deserialisierung eines \ac{HLL} genutzt werden kann.
 
 Konzeptionell ähnelt die Nutzung von \ac{HLL} in einigen Aspekten dem Einsatz von Sets, insbesondere in der Verwaltung einzigartiger Elemente. Die direkte Speicherung der Elemente erfolgt jedoch nicht, stattdessen wird ein Zustand aufgezeichnet, der für Schätzungen verwendet wird.
 
-Anwendungsbereiche von \ac{HLL} umfassen beispielsweise die Zählung einzigartiger Suchanfragen oder die Bestimmung der Anzahl einzigartiger Besucher einer Webseite.
+Anwendungsbereiche von \ac{HLL} umfassen beispielsweise die Zählung einzigartiger Such\-anfragen oder die Bestimmung der Anzahl einzigartiger Besucher einer Webseite.
 
 Bei den grundlegenden Befehlen für die Arbeit mit \ac{HLL} in Redis, erlaubt \emph{PFADD} das Eintragen eines Elements in ein \ac{HLL}. Die Anzahl der Elemente in einem \ac{HLL} lässt sich mit \emph{PFCOUNT} schätzen. Für das Zusammenführen von mehreren HyperLogLogs steht der Befehl \emph{PFMERGE} zur Verfügung.
 
@@ -549,13 +550,13 @@ Hinsichtlich der Leistungsfähigkeit zeichnen sich Schreib- (\emph{PFADD}) und L
 \subsubsection{Weitere Datentypen durch zusätzliche Module}
 Durch Module können in Redis zusätzliche Datentypen wie zum Beispiel \emph{JSON} oder \emph{Time-Series}-Daten genutzt werden.
 
-Das \textbf{RedisJSON}-Modul bietet eine Unterstützung für JSON-Daten in Redis.
+Das \emph{RedisJSON}-Modul bietet eine Unterstützung für JSON-Daten in Redis.
 JSON-Daten können so direkt in der Redis-Datenbank gespeichert, aktualisiert und wieder abgerufen werden, was eine effiziente Verwaltung von komplexen Datenstrukturen ermöglicht. Hierzu zählen das gezielte Bearbeiten von Subelementen dank der \emph{JSONPath}-Syntax und ein schneller Zugriff auf Unterstrukturen von JSON-Dokumenten.
 Außerdem ermöglicht RedisJSON atomare Operationen auf Datentypen innerhalb der JSON-Dokumente, um die Leistungsfähigkeit bei der Datenaufbereitung zu verbessern.
 Ein wesentlicher Vorteil im Vergleich zur Speicherung von JSON als serialisierte Strings besteht in der Fähigkeit, JSON-Objekte zu indizieren und zu durchsuchen, was im Zusammenspiel mit dem \emph{RediSearch}-Modul ermöglicht wird.
 Dadurch können komplexe Anfragen direkt in Redis ausgeführt werden~\cite{redis_ltd_json_nodate, redis_ltd_json-use-cases_nodate}.
 
-Durch das \textbf{RedisTimeSeries}-Modul können Zeitreihendaten in Redis gespeichert werden.
+Durch das \emph{RedisTimeSeries}-Modul können Zeitreihendaten in Redis gespeichert werden.
 Dabei bietet Redis hohe Einfügeraten und schnelle Lesezugriffe.
 Es ermöglicht Abfragen innerhalb spezifizierter Start- und Endzeiten sowie eine Vielfalt von aggregierten Abfragen, einschließlich, aber nicht beschränkt auf Minimum, Maximum, Durchschnitt und Summe, für beliebige Zeitintervalle.
 Zudem lässt sich ein maximaler Aufbewahrungszeitraum konfigurieren und die Kompaktierung sorgt für automatisch aktualisierte, aggregierte Zeitreihen.
@@ -611,8 +612,8 @@ Zusätzlich werden weitere Daten gespeichert, wie etwa die Häufigkeit und die S
 Bei einer Suche kann entweder ein einzelner Index oder eine Verbindung mehrerer Indizes nach dem Suchbegriff durchsucht werden.
 
 Zusätzlich zu den invertieren Indizes werden weitere Daten in anderen \textit{Redis DMA string keys} gespeichert:\\
-Der sogenannte \textbf{Skip-Index}, eine Tabelle des Index-Offsets von einem Fünfzigstel der Einträge im Index. Dies ermöglicht eine schnellere Suche, wenn mehrere invertierte Indizes überschnitten werden, da nicht die gesamte Liste durchsucht werden muss.\\
-Da bei der Suche nach einzelnen Wörtern nicht alle Treffer durchsucht werden, sondern nur die ersten N Treffer für den Benutzenden relevant sind, wird für jeden Suchbegriff ein Hilfsindex mit den ersten 20 oder mehr Einträgen erstellt, der sogenannte \textbf{Score Index}.
+Der sogenannte \emph{Skip-Index}, eine Tabelle des Index-Offsets von einem Fünfzigstel der Einträge im Index. Dies ermöglicht eine schnellere Suche, wenn mehrere invertierte Indizes überschnitten werden, da nicht die gesamte Liste durchsucht werden muss.\\
+Da bei der Suche nach einzelnen Wörtern nicht alle Treffer durchsucht werden, sondern nur die ersten N Treffer für den Benutzenden relevant sind, wird für jeden Suchbegriff ein Hilfsindex mit den ersten 20 oder mehr Einträgen erstellt, der sogenannte \emph{Score Index}.
 
 Beim indizieren konnte früher angegeben werden, dass die Inhalte der Dokumente nicht gespeichert werden. Diese Option ist jedoch seit Version 2.0 von RediSearch nicht mehr verfügbar~\cite{redis_ltd_upgrade_nodate, korland_missing_nodate}.
 % Hier eigentlich "Document and result ranking" aber veraltet ?!
@@ -671,7 +672,7 @@ Das Argument \emph{ON \{data\_type\}} bestimmt die Datentypen, auf die der Index
 
 Über \emph{PREFIX \{count\} \{prefix\}} werden die vom Index zu erfassenden Schlüssel bestimmt. Mehrere Präfixe können hinzugefügt werden, standardmäßig werden alle Schlüssel indiziert.
 
-Der Ausdruck \emph{FILTER \{filter\}} erlaubt die Nutzung der RediSearch-Aggregationssprache für spezifische Filterungen.
+Der Ausdruck \emph{FILTER \{filter\}} erlaubt die Nutzung der RediSearch-Ag\-gre\-ga\-ti\-ons\-spra\-che für spezifische Filterungen.
 
 Durch \emph{LANGUAGE \{default\_lang\}} und \emph{LANGUAGE\_FIELD \{lang\_attribute\}} werden die Standardsprache und das Sprachattribut des Dokuments festgelegt.
 
@@ -739,7 +740,7 @@ Der Syntax für Queries zur Abfrage lautet wie folgt:\\
 \lstinline+@field:[{WITHIN|CONTAINS} \$geometry] PARAMS 2 geometry \{geometry\}+
 
 Ein Beispiel, in dem abgefragt wird, ob ein Polygon einen bestimmten Punkt beinhaltet könnte so aussehen:\\
-\lstinline|FT.SEARCH polygon\_idx "@g:[CONTAINS \$point]" PARAMS 2 point 'POINT(8 8)' DIALECT 3|
+\lstinline|FT.SEARCH polygon\_idx "@g:[CONTAINS \$point]" PARAMS 2 point 'POINT(8 8)' DIALECT 3|\\
 \emph{DIALECT 3} gibt bei mehrwertigen Attributen statt Skalaren JSON zurück.
 Komplexere Beispiele und Erklärungen sind in der Dokumentation zu Queries~\cite{redis_ltd_query_nodate} zu finden.
 
@@ -747,14 +748,15 @@ Komplexere Beispiele und Erklärungen sind in der Dokumentation zu Queries~\cite
 \subsubsection{\emph{Vector fields}} Vektor-Felder halten Gleitkommavektoren, die diverse unstrukturierte Daten wie etwa Text oder Bilder repräsentieren können, und unterstützen Vektorsimilaritätssuchen. Sie werden oft für externe Machine-Learning-Modelle genutzt.
 
 Die Felder können mit dem \emph{FT.CREATE}-Befehl definiert werden:\\
-\lstinline|FT.CREATE ... SCHEMA ... {field\_name} VECTOR {algorithm} {count} [{attribute\_name} {attribute\_value} ...]|
+\lstinline|FT.CREATE ... SCHEMA ... {field_name} VECTOR {algorithm} {count} |\\
+\lstinline|[{attribute_name} {attribute_value} ...]|
 
 Mit dem \emph{algorithm}-Attribut wird ein unterstützter Algorithmus für Vektorvergleiche angegeben. Er wird genutzt bei der Suche nach den k ähnlichsten Vektoren im Index oder beim Filtern von Vektoren nach Bereichen. Die unterstützten Algorithmen sind \emph{FLAT} für einen \enquote{brut force} Algorithmus und \emph{HNSM} für einen \enquote{hierarchical, navigable, small world} Algorithmus.
 
 Das \emph{count}-Attribut gibt an, wie viele Attributpaare im Befehl verwendet werden. Wobei die Attributpaare die Algorithmusattribute für die Erstellung des Vektorindexes sind. Jeder Algorithmus hat seine eigenen obligatorischen und optionalen Attribute.
 
 Ein Index kann zum Beispiel so erstellt werden:\\
-\lstinline|FT.CREATE my\_idx SCHEMA vec\_field VECTOR FLAT 6 TYPE FLOAT32 DIM 128 DISTANCE\_METRIC L2|
+\lstinline|FT.CREATE my_idx SCHEMA vec_field VECTOR FLAT 6 TYPE FLOAT32 DIM 128 | \\\lstinline|DISTANCE_METRIC L2|
 
 Ein Beispiel für einen Vektorvergleich ist der \enquote{k nearest neighbors}(KNN)-Algorithmus. Die Syntax dazu ist wie folgt aufgebaut:\\
 \lstinline+*=>[ KNN {num|\$num @vector \$query\_vec ]+\\
@@ -780,10 +782,10 @@ Um etwa nach Rezepten mit Tomaten als Zutat zu suchen, kann folgender Befehl ver
 
 
 \subsubsection{{\emph{Text fields}}}
-Textfelder sind für die Speicherung menschlicher Sprache optimiert. Sie werden zu Kleinbuchstaben umgewandelt und tokenisiert, um effiziente Volltextsuchen zu ermöglichen. Zudem können sie gewichtet und sortiert werden, was eine differenzierte Suchrelevanz und -ordnung ermöglicht.
+Textfelder sind für die Speicherung menschlicher Sprache optimiert. Sie werden zu Kleinbuchstaben umgewandelt und tokenisiert, um effiziente Voll\-text\-su\-chen zu er\-mög\-li\-chen. Zu\-dem kön\-nen sie ge\-wich\-tet und sor\-tiert wer\-den, was ei\-ne dif\-fe\-ren\-zier\-te Such\-re\-le\-vanz und -ordnung ermöglicht.\\
 Textfelder können mit dem FT.CREATE Befehl wie folgt angegeben werden:\\
 % Hier vllt. nen fancigen codeblock aber ohne untertitel und so
-\lstinline|FT.CREATE ... SCHEMA ... \{field\_name\} TEXT [WEIGHT] [NOSTEM] [PHONETIC \{matcher\}] [SORTABLE] [NOINDEX] [WITHSUFFIXTRIE]|
+\lstinline|FT.CREATE ... SCHEMA ... {field_name} TEXT [WEIGHT] [NOSTEM] [PHONETIC {matcher}]|\\ \lstinline|[SORTABLE] [NOINDEX] [WITHSUFFIXTRIE]|
 
 Die Bedeutung der einzelnen Optionen:
 
@@ -931,7 +933,8 @@ Die mögliche Reducerfunktionen werden im folgenden kurz beschrieben:\\
 
 \paragraph{\emph{LIMIT \{offset\} \{num\}}}: Begrenzt die Anzahl der Ergebnisse die zurückgegeben werden. Dabei wird die Anzahl der Ergebnisse festgelegt und ab welchem Offset sie ausgewählt werden sollen. Falls die Ergebnisse auch sortiert werden ist es effizienter, sie mit dem Attribut \emph{MAX} des Befehls \emph{SORTBY} zu limitieren.
 
-\paragraph{\emph{FILTER \{expr\}}}: Filtert Ergebnisse mit Prädikatausdrücken. Die \emph{FILTER}-Ausdrücke werden nach der Abfrage ausgewertet und beziehen sich auf den aktuellen Zustand der Pipeline. Sie sind nützlich, um Ergebnisse auf Basis von Gruppenberechnungen zu filtern. Filterausdrücke folgen der Syntax von \emph{APPLY}-Ausdrücken, ergänzt durch die Bedingungen \emph{==, !=, <, <=, >, >=}.
+\paragraph{\emph{FILTER \{expr\}}}: Filtert Ergebnisse mit Prädikatausdrücken.\\
+Die \emph{FILTER}-Ausdrücke werden nach der Abfrage ausgewertet und beziehen sich auf den aktuellen Zustand der Pipeline. Sie sind nützlich, um Ergebnisse auf Basis von Gruppenberechnungen zu filtern. Filterausdrücke folgen der Syntax von \emph{APPLY}-Ausdrücken, ergänzt durch die Bedingungen \lstinline|==, !=, <, <=, >, >=|.
 
 \paragraph{\emph{PARAMS \{nargs\} \{name\} \{value\}}}: Definiert Parameter für die Abfrage die aus einem Namen und einem Wert bestehen. Parameter können in der Abfrage durch \$-Zeichen und dem Namen referenziert werden. Jede Referenz in der Suchanfrage auf einen Parameternamen wird dann durch den entsprechenden Parameterwert ersetzt.
 
@@ -1042,15 +1045,15 @@ Scala hat einige Charakteristiken, die ihm im Vergleich zu Java einen Vorteil ve
 Besonders zu betonen sind folgende Eigenschaften von Scala im Gegensatz zu Java~\cite{epfl_scala_nodate-1, epfl_scala_nodate-2}: % Quellenangabe hier so okay?
 
 \begin{enumerate}
-    \item \textbf{Kompakterer und ausdrucksstärkerer Code:} Scala ermöglicht oftmals kürzere und prägnantere Codezeilen im Vergleich zu Java. Dies wird durch spezifische Konstrukte in Scala, wie \emph{case}-Klassen und Collections-Operationen (\emph{map} und \texttt{toMap}), sowie durch Pattern Matching erreicht, was den Code weniger umfangreich und einfacher lesbar macht.
+    \item \emph{Kompakterer und ausdrucksstärkerer Code:} Scala ermöglicht oftmals kürzere und prägnantere Codezeilen im Vergleich zu Java. Dies wird durch spezifische Konstrukte in Scala, wie \emph{case}-Klassen und Collections-Operationen (\emph{map} und \texttt{toMap}), sowie durch Pattern Matching erreicht, was den Code weniger umfangreich und einfacher lesbar macht.
     
-    \item \textbf{Funktionale Programmierung:} Scala, eine Sprache, die objektorientierte und funktionale Programmierstile unterstützt, bietet Vorteile durch funktionale Konzepte wie Higher-Order-Funktionen und effiziente Methoden zur Transformation von Collections. Diese Eigenschaften sind in Java oft weniger elegant umsetzbar oder erfordern mehr Boilerplate-Code.
+    \item \emph{Funktionale Programmierung:} Scala, eine Sprache, die objektorientierte und funktionale Programmierstile unterstützt, bietet Vorteile durch funktionale Konzepte wie Higher-Order-Funktionen und effiziente Methoden zur Transformation von Collections. Diese Eigenschaften sind in Java oft weniger elegant umsetzbar oder erfordern mehr Boilerplate-Code.
     
-    \item \textbf{Immutability und Case Classes:} Der Einsatz von Unveränderlichkeit (Immutability) bei der Definition von Datenstrukturen ist in Scala weniger komplex als in Java. Scala's \emph{case}-Klassen unterstützen Unveränderlichkeit und Pattern Matching, was die Sicherheit und Wartbarkeit des Codes erhöht.
+    \item \emph{Immutability und Case Classes:} Der Einsatz von Unveränderlichkeit (Immutability) bei der Definition von Datenstrukturen ist in Scala weniger komplex als in Java. Scala's \emph{case}-Klassen unterstützen Unveränderlichkeit und Pattern Matching, was die Sicherheit und Wartbarkeit des Codes erhöht.
     
-    \item \textbf{Pattern Matching:} Scalas Implementierung von Pattern Matching ermöglicht eine elegantere und sicherere Handhabung potenziell fehlender Werte, ein Ansatz, der in Java nicht so nativ und leserlich umgesetzt ist.
+    \item \emph{Pattern Matching:} Scalas Implementierung von Pattern Matching ermöglicht eine elegantere und sicherere Handhabung potenziell fehlender Werte, ein Ansatz, der in Java nicht so nativ und leserlich umgesetzt ist.
     
-    \item \textbf{Typinferenz:} Durch Scala's Typinferenz wird der Bedarf an expliziten Typdeklarationen reduziert, was den Code weniger überladen und besser lesbar macht – ein Aspekt, der in Java oft durch die Notwendigkeit expliziter Typangaben nicht gegeben ist.
+    \item \emph{Typinferenz:} Durch Scala's Typinferenz wird der Bedarf an expliziten Typdeklarationen reduziert, was den Code weniger überladen und besser lesbar macht – ein Aspekt, der in Java oft durch die Notwendigkeit expliziter Typangaben nicht gegeben ist.
 \end{enumerate}
 
 

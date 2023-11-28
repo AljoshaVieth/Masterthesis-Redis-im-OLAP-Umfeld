@@ -181,7 +181,9 @@ Die Daten werden gebündelt und in einer Pipeline an Redis übermittelt. Durch d
 \subsubsection{Einfügen von denormalisierten Daten}
 Beim denormalisierten Ansatz werden zuerst alle \emph{.tbl}-Dateien komplett geladen.
 
-Für jede Tabelle gibt es eine passende Scala \emph{case class} die die notwendigen Daten für den SSB Benchmark halten. So gibt es die Klassen: \lstinline|ShortenedCustomerObject, ShortenedDateObject, ShortenedLineorderObject, ShortenedPartObject| und \lstinline|ShortenedSupplierObject|.
+Für jede Tabelle gibt es eine passende Scala \emph{case class} die die notwendigen Daten für den SSB Benchmark halten.
+So gibt es die Klassen:\\
+\lstinline|ShortenedCustomerObject|, \lstinline|ShortenedDateObject|, \lstinline|ShortenedLineorderObject|, \\\lstinline|ShortenedPartObject| und \lstinline|ShortenedSupplierObject|.
 
 \begin{lstlisting}[
     caption=Das ShortenedCustomerObject,
@@ -445,7 +447,8 @@ FT.CREATE date-index PREFIX 1 "date:" SCHEMA d_year NUMERIC d_datekey NUMERIC d_
 \end{lstlisting}
 
 
-Schließlich enthält der Index für die \emph{Lineorder}-Daten eine Reihe von numerischen Werten, die für die Abwicklung und Analyse von Bestellungen relevant sind. Dies umfasst \emph{lo\_orderdate}, \emph{lo\_discount}, \emph{lo\_quantity}, \emph{lo\_partkey}, \emph{lo\_suppkey} und \emph{lo\_extendedprice}. Die Felder, die mit \enquote{key} enden, enthalten IDs der Werte aus den anderen Tabellen. Zum Beispiel steht \lstinline|lo_partkey=1389| für den Eintrag \lstinline|part:1389|.
+Schließlich enthält der Index für die \emph{Lineorder}-Daten eine Reihe von numerischen Werten, die für die Abwicklung und Analyse von Bestellungen relevant sind.\\
+Dies umfasst \emph{lo\_orderdate}, \emph{lo\_discount}, \emph{lo\_quantity}, \emph{lo\_partkey}, \emph{lo\_suppkey} und \emph{lo\_extendedprice}. Die Felder, die mit \enquote{key} enden, enthalten IDs der Werte aus den anderen Tabellen. Zum Beispiel steht \lstinline|lo_partkey=1389| für den Eintrag \lstinline|part:1389|.
 
 \begin{lstlisting}[
     caption=Befehl zum Anlegen des Index für lineorder-Daten,
@@ -572,7 +575,8 @@ Q 2.2 & 26595 & 267       \\ \hline
     \label{pic:results-client}    % label the image for internal referencing
 \end{figure}
 
-Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in kleineren Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten ohne RediSearch-Aggregationen verwendet. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_client\_c}, \emph{Q1\_2\_client\_c}, \emph{Q1\_3\_client\_c}, \emph{Q2\_1\_client\_a}, \emph{Q2\_2\_client\_a}. Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten. % Hier eventuell auf Aggregation verweisen
+Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in kleineren Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten ohne RediSearch-Aggregationen verwendet. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_client\_c}, \emph{Q1\_2\_client\_c}, \emph{Q1\_3\_client\_c}, \emph{Q2\_1\_client\_a} und\\ \emph{Q2\_2\_client\_a}.
+Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten. % Hier eventuell auf Aggregation verweisen
 
 % Noch was zu Q2.1
 
