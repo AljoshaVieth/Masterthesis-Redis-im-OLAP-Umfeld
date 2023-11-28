@@ -6,7 +6,7 @@ In Kapitel ~\ref{sec:ssb-data-in-redis} werden Ansätze vorgestellt, wie die Dat
 
 
 Kapitel ~\ref{sec:ssb-use-in-redis} beschäftigt sich mit der Ausführung des SSB in Redis.
-Zunächst wird das entwickelte Programm \emph{Redis OLAP Client} vorgestellt, welches zur Ausführung der Queries verwendet wurde. Anschließend werden verschiedene Ansätze zur Durchführung der Queries erläutert.
+Zunächst wird das entwickelte Programm \emph{Redis OLAP Client} vorgestellt, welches zur Ausführung der Queries verwendet wurde. Anschließend werden verschiedene Ansätze zur Durchführung der Queries erläutert. % TODO: Das Programm wird nicht zuerst vorgestellt
 
 \section{Herausforderungen}
 %\subsection{Keine Joins}
@@ -16,9 +16,9 @@ Zunächst wird das entwickelte Programm \emph{Redis OLAP Client} vorgestellt, we
 
 % TODO: Hier ganze Anleitung im Anhang verlinken
 \subsection{Generieren von SSB Daten}
-Um Daten für einen \emph{Star Schema Benchmark} zu generieren, stellen die Autoren ein spezielles Tool~\cite{phillips_electrumssb-dbgen_2023} zur Verfügung.
+Um Daten für einen \emph{Star Schema Benchmark} zu generieren, stellen die Autoren des Benchmarks ein spezielles Tool~\cite{phillips_electrumssb-dbgen_2023} zur Verfügung.
 Das in \emph{C} programmierte Tool ermöglicht nach der Kompilierung die Erstellung von \emph{.tbl}-Dateien, welche für den Import in SQL-basierte Datenbanksysteme geeignet sind.
-Es erlaubt die Variation der Datenmenge durch Anpassung eines Parameters, um unterschiedliche Skalierungen zu generieren.
+Es erlaubt die Variation der Datenmenge durch Anpassung eines Parameters, um unterschiedliche Skalierungen zu generieren. % TODO: Auf ausführliche Anleitung im Anhang verlinken
 Das Tool basiert auf einem Programm, das ursprünglich zur Datengenerierung für den TPC-H-Benchmark entwickelt wurde.
 \begin{lstlisting}[
     caption=Auszug aus generierter supplier.tbl-Datei,
@@ -29,13 +29,14 @@ Das Tool basiert auf einem Programm, das ursprünglich zur Datengenerierung für
 93|Supplier#000000093|wd1djjKXT|MOZAMBIQU9|MOZAMBIQUE|AFRICA|26-359-388-5266|
 \end{lstlisting}
 Die Zeilen der .tbl-Datei repräsentieren eine Zeile in einer Datenbanktabelle. Die einzelnen Spalten sind durch einen Trennstrich voneinander getrennt.
-Beim Importieren der Daten werden die Spalten den entsprechenden Spalten in der Datenbank zugeordnet. Dafür muss die Tabelle im korrekten Format erstellt werden.
+Beim Importieren der Daten werden die Spalten den entsprechenden Spalten in der Datenbank zugeordnet. Dafür muss die Tabelle im korrekten Format erstellt werden (siehe Durchführung des SSB in PostgreSQL). % TODO: Verlinken auf PostgreSQL teil
 
 \subsection{Sternschema in Redis abbilden}
 Bei der Betrachtung der Datenorganisation gibt es grundlegende Unterschiede zwischen dem \emph{Sternschema} und den Möglichkeiten zur Datenmodellierung in \emph{Redis}. Während das Sternschema trotz einer geringeren Normalisierung als einige andere Schemata mehrere Tabellen umfasst, fehlt das Konzept der Tabelle in \emph{Redis} vollständig.
 
 \subsubsection{Modellierung der Daten mit künstlichen Namensräumen}
-Um dennoch eine Art Tabellenstruktur in \emph{Redis} zu erreichen, werden durch das Hinzufügen von Präfixen zu Schlüsseln künstliche Namensräume geschaffen. Alle Einträge, die der Tabelle \emph{Supplier} angehören, beginnen beispielsweise mit dem Präfix \enquote{supplier:}. Durch dieses Vorgehen ist es möglich, bei der Nutzung von Befehlen wie \emph{Scan} oder bei der Anwendung von Indizes in \emph{RediSearch} gezielt nach diesem Präfix zu suchen. Die Methode wird dabei von \emph{RedisInsight} unterstützt, das die Möglichkeit bietet, Daten in der Benutzeroberfläche nach Präfixen gruppiert anzuzeigen.
+Um dennoch eine Art Tabellenstruktur in \emph{Redis} zu erreichen, werden durch das Hinzufügen von Präfixen zu Schlüsseln künstliche Namensräume geschaffen. Alle Einträge, die der Tabelle \emph{Supplier} angehören, beginnen beispielsweise mit dem Präfix \enquote{supplier:}. Durch dieses Vorgehen ist es möglich, bei der Nutzung von Befehlen wie \emph{Scan} oder bei der Anwendung von Indizes in \emph{RediSearch} gezielt nach diesem Präfix zu suchen. Die Methode wird dabei von \emph{RedisInsight} unterstützt, das die Möglichkeit bietet, Daten in der Benutzeroberfläche nach Präfixen gruppiert anzuzeigen. % TODO: Aus Scan verlinken
+% TODO: RedisInsight irgendwo kurz erklären
 
 \begin{lstlisting}[
     caption=Beispiel von Keys mit künstlichem Namensräumen in Redis,
@@ -48,22 +49,22 @@ lineorder:5:4
 
 
 Es besteht die Möglichkeit, mehrere \emph{Datenbanken} in Redis anzulegen.
-Dies wird jedoch als Anti-Pattern angesehen und ist daher nicht empfohlen~\cite{prickett_answer_2022}. Viele Erweiterungen unterstützen nur die erste Datenbank. Daher wird der Ansatz der künstlichen Namensräume bevorzugt. 
+Dies wird jedoch als Anti-Pattern angesehen und wird nicht empfohlen~\cite{prickett_answer_2022}. Viele RedisModule, darunter auch RediSearch, unterstützen nur die erste Datenbank. Daher wird der Ansatz der künstlichen Namensräume bevorzugt. 
 
 Neben der Option, die Struktur der \emph{SSB}-Daten durch künstliche Namensräume darzustellen, besteht auch die Möglichkeit, die Daten vollständig zu denormalisieren. Kapitel \ref{sec:ssb-inserter} beschreibt die Umsetzung beider Ansätze.
 
 
 \subsubsection{Wahl des Datentypen in Redis}
-Von den gängigen Datentypen in Redis unterstützen nur Hashes, JSON und Sorted Sets eine Key-Value-Struktur. Theoretisch können Daten auch in Strings gespeichert werden und durch die Volltextsuche von Redisearch ist es auch möglich nach Daten zu suchen, jedoch ist dies wesentlich komplizierter als bei Hashes und JSON.
-In Sorted Sets können nur begrenzte numerische Werte gespeichert werden was sie für die SSB-Daten nicht nutzbar macht, da dort unter anderem auch Texte gespeichert werden müssen.
-Hashes und JSON bieten beide die Möglichkeit, beliebige Daten in einer Key-Value-Struktur zu speichern und dann mir RediSearch auch nach diesen Daten zu suchen.
-Hashes benötigen dafür jedoch erheblich weniger Speicherplatz als JSON.
-JSON wird in einer deserialisierten Form gespeichert und benötigt etwas Overhead zusätzlich zu den eigentlichen Daten~\cite{redis_ltd_json-ram-usage_nodate}.
-Hashes sind dagegen optimiert um Speicher zu sparen~\cite{redis_ltd_memory-optimization_nodate}.
+Von den gängigen Datentypen in Redis unterstützen nur \emph{Hashes}, \emph{JSON} und \emph{Sorted Sets} eine Key-Value-Struktur. Theoretisch können Daten auch in \emph{Strings} gespeichert werden und durch die Volltextsuche von Redisearch ist es auch möglich nach Daten zu suchen, jedoch ist dies wesentlich komplizierter als bei \emph{Hashes} und \emph{JSON}.
+In \emph{Sorted Sets} können nur begrenzte numerische Werte gespeichert werden was sie für die SSB-Daten nicht nutzbar macht, da dort unter anderem auch Texte gespeichert werden müssen.
+\emph{Hashes} und \emph{JSON} bieten beide die Möglichkeit, beliebige Daten in einer Key-Value-Struktur zu speichern und dann mit RediSearch auch nach diesen Daten zu suchen.
+\emph{Hashes} benötigen dafür jedoch erheblich weniger Speicherplatz als \emph{JSON}.
+\emph{JSON} wird in einer deserialisierten Form gespeichert und benötigt etwas Overhead zusätzlich zu den eigentlichen Daten~\cite{redis_ltd_json-ram-usage_nodate}.
+\emph{Hashes} sind dagegen optimiert um Speicher zu sparen~\cite{redis_ltd_memory-optimization_nodate}.
 Mit dem Befehl \lstinline|MEMORY USAGE| kann der Speicherverbrauch eines Elements in Redis angezeigt werden~\cite{redis_ltd_memory-usage-command-redis_nodate}.
 
 % Dafür sorgen dass Abbildung an richitger Stelle ist...
-In \Cref{pic:redis-hash-vs-json-memory} wird der Vergleich der Speicherplatznutzung dargestellt, wobei dieselben Informationen einmal in Form eines Hash und einmal in Form von JSON gespeichert sind. In diesem Beispiel belegt das JSON-Format 694 Byte, während das Hash-Format nur 288 Byte benötigt, was einer Reduzierung um 58,5\% entspricht.
+In \Cref{pic:redis-hash-vs-json-memory} wird der Vergleich der Speicherplatznutzung dargestellt, wobei dieselben Informationen einmal in Form eines \emph{Hash} und einmal in Form von \emph{JSON} gespeichert sind. In diesem Beispiel belegt das \emph{JSON}-Format 694 Byte, während das \emph{Hash}-Format nur 288 Byte benötigt, was einer Reduzierung um 58,5\% entspricht.
 \begin{figure}[!h]  % force the figure to be placed here
     \centering
     \includegraphics[width=1\textwidth]{pictures/redis/redis_hash_vs_json_memory.png}
@@ -71,7 +72,9 @@ In \Cref{pic:redis-hash-vs-json-memory} wird der Vergleich der Speicherplatznutz
     \label{pic:redis-hash-vs-json-memory}
 \end{figure}
 
+% TODO: SSB als Abkürzung öfter verwenden
 \subsection{SSB Inserter}\label{sec:ssb-inserter}
+Im Rahmen dieser Arbeit wurde der \emph{SSB Inserter} entwickelt. Es handelt sich hierbei um ein Scala-Programm, das Daten, die für den SSB Benchmark erstellt wurden, aus \emph{.tbl}-Dateien einliest und anschließend in angepasster Form in Redis speichert. Es wurden unterschiedliche Methoden zur Strukturierung dieser Daten in Redis verfolgt. In diesem Kapitel werden diese Methoden und die Umsetzung des Programms erläutert.
 
 \subsubsection{Konfiguration von Redis und Jedis}
 Redis verfügt über Eigenschaften, die beim Einfügen großer Datenmengen suboptimal sein können.
@@ -122,7 +125,7 @@ val lineorderStructure: Array[String] =
 \end{lstlisting}
 
 
-Der SSB Inserter liest zuerst jede \emph{.tbl}-Datei mit der Methode \lstinline|{readLines| ein. Dabei wird der Tabellenname aus dem Dateinamen extrahiert und die Datei in Zeilen gelesen. Die gelesenen Zeilen werden in Gruppen zu je 1000 Stück gebündelt. Für jede Gruppe wird die Funktion \lstinline|insertIntoRedis| aufgerufen, die die Daten in die Redis-Datenbank einfügt. Dabei wird der Tabellenname, ein Array mit den Spaltennamen, ein Jedis-Pipeline-Objekt und ein Boolean übergeben, der angibt, ob der Tabellenname \emph{lineorder} ist.
+Der SSB Inserter liest zuerst jede \emph{.tbl}-Datei mit der Methode \lstinline|readLines| ein. Dabei wird der Tabellenname aus dem Dateinamen extrahiert und die Datei in Zeilen gelesen. Die gelesenen Zeilen werden in Gruppen zu je 1000 Stück gebündelt. Für jede Gruppe wird die Funktion \lstinline|insertIntoRedis| aufgerufen, die die Daten in die Redis-Datenbank einfügt. Dabei wird der Tabellenname, ein Array mit den Spaltennamen, ein Jedis-Pipeline-Objekt und ein Boolean übergeben, der angibt, ob der Tabellenname \emph{lineorder} ist.
 Zusätzlich wird die Zeit gemessen, die zum lesen und Einfügen der Daten benötigt wird.
 
 \begin{lstlisting}[
@@ -145,7 +148,7 @@ def readLines(fileName: String, dataStructure: Array[String], pipeline: Pipeline
 }
 \end{lstlisting}
 
-Die Funktion \lstinline|insertIntoRedis| arbeitet wie folgt: Zunächst werden die vorliegenden Daten, die aus einer Folge von Zeilen bestehen, verarbeitet. Jede Zeile wird dabei anhand des Trennzeichen (\lstinline+|+) in einzelne Werte aufgeteilt. Anschließend wird für jedes Schlüsselelement im Array \emph{dataStructure} ein entsprechender Wert aus der aufgeteilten Zeile ausgewählt. Dann wird geprüft, ob die Option \emph{isLineOrder} aktiviert ist. Falls zutreffend, wird der Schlüssel für die Redis-Datenbank aus dem Namen der Datenbank und den ersten beiden Werten der Zeile gebildet. Andernfalls wird der Schlüssel lediglich aus dem Datenbanknamen und dem ersten Wert der Zeile erzeugt. Jedes Schlüssel-Wert-Paar wird dann in der Redis-Pipeline mit einem \emph{hset}-Befehl erzeugt, um den Wert unter dem jeweiligen Schlüssel in der Datenbank zu speichern.
+Die Funktion \lstinline|insertIntoRedis| arbeitet wie folgt: Zunächst werden die vorliegenden Daten, die aus einer Folge von Zeilen bestehen, verarbeitet. Jede Zeile wird dabei anhand des Trennzeichen (\lstinline+|+) in einzelne Werte aufgeteilt. Anschließend wird für jedes Schlüsselelement im Array \emph{dataStructure} ein entsprechender Wert aus der aufgeteilten Zeile ausgewählt. Dann wird geprüft, ob der \emph{Boolean} \emph{isLineOrder} wahr ist. Falls zutreffend, wird der Schlüssel für die Redis-Datenbank aus dem Namen der Datenbank und den ersten beiden Werten der Zeile gebildet. Andernfalls wird der Schlüssel lediglich aus dem Datenbanknamen und dem ersten Wert der Zeile erzeugt. Jedes Schlüssel-Wert-Paar wird dann in der Redis-Pipeline mit einem \emph{hset}-Befehl erzeugt, um den Wert unter dem jeweiligen Schlüssel in der Datenbank zu speichern.
 
 \begin{lstlisting}[
     caption=Die Funktion insertIntoRedis des SSB Inserter,
@@ -172,13 +175,13 @@ def insertIntoRedis(data: Seq[String], databaseName: String, dataStructure: Arra
 
 Um eindeutige Schlüsselnamen zu generieren, wird der Wert, der normalerweise als Primärschlüssel in relationalen Datenbanken verwendet wird, dem Tabellennamen angehängt. In der \emph{lineorder}-Tabelle ist dies ein zusammengesetzter Schlüssel, der aus zwei Feldern besteht. Aus diesem Grund ist es im Code notwendig, zwischen der \emph{lineorder}-Tabelle und den anderen Tabellen zu unterscheiden.
 
-Die Daten werden gebündelt und in einer Pipeline an Redis übermittelt. Durch diese Bündelung auf maximal 1000 Elemente pro Pipeline wird die Häufigkeit der Kommunikation mit Redis reduziert. Das wiederum verbessert die Effizienz und Leistung, da weniger einzelne Anfragen nötig sind.
+Die Daten werden gebündelt und in einer Pipeline an Redis übermittelt. Durch diese Bündelung auf maximal 1000 Elemente pro Pipeline wird die Häufigkeit der Kommunikation mit Redis reduziert. Das wiederum verbessert die Effizienz, da weniger einzelne Anfragen nötig sind.
 
 
 \subsubsection{Einfügen von denormalisierten Daten}
 Beim denormalisierten Ansatz werden zuerst alle \emph{.tbl}-Dateien komplett geladen.
 
-Für jede Tabelle gibt es eine passende Scala \emph{case class} die die notwendigen Daten für den SSB Benchmark enthalten. So gibt es die Klassen: \lstinline|ShortenedCustomerObject, ShortenedDateObject, ShortenedLineorderObject, ShortenedPartObject| und \lstinline|ShortenedSupplierObject|.
+Für jede Tabelle gibt es eine passende Scala \emph{case class} die die notwendigen Daten für den SSB Benchmark halten. So gibt es die Klassen: \lstinline|ShortenedCustomerObject, ShortenedDateObject, ShortenedLineorderObject, ShortenedPartObject| und \lstinline|ShortenedSupplierObject|.
 
 \begin{lstlisting}[
     caption=Das ShortenedCustomerObject,
@@ -198,7 +201,7 @@ Es ist zu berücksichtigen, dass ausschließlich die für die Queries notwendige
 
 Für jede Tabelle wird eine Map definiert, die aus einem String als Key und der jeweiligen \emph{case class} als Value besteht.
 
-Für jede Tabelle gibt es eine eigene Funktion, um die entsprechende Map zu füllen. Diese Funktionen folgen einem einheitlichen Schema: Sie verarbeiten die übergebenen Zeilen aus der gelesenen Datei, um eine Map zu erstellen, die anschließend einer der zuvor definierten Maps zugeordnet wird. Dabei besteht der Prozess darin, jede Zeile anhand des Trennzeichens \lstinline+|+ in ihre einzelnen Attribute zu gliedern. Aus diesen Attributen werden spezifische Objekte generiert, wobei nur die relevanten Teile der Zeilen verwendet werden. Dadurch entfallen sämtliche Werte, die nicht für die Abfrage benötigt werden. \cref{code:ssb-inserter-createCustomerMap} zeigt als Beispiel für eine solche Funktion die Funktion  \lstinline|createCustomerMap|, die genutzt wird, um die \emph{customer}-Map zu befüllen.
+Für jede Tabelle gibt es eine eigene Funktion, um die entsprechende Map zu füllen. Diese Funktionen folgen einem einheitlichen Schema: Sie verarbeiten die übergebenen Zeilen aus der gelesenen Datei, um eine Map zu erstellen, die anschließend einer der zuvor definierten Maps zugeordnet wird. Dabei besteht der Prozess darin, jede Zeile anhand des Trennzeichens \enquote{\lstinline+|+} in ihre einzelnen Attribute zu gliedern. Aus diesen Attributen werden spezifische Objekte generiert, wobei nur die relevanten Teile der Zeilen verwendet werden. Dadurch entfallen sämtliche Werte, die nicht für die Abfrage benötigt werden. \cref{code:ssb-inserter-createCustomerMap} zeigt als Beispiel für eine solche Funktion die Funktion  \lstinline|createCustomerMap|, die genutzt wird, um die \emph{customer}-Map zu befüllen.
 
 \begin{lstlisting}[
     caption=Die Funktion createCustomerMap,
@@ -221,7 +224,7 @@ def createCustomerMap(customerLines: Iterator[String]): Unit = {
 \end{lstlisting}
 
 
-Die Funktion \lstinline|readLines| in Scala öffnet eine \emph{.tbl}-Datei, extrahiert den Namen der Tabelle aus dem Dateinamen und wendet die übergebene Funktion auf die Inhalte der Datei an. Die übergeben Funktion ist dabei die passende Funktion zur Erstellung einer Map zu dieser Tabelle, z.~B. \lstinline|createCustomerMap|. Nachdem die Datei geöffnet und die Zeilen an die Funktion übergeben wurden, wird die Datei geschlossen. Die Funktion integriert zusätzlich sowohl eine Zeitmessung zur Überwachung der Leistung als auch eine Fehlerbehandlung.
+Zum Einlesen der Daten gibt es die Funktion \lstinline|readLines|. Sie öffnet eine \emph{.tbl}-Datei, extrahiert den Namen der Tabelle aus dem Dateinamen und wendet die übergebene Funktion auf die Inhalte der Datei an. Die übergeben Funktion ist dabei die passende Funktion zur Erstellung einer Map zu dieser Tabelle, z.~B. \lstinline|createCustomerMap|. Nachdem die Datei geöffnet und die Zeilen an die Funktion übergeben wurden, wird die Datei geschlossen. Die Funktion integriert zusätzlich sowohl eine Zeitmessung als auch eine Fehlerbehandlung.
 
 \begin{lstlisting}[
     caption=Die Funktion readLines für den denormalisierten Ansatz,
@@ -242,7 +245,7 @@ def readLines(fileName: String, f: Iterator[String] => Unit): Unit = {
 }
 \end{lstlisting}
 
-Um die Daten denormalisiert zu speichern, gibt es die \emph{case class} \lstinline|DenormalizedObject|. Sie enthält alle Felder, die für die Queries benötigt werden und kombiniert dabei die case classes der einzelnen Tabellen (siehe \cref{code:ssb-inserter-DenormalizedObject}).
+Um die Daten denormalisiert zu speichern, gibt es die \emph{case class} \lstinline|DenormalizedObject|. Sie enthält alle Felder, die für die Queries benötigt werden und kombiniert dabei die \emph{case classes} der einzelnen Tabellen (siehe \cref{code:ssb-inserter-DenormalizedObject}).
 
 \begin{lstlisting}[
     caption=Die case class DenormalizedObject,
@@ -276,7 +279,7 @@ case class DenormalizedObject(
 
 
 
-Um eine Map mit denormalisierten Objekten zu erstellen, wird die Funktion \lstinline|createDenormalizedMap| genutzt. Diese verwendet die zuvor erstellten Maps der verschiedenen Tabellen. Die Funktion geht folgendermaßen vor: Zunächst wird jede Bestellung in \lstinline|lineorderMap| durchlaufen und für jeden Eintrag werden passende Objekte in den anderen Maps, also  \lstinline|customerMap|, \lstinline|supplierMap|, \lstinline|partMap| und \lstinline|dateMap|, gesucht. Dabei werden spezifische Schlüssel verwendet, die in den Bestellungen hinterlegt sind, z.~B. \lstinline|lo\_custkey|. In relationalen Datenbanken werden die Tabellen über diese Schlüssel verknüpft. Anschließend wird für jede Bestellung ein \lstinline|DenormalizedObject| erstellt, welches Informationen aus den entsprechenden Kundendaten, Lieferantendaten, Teildaten und Datumsobjekten mit den Bestelldaten kombiniert. Dieser Prozess führt zur Denormalisierung der Struktur, indem Daten aus verschiedenen Quellen zu einem einzigen Objekt zusammengeführt werden. Die denormalisierten Objekte werden dann in der \lstinline|denormalizedMap| gespeichert, wobei als Schlüssel der Key der \emph{lineorder}-Einträge verwendet wird.
+Die Funktion \lstinline|createDenormalizedMap| wird genutzt, um eine Map mit denormalisierten Objekten zu erstellen. Diese verwendet die zuvor erstellten Maps der verschiedenen Tabellen. Die Funktion geht folgendermaßen vor: Zunächst wird jede Bestellung in \lstinline|lineorderMap| durchlaufen und für jeden Eintrag werden passende Objekte in den anderen Maps, also  \lstinline|customerMap|, \lstinline|supplierMap|, \lstinline|partMap| und \lstinline|dateMap|, gesucht. Dabei werden spezifische Schlüssel verwendet, die in den Bestellungen hinterlegt sind, z.~B. \lstinline|lo_custkey|. In relationalen Datenbanken werden die Tabellen über diese Schlüssel verknüpft. Anschließend wird für jede Bestellung ein \lstinline|DenormalizedObject| erstellt, welches Informationen aus den entsprechenden \emph{customer}-Daten, \emph{supplier}-Daten, \emph{part}-Daten und \emph{date}-Daten mit den \emph{lineoder}-Daten kombiniert. Dieser Prozess führt zur Denormalisierung der Struktur, indem Daten aus verschiedenen Quellen zu einem einzigen Objekt zusammengeführt werden. Die denormalisierten Objekte werden dann in der \lstinline|denormalizedMap| gespeichert, wobei als Schlüssel der Key der \emph{lineorder}-Einträge verwendet wird.
 
 \begin{lstlisting}[
     caption=Die Funktion createDenormalizedMap,
@@ -328,9 +331,10 @@ def createDenormalizedMap(
 }
 \end{lstlisting}
 
+% TODO: Alle Hashes etc emph machen
 
-Zum Schluss werden die Daten mit der Funktion \lstinline|insertDenormalizedObjectsIntoRedis| an Redis gesendet.
-Die Funktion gruppiert die denormalisierten Objekte der \lstinline|denormalizedMap| in Gruppen zu je 1000, um die Einfügeeffizienz in Redis zu optimieren. Für jedes denormalisierte Objekt wird eine Map erstellt, die aus den Bezeichnungen der Attribute der Objekte als Schlüssel und den Attributen als Wert besteht. Anschließend werden diese Maps mittels einer Redis-Pipeline in die Datenbank übertragen, wobei sie als Hash in der Datenbank gespeichert werden. Für die Schlüssel der Hashes wird eine Kombination aus \lstinline|lo\_oderderkey| und \lstinline|lo\_linenumber| verwendet. Um die Transaktionen abzuschließen, wird die Pipeline nach dem Einfügen jeder Gruppe von 1000 Objekten synchronisiert.
+Zum Schluss wird die Funktion \lstinline|insertDenormalizedObjectsIntoRedis| genutzt, um die Daten an Redis zu senden.
+Dabei gruppiert die Funktion die denormalisierten Objekte der \lstinline|denormalizedMap| in Gruppen zu je 1000, um die Einfügeeffizienz in Redis zu optimieren. Für jedes denormalisierte Objekt wird eine Map erstellt, die aus den Bezeichnungen der Attribute der Objekte als Schlüssel und den Attributen als Wert besteht. Anschließend werden diese Maps mittels einer Redis-Pipeline in die Datenbank übertragen, wobei sie als \emph{Hash} in der Datenbank gespeichert werden. Für die Schlüssel der \emph{Hashes} wird eine Kombination aus \lstinline|lo_oderderkey| und \lstinline|lo_linenumber| verwendet. Um die Transaktionen abzuschließen, wird die Pipeline nach dem Einfügen jeder Gruppe von 1000 Objekten synchronisiert und damit ausgeführt.
 
 \begin{lstlisting}[
     caption=Die Funktion insertDenormalizedObjectsIntoRedis,
@@ -380,8 +384,8 @@ private def insertDenormalizedObjectsIntoRedis(pipeline: Pipeline): Unit = {
 
 \subsubsection{Konfiguration von RediSearch und Jedis}
 Standardmäßig begrenzt RediSearch sowohl die Anzahl der Suchergebnisse als auch die der Aggregationsergebnisse (siehe Dokumentation von RediSearch~\cite{redis_ltd_configuration_nodate}). Außerdem verfügt RediSearch über einen Timeout für Abfragen. Um sicherzustellen, dass diese Begrenzungen bei der Verarbeitung großer Datenmengen nicht wirksam werden, werden sie deaktiviert.
-
 Gleiches gilt für den Timeout von Jedis auf der Clientseite.
+
 \begin{lstlisting}[
     caption=Konfiguration von RediSearch,
     label=code:redis-olap-client-config,
@@ -406,9 +410,9 @@ jedis.getClient.setTimeoutInfinite()
 \subsection{Ansatz 2: Clientseitige Joins}
 
 \subsubsection{Aufbau der Daten}\label{sec:client-approach-datastructure}
-Dieser Ansatz beruht auf einer Struktur, in der die Daten so nah wie möglich an der ursprünglichen Datenstruktur gehalten werden, was durch die Verwendung künstlicher Namensräume erreicht wird. Konkret bedeutet dies, dass jede Zeile aller \emph{.tbl}-Dateien mit einem spezifischen Präfix in die Datenbank eingefügt wurde. . Für jeden dieser Namensräume wurde ein dedizierter Index erstellt. Bei der Erstellung dieser Indizes wurden nur die notwendigen Felder für den jeweiligen Kontext berücksichtigt.
+Dieser Ansatz beruht auf einer Struktur, in der die Daten so nah wie möglich an der ursprünglichen Datenstruktur gehalten werden, was durch die Verwendung künstlicher Namensräume erreicht wird. Konkret bedeutet dies, dass jede Zeile aller \emph{.tbl}-Dateien mit einem spezifischen Präfix in die Datenbank eingefügt wurde. Für jeden dieser Namensräume wurde ein dedizierter Index erstellt. Bei der Erstellung dieser Indizes wurden nur die notwendigen Felder für den jeweiligen Kontext berücksichtigt.
 
-Für den Namensraum der \emph{supplier}-Daten wurde ein Index erstellt, der ausschließlich das Feld \emph{s\_region} enthält. Dieses Feld wird als \emph{TAG} indiziert, da es Daten wie beispielsweise \lstinline|AMERICA| enthält.
+Für den Namensraum der \emph{supplier}-Daten wurde ein Index erstellt, der ausschließlich das Feld \emph{s\_region} enthält. Dieses Feld wird als \emph{TAG} indiziert, da es Daten wie beispielsweise \lstinline|AMERICA| enthält. % TODO: Tag vs Text
 
 \begin{lstlisting}[
     caption=Befehl zum Anlegen des Index für supplier-Daten,
@@ -419,7 +423,7 @@ FT.CREATE supplier-index PREFIX 1 "supplier:" SCHEMA s_region TAG
 \end{lstlisting}
 
 
-Ähnlich verhält es sich mit dem Index für die \emph{part}-Daten, der lediglich das Feld \emph{p\_category} umfasst. Dieses Feld wird als \emph{Tag} indiziert, da es Werte wie beispielsweise \lstinline|MFGR#54| enthält.
+Ähnlich verhält es sich mit dem Index für die \emph{part}-Daten, der lediglich das Feld \emph{p\_category} umfasst. Dieses Feld wird ebenfalls als \emph{TAG} indiziert, da es Werte wie beispielsweise \lstinline|MFGR#54| enthält.
 
 \begin{lstlisting}[
     caption=Befehl zum Anlegen des Index für part-Daten,
@@ -479,7 +483,7 @@ val dateFilters: List[Query.Filter] = List(new Query.NumericFilter("d_year", 199
 val dateDocuments: List[Document] = queryDocuments(jedisPooled, "date-index", filters = dateFilters, List("d_datekey"))
 \end{lstlisting}
 
-Im Anschluss wird ein Query-String für die \emph{lineorder}-Daten erzeugt, indem für jedes Dokument, das aus dem \emph{date-index} abgerufen wird, eine Datumsbereichsabfrage erstellt wird. Diese Abfragen werden in einer Liste zusammengefasst und mit dem Trennzeichen \enquote{|} (logisches Oder) zu einem einzigen RediSearch-Abfragestring kombiniert. Dieser Ansatz ermöglicht die Kombination mehrerer spezifischer Datumsabfragen in einer einzigen Datenbankabfrage.
+Im Anschluss wird ein Query-String für die \emph{lineorder}-Daten erzeugt, indem für jedes Dokument, das aus dem \emph{date-index} abgerufen wird, eine Datumsbereichsabfrage erstellt wird. Diese Abfragen werden in einer Liste zusammengefasst und mit dem Trennzeichen \enquote{\lstinline+|+} (logisches Oder) zu einem einzigen RediSearch-Abfragestring kombiniert. Dieser Ansatz ermöglicht die Kombination mehrerer spezifischer Datumsabfragen in einer einzigen Datenbankabfrage.
 
 \begin{lstlisting}[
     caption=Erstellen eines Query-Strings mit Datumsbereichen für Q1.1,
@@ -521,7 +525,8 @@ Als letzter Schritt wird der Umsatz berechnet, indem über die Liste der abgefra
 val revenue = relevantLineOrderDocuments.map(doc => doc.getString("lo_extendedprice").toLong * doc.getString("lo_discount").toLong).sum // Using Long is crucial, since result > Integer MAX
 \end{lstlisting}
 
-Hinweis: Die Funktion \lstinline|queryDocuments| wurde eigens entwickelt und erleichtert die Ausführung bestimmter Anfragen an Redis mit Jedis. Sie ist dafür konzipiert, Abfragen durchzuführen, um eine Liste von Dokumenten zu erhalten. Dabei können sowohl Filter als auch die zurückzugebenden Werte angegeben werden. Als Parameter benötigt sie eine Instanz von \emph{JedisPooled} zur Kommunikation mit Redis, einen Indexnamen für die Abfrage, optional einen Query-String, eine Liste von Filtern zur Einschränkung der Ergebnisliste und eine Liste von zurückzugebenden Feldern. Die Methode setzt die Abfragelimitierung und Timeout-Einstellung auf die maximal möglichen Werte und fügt die definierten Filter der Abfrage hinzu. Anschließend wird die Abfrage ausgeführt und das Ergebnis in eine Scala-Liste von \emph{Document}-Objekten umgewandelt. Die Klasse Dokument stammt dabei aus der Jedis-Bibliothek.
+Hinweis: Die Funktion \lstinline|queryDocuments| wurde eigens entwickelt und erleichtert die Ausführung bestimmter Anfragen an Redis mit Jedis. Sie ist dafür konzipiert, Abfragen durchzuführen, um eine Liste von Dokumenten zu erhalten. Dabei können sowohl Filter als auch die zurückzugebenden Werte angegeben werden. Als Parameter benötigt sie eine Instanz von \emph{JedisPooled} zur Kommunikation mit Redis, einen Indexnamen für die Abfrage, optional einen Query-String, eine Liste von Filtern zur Einschränkung der Ergebnisliste und eine Liste von zurückzugebenden Feldern. Die Methode setzt die Abfragelimitierung und Timeout-Einstellung auf die maximal möglichen Werte und fügt die definierten Filter der Abfrage hinzu. Anschließend wird die Abfrage ausgeführt und das Ergebnis in eine Scala-Liste von \emph{Document}-Objekten umgewandelt. Die Klasse \emph{Document} stammt dabei aus der Jedis-Bibliothek.
+Die \lstinline|queryDocuments| Funktion wurde entwickelt, um sich wiederholenden Code bei den verschiedenen Queries zu vermeiden.
 
 \begin{lstlisting}[
     caption=Hilfsfunktion queryDocuments um einfacher RediSearch-Abfragen in Scala durchzuführen,
@@ -567,7 +572,7 @@ Q 2.2 & 26595 & 267       \\ \hline
     \label{pic:results-client}    % label the image for internal referencing
 \end{figure}
 
-Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten ohne RediSearch-Aggregationen verwendet. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_client\_c}, \emph{Q1\_2\_client\_c}, \emph{Q1\_3\_client\_c}, \emph{Q2\_1\_client\_a}, \emph{Q2\_2\_client\_a}. Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten.
+Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in kleineren Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten ohne RediSearch-Aggregationen verwendet. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_client\_c}, \emph{Q1\_2\_client\_c}, \emph{Q1\_3\_client\_c}, \emph{Q2\_1\_client\_a}, \emph{Q2\_2\_client\_a}. Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten. % Hier eventuell auf Aggregation verweisen
 
 % Noch was zu Q2.1
 
@@ -576,7 +581,7 @@ Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwi
 
 \subsection{Ansatz 3: Serverseitige Joins}
 \subsubsection{Aufbau der Daten}
-Der Aufbau der Daten entspricht dem Aufbau der Daten im Client-Ansatz (siehe \cref{sec:client-approach-datastructure}). Dieser Ansatz unterscheidet sich lediglich in den Abfragen von dem anderen Ansatz.
+Der Aufbau der Daten entspricht dem Aufbau der Daten im Client-Ansatz (siehe \cref{sec:client-approach-datastructure}). Dieser Ansatz unterscheidet sich lediglich in den Abfragen.
 \subsubsection{Aufbau der Abfragen}
 \subsubsection{Ergebnisse}
 
