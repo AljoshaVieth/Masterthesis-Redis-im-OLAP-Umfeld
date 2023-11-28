@@ -233,7 +233,7 @@ Die Queries des \ac{SSB} sind in vier Kategorien aufgeteilt (query flights): % q
 
 %TODO: \usepackage{underscore}
 
-\paragraph{Q1}
+\paragraph{Q1}\label{sec:ssb-q1}
 %ausbauen
 Queries in Q1 schränken die Daten über nur eine Dimension, \emph{DATE}, ein.
 Die Faktentabelle \emph{LINEORDER} wird mit der Dimensionstabelle\emph{DATE} gejoint und die Daten anhand einer Zeitspanne aus der DATE-Tabelle und den Bereichen der Felder \emph{lo\_discount} und \emph{lo\_quantity} aus der LINEORDER-Tabelle gefiltert.
@@ -257,7 +257,7 @@ WHERE
     AND lo_quantity < [QUANTITY];
 \end{lstlisting}
 
-\paragraph{Q2}
+\paragraph{Q2}\label{sec:ssb-q2}
 In Q2 schränken die Queries die Daten über zwei Dimensionen ein: \emph{PART} und \emph{SUPPLIER}.
 Anschließend wird wie in Q1 der Umsatz gebildet, wobei die Ergebnisse hier noch nach \emph{d\_year} und \emph{p\_brand1} gruppiert und sortiert werden.  
 In Q2 werden insgesamt vier Tabellen (\emph{LINEORDER}, \emph{PART}, \emph{SUPPLIER}, \emph{DATE}) gejoint.
@@ -283,7 +283,7 @@ ORDER BY
 
 \end{lstlisting}
 
-\paragraph{Q3}
+\paragraph{Q3}\label{sec:ssb-q3}
 In Q3 schränken die Queries die Daten über drei Dimensionen ein: \emph{DATE}, \emph{SUPPLIER} und \emph{CUSTOMER}.
 Wie in Q1 und Q2 werden auch hier die Umsätze gebildet.
 Anschließend werden sie nach \emph{c\_nation}, \emph{s\_region} und \emph{d\_year} gruppiert und nach \emph{d\_year} sortiert.
@@ -311,7 +311,7 @@ ORDER BY
     d_year ASC, revenue DESC;
 \end{lstlisting}
 
-\paragraph{Q4}
+\paragraph{Q4}\label{sec:ssb-q4}
 Die Queries von Q4 schränken die Daten basierend auf drei Dimensionen\\ (\emph{CUSTOMER}, \emph{SUPPLIER} und \emph{PART}) ein.
 Auch hier wird wieder der Umsatz berechnet.
 Dieses Mal wird er durch \emph{d\_year} und \emph{c\_nation} gruppiert und sortiert.

@@ -406,15 +406,24 @@ jedis.getClient.setTimeoutInfinite()
 \subsection{Ansatz 1: Alles in Keys}
 \subsubsection{Aufbau der Daten}
 \subsubsection{Aufbau der Abfragen}
-\subsubsection{Ergebnisse}
+\subsubsection{Vergleich der Laufzeiten von Abfragen}
 \subsubsection{Fazit}
 
 
+
+
+% ----------------------------------------------------------
 \subsection{Ansatz 2: Clientseitige Joins}
 Dieser Ansatz nutzt eine Datenstruktur, die der Struktur von relationalen Datenbanken möglichst ähnlich ist. Da SSB-Abfragen in einer solchen Struktur zwingend Joins erfordern und Redis keine Joins unterstützt, werden in diesem Ansatz clientseitige Joins eingesetzt. Die verschiedenen Daten werden zunächst von Redis abgefragt und anschließend in einem Scala-Programm gejoint und weiterverarbeitet.
 
-Dieses Kapitel ist wie folgt aufgebaut:
-Zunächst wird die verwendete Datenstruktur betrachtet. Anschließend wird ausführlich erläutert, wie die Abfragen in Scala strukturiert und umgesetzt wurden. Im dritten Abschnitt werden die Ergebnisse untersucht und im vierten Abschnitt wird ein vorläufiges Fazit gezogen.
+Dieses Kapitel ist wie folgt aufgebaut:\\
+Zunächst wird die verwendete Datenstruktur betrachtet. Anschließend werden einige Hilfsfunktionen erläutert, die das Umsetzen der Queries in Scala vereinfachen.
+In den nächsten zwei Abschnitten wird ausführlich erläutert, wie die Abfragen in Scala strukturiert und umgesetzt wurden. Dabei gibt es zwei verschiedene Varianten: In \emph{Variante 1} werden zuerst alle Daten der einzelnen Indexe abgefragt und danach gejoint. In \emph{Ansatz 2} werden zunächst die Daten der Indexe mit den Fakten (\lstinline|date,part,supplier,customer|) abgefragt und daraus dann eine Query gebaut, mit der die \emph{lineoder}-Daten abgefragt werden.
+Im fünften Abschnitt werden die Ergebnisse untersucht und im sechsten Abschnitt wird ein vorläufiges Fazit gezogen.
+
+Dieser Ansatz wurde für die Queries \emph{Q1.1}, \emph{Q1.2}, \emph{Q1.3}, \emph{Q2.1}, \emph{Q2.2} und \emph{Q2.3} umgesetzt. Exemplarisch werden die Queries Q1.1 und Q2.1 detailliert erklärt.
+
+
 \subsubsection{Aufbau der Daten}\label{sec:client-approach-datastructure}
 Dieser Ansatz beruht auf einer Struktur, in der die Daten so nah wie möglich an der ursprünglichen Datenstruktur gehalten werden, was durch die Verwendung künstlicher Namensräume erreicht wird. Konkret bedeutet dies, dass jede Zeile aller \emph{.tbl}-Dateien mit einem spezifischen Präfix in die Datenbank eingefügt wurde. Für jeden dieser Namensräume wurde ein dedizierter Index erstellt. Bei der Erstellung dieser Indizes wurden nur die notwendigen Felder für den jeweiligen Kontext berücksichtigt.
 
@@ -429,14 +438,14 @@ FT.CREATE supplier-index PREFIX 1 "supplier:" SCHEMA s_region TAG
 \end{lstlisting}
 
 
-Ähnlich verhält es sich mit dem Index für die \emph{part}-Daten, der lediglich das Feld \emph{p\_category} umfasst. Dieses Feld wird ebenfalls als \emph{TAG} indiziert, da es Werte wie beispielsweise \lstinline|MFGR#54| enthält.
+Der Index für die \emph{part}-Daten indiziert die Felder \emph{p\_category} und \emph{p\_brand1}. Beide Felder werden ebenfalls als \emph{TAG} indiziert, da sie Werte wie beispielsweise \lstinline|MFGR#54| oder\lstinline|MFGR#2221| enthalten.
 
 \begin{lstlisting}[
     caption=Befehl zum Anlegen des Index für part-Daten,
     label=code:redis-index-part,
     numbers=none
 ]
-FT.CREATE part-index PREFIX 1 "part:" SCHEMA p_category TAG
+FT.CREATE part-index PREFIX 1 "part:" SCHEMA p_category TAG p_brand1 TAG
 \end{lstlisting}
 
 
@@ -462,78 +471,11 @@ Dies umfasst \emph{lo\_orderdate}, \emph{lo\_discount}, \emph{lo\_quantity}, \em
 FT.CREATE lineorder-index PREFIX 1 "lineorder:" SCHEMA lo_orderdate NUMERIC lo_discount NUMERIC lo_quantity NUMERIC lo_partkey NUMERIC lo_suppkey NUMERIC lo_extendedprice NUMERIC
 \end{lstlisting}
 
-\subsubsection{Aufbau der Abfragen}
 
-Für die erste Query (Q1.1) werden im Original die Daten aus der Tabelle \emph{date} und der Tabelle \emph{lineorder} gejoint. Da Redis keine Möglichkeiten zum Joinen bietet, müssen die Daten clientseitig gejoint werden.
+\subsubsection{Erklärung von Hilfsfunktionen}\label{sec:redis-scale-helper}
+Da die Abfragen im SSB Benchmark häufig eine ähnliche Struktur aufweisen, erfordern sie oft die Verwendung gleicher Codeabschnitte. Um redundanten Code in den verschiedenen Abfragen zu vermeiden, wurden Hilfsfunktionen in Scala entwickelt, die im Folgenden kurz erläutert werden.
 
-\begin{lstlisting}[
-    caption=Originale SQL Query Q1.1 des SSB,
-    label=code:ssb-q-1-1,
-    language=Sql
-]
-select sum(lo_extendedprice*lo_discount) as revenue
-  from lineorder, date
-  where lo_orderdate = d_datekey
-  and d_year = 1993
-  and lo_discount between 1 and 3
-  and lo_quantity < 25;
-\end{lstlisting}
-
-Dazu werden zuerst die relevanten \emph{date}-Datensätze geladen, da diese weniger Daten enthalten als die benötigten \emph{lineorder}-Datensätze. Im ersten Schritt werden also alle Einträge aus dem \emph{date-index} abgefragt, bei denen \lstinline|d_year=1993|. Bei der Abfrage wird angegeben, dass nur das Feld \lstinline|d_datekey| zurückgegeben werden soll.
-
-\begin{lstlisting}[
-    caption=Abfragen der date-Daten für Q1.1 im Redis Olap Client,
-    label=code:redis-olap-server-q1-1-date,
-    language=Java
-]
-val dateFilters: List[Query.Filter] = List(new Query.NumericFilter("d_year", 1993, 1993))
-val dateDocuments: List[Document] = queryDocuments(jedisPooled, "date-index", filters = dateFilters, List("d_datekey"))
-\end{lstlisting}
-
-Im Anschluss wird ein Query-String für die \emph{lineorder}-Daten erzeugt, indem für jedes Dokument, das aus dem \emph{date-index} abgerufen wird, eine Datumsbereichsabfrage erstellt wird. Diese Abfragen werden in einer Liste zusammengefasst und mit dem Trennzeichen \enquote{\lstinline+|+} (logisches Oder) zu einem einzigen RediSearch-Abfragestring kombiniert. Dieser Ansatz ermöglicht die Kombination mehrerer spezifischer Datumsabfragen in einer einzigen Datenbankabfrage.
-
-\begin{lstlisting}[
-    caption=Erstellen eines Query-Strings mit Datumsbereichen für Q1.1,
-    label=code:redis-olap-client-q1-1-query-string,
-    language=Java
-]
-val d_datekeys = dateDocuments.flatMap { doc =>
-	val validDateRanges = "@lo_orderdate:[" + doc.getString("d_datekey") + " " + doc.getString("d_datekey") + "]"
-	List(validDateRanges) // return a List with the dateRange string
-}
-val queryString = d_datekeys.mkString(" | ")
-// queryString looks like this: @lo_orderdate:[19931029 19931029] | @lo_orderdate:[19930709 19930709] ...]
-\end{lstlisting}
-
-
-Als nächstes wird die zweite Abfrage, diesmal für den \emph{lineorder-index} erstellt. Dazu werden numerische Filter für die Felder \lstinline|lo_discount| und \lstinline|lo_quantity| verwendet. Zusätzlich wird der gerade erstellte Query-String für das Feld \lstinline|lo_orderdate| hinzugefügt. Es wird angegeben, dass nur die Felder \lstinline|lo_extendedprice| und \lstinline|lo_discount| abgefragt werden sollen.
-
-\begin{lstlisting}[
-    caption=Abfragen der lineoder-Daten für Q1.1 im Redis Olap Client,
-    label=code:redis-olap-server-q1-1-lineorder,
-    language=Java
-]
-val query = new Query(queryString)
-val lineorderFilters = List(
-	new Query.NumericFilter("lo_discount", 1, 3),
-	new Query.NumericFilter("lo_quantity", 0, 24)
-)
-val relevantLineOrderDocuments = queryDocuments(jedisPooled, "lineorder-index", query = query, filters = lineorderFilters, List("lo_extendedprice", "lo_discount"))
-\end{lstlisting}
-
-
-Als letzter Schritt wird der Umsatz berechnet, indem über die Liste der abgefragten Dokumente (\lstinline|relevantLineOrderDocuments|) iteriert wird. Für jedes Dokument werden die Werte von \lstinline|lo_extendedprice| und \lstinline|lo_discount| ausgelesen, in den Datentyp \emph{Long} konvertiert und multipliziert. Die Ergebnisse werden dann summiert, um den Gesamtertrag zu erhalten. Die Verwendung von \emph{Long} ist hier von entscheidender Bedeutung, um große Zahlen zu verarbeiten, die den maximalen Wert eines \emph{Integer} überschreiten.
-
-\begin{lstlisting}[
-    caption=Berechnen des Umsatzes der geladenen lineoder-Dokumente für Q1.1 im Redis Olap Client,
-    label=code:redis-olap-server-q1-1-sum-calculation,
-    language=Java
-]
-val revenue = relevantLineOrderDocuments.map(doc => doc.getString("lo_extendedprice").toLong * doc.getString("lo_discount").toLong).sum // Using Long is crucial, since result > Integer MAX
-\end{lstlisting}
-
-Hinweis: Die Funktion \lstinline|queryDocuments| wurde eigens entwickelt und erleichtert die Ausführung bestimmter Anfragen an Redis mit Jedis. Sie ist dafür konzipiert, Abfragen durchzuführen, um eine Liste von Dokumenten zu erhalten. Dabei können sowohl Filter als auch die zurückzugebenden Werte angegeben werden. Als Parameter benötigt sie eine Instanz von \emph{JedisPooled} zur Kommunikation mit Redis, einen Indexnamen für die Abfrage, optional einen Query-String, eine Liste von Filtern zur Einschränkung der Ergebnisliste und eine Liste von zurückzugebenden Feldern. Die Methode setzt die Abfragelimitierung und Timeout-Einstellung auf die maximal möglichen Werte und fügt die definierten Filter der Abfrage hinzu. Anschließend wird die Abfrage ausgeführt und das Ergebnis in eine Scala-Liste von \emph{Document}-Objekten umgewandelt. Die Klasse \emph{Document} stammt dabei aus der Jedis-Bibliothek.
-Die \lstinline|queryDocuments| Funktion wurde entwickelt, um sich wiederholenden Code bei den verschiedenen Queries zu vermeiden.
+\paragraph{queryDocuments}: Die Funktion \lstinline|queryDocuments| wurde eigens entwickelt und erleichtert die Ausführung bestimmter Anfragen an Redis mit Jedis. Sie ist dafür konzipiert, Abfragen durchzuführen, um eine Liste von Dokumenten zu erhalten. Dabei können sowohl Filter als auch die zurückzugebenden Werte angegeben werden. Als Parameter benötigt sie eine Instanz von \emph{JedisPooled} zur Kommunikation mit Redis, einen Indexnamen für die Abfrage, optional einen Query-String, eine Liste von Filtern zur Einschränkung der Ergebnisliste und eine Liste von zurückzugebenden Feldern. Die Methode setzt die Abfragelimitierung und Timeout-Einstellung auf die maximal möglichen Werte und fügt die definierten Filter der Abfrage hinzu. Anschließend wird die Abfrage ausgeführt und das Ergebnis in eine Scala-Liste von \emph{Document}-Objekten umgewandelt. Die Klasse \emph{Document} stammt dabei aus der Jedis-Bibliothek.
 
 \begin{lstlisting}[
     caption=Hilfsfunktion queryDocuments um einfacher RediSearch-Abfragen in Scala durchzuführen,
@@ -553,19 +495,310 @@ protected def queryDocuments(jedisPooled: JedisPooled, indexName: String, query:
 }
 \end{lstlisting}
 
+\paragraph{filterDocuments}: Die Funktion \lstinline|filterDocuments| wurde entwickelt, um eine Liste von Dokumenten (\emph{List[Document]}) anhand einer anderen Liste von Dokumenten (\emph{List[Document]}) zu filtern. Sie verwendet zwei Felder (\emph{filterField1} und \emph{filterField2}), um die Dokumente in der ersten Liste (\emph{documentsToFilter}) mit denen in der zweiten Liste (\emph{documentsToFilterWith}) zu vergleichen. Das Ergebnis ist eine Liste von Dokumenten, die die Filterkriterien erfüllen und aus der ersten Liste stammen.
+
+\begin{lstlisting}[
+    caption=Hilfsfunktion filterDocuments,
+    label=code:redis-olap-client-filterDocuments,
+    language=Java
+]
+protected def filterDocuments(documentsToFilter: List[Document], filterField1: String, documentsToFilterWith: List[Document], filterField2: String): List[Document] = {
+	val filterValues = documentsToFilterWith.map(_.getString(filterField2)).toSet // Converting to set to enable faster comparison due to constant-time lookups
+	documentsToFilter.filter(doc => filterValues.contains(doc.getString(filterField1)))
+}
+\end{lstlisting}
+
+
+\paragraph{filterAndJoinDocuments}: Die Funktion \lstinline|filterAndJoinDocuments| arbeitet mit zwei Listen von Dokumenten: \emph{documentsToFilter} und \emph{documentsToFilterWith}. Sie verwendet die Felder \emph{filterField1} und \emph{filterField2}, um die Dokumente in \emph{documentsToFilter} basierend auf den Werten in \emph{documentsToFilterWith} zu filtern. Nach dem Filtervorgang verknüpft sie die übrigen Dokumente anhand der in \emph{fieldsToJoin} angegebenen Felder. Das Ergebnis ist eine Liste von Dokumenten, die den Filterkriterien entsprechen und durch die Verknüpfung bearbeitet wurden.
+
+\begin{lstlisting}[
+    caption=Hilfsfunktion filterAndJoinDocuments,
+    label=code:redis-olap-client-filterAndJoinDocuments,
+    language=Java
+]
+protected def filterAndJoinDocuments(documentsToFilter: List[Document], filterField1: String, documentsToFilterWith: List[Document], filterField2: String, fieldsToJoin: List[String]): List[Document] = {
+	val filterMap = documentsToFilterWith.map(doc => (doc.getString(filterField2), doc)).toMap
+	documentsToFilter
+		.filter(doc => filterMap.contains(doc.getString(filterField1)))
+		.map(doc => {
+			val fieldsToJoinValues = fieldsToJoin.map(filterMap(doc.getString(filterField1)).getString)
+			fieldsToJoin.zip(fieldsToJoinValues).foldLeft(doc)((d,p) => d.set(p._1, p._2))
+		})
+}
+\end{lstlisting}
+
+\paragraph{exchangeDocumentProperties}: In der Query-Kategorie 2 werden die Ergebnisse anhand von bestimmten Feldern gruppiert.
+Die geladenen \emph{lineoder}-Dokumente (\lstinline|relevantLineorderDocuments|) enthalten dabei die \emph{Properties} (ein Feld der \emph{Documents}-Klasse aus \emph{Jedis}) \emph{lo\_partkey} und \emph{lo\_orderdate}. Die Query erfordert jedoch eine Gruppierung nach den \emph{Properties} \emph{p\_brand1} und \emph{d\_year}, die in den Dokumenten aus \lstinline|partDocuments| und \lstinline|dateDocuments| enthalten sind. Um die Gruppierung korrekt durchführen zu können, ersetzt diese Funktion die \emph{Properties} \emph{lo\_partkey} und \emph{lo\_orderdate} in den \lstinline|relevantLineorderDocuments| durch die entsprechenden \emph{Properties} \emph{p\_brand1} und \emph{d\_year} aus \lstinline|partDocuments| und \lstinline|dateDocuments|. Damit wird sichergestellt, dass die richtigen Kriterien für die Gruppierung verwendet werden können.
+
+\begin{lstlisting}[
+    caption=Hilfsfunktion exchangeDocumentProperties,
+    label=code:redis-olap-client-exchangeDocumentProperties,
+    language=Java
+]
+def exchangeDocumentProperties(partDocuments: List[Document], dateDocuments: List[Document], relevantLineorderDocuments: List[Document]): List[Document] = {
+	// Creating mappings from part key to brand and from order date to year
+	val partKeyToBrand = partDocuments.map(doc => doc.getString("p_partkey") -> doc.getString("p_brand1")).toMap
+	val dateKeyToYear = dateDocuments.map(doc => doc.getString("d_datekey") -> doc.getString("d_year")).toMap
+
+	// Iterating over each document in relevantLineorderDocuments to update their properties
+	val updatedLineorderDocuments = relevantLineorderDocuments.map { doc =>
+		// Converting Java properties to a Scala Map and transforming all values to Strings
+		val propertiesScalaMap = doc.getProperties.asScala.map { entry =>
+			entry.getKey -> entry.getValue.toString
+		}.toMap
+
+		// Updating the properties based on the mappings created earlier
+		val updatedProperties = propertiesScalaMap.flatMap {
+			// If the key is lo_partkey and a mapping exists, replace it with p_brand1
+			case (key, value) if key == "lo_partkey" && partKeyToBrand.contains(value) =>
+				Some("p_brand1" -> partKeyToBrand(value))
+			// If the key is lo_orderdate and a mapping exists, replace it with d_year
+			case (key, value) if key == "lo_orderdate" && dateKeyToYear.contains(value) =>
+				Some("d_year" -> dateKeyToYear(value))
+			// For other keys, retain them as they are
+			case (key, value) if key != "lo_partkey" && key != "lo_orderdate" =>
+				Some(key -> value)
+			// Discard keys that don't match any of the above cases
+			case _ => None
+		}
+		// Creating a new Document with the updated properties
+		new Document(doc.getId, updatedProperties.asJava, doc.getScore, doc.getPayload)
+	}
+	updatedLineorderDocuments
+}
+\end{lstlisting}
+% TODO: Vielleicht paragraphen statt subsubsections für q11 q21 verwenden
+\subsubsection{Aufbau der Query Q1.1 in Variante 1}
+Für die erste Query (Q1.1) werden im Original die Daten aus der Tabelle \emph{date} und der Tabelle \emph{lineorder} gejoint (siehe \cref{sec:ssb-q1}). Da Redis keine Möglichkeiten zum Joinen bietet, müssen die Daten clientseitig gejoint werden.
+
+\begin{lstlisting}[
+    caption=Originale SQL Query Q1.1 des SSB,
+    label=code:ssb-q-1-1,
+    language=Sql
+]
+select sum(lo_extendedprice*lo_discount) as revenue
+  from lineorder, date
+  where lo_orderdate = d_datekey
+  and d_year = 1993
+  and lo_discount between 1 and 3
+  and lo_quantity < 25;
+\end{lstlisting}
+
+
+
+
+% TODO: Hinweis, das Dokumente als Begriff genutzt wird!
+
+Um die \emph{Query Q1.1} auszuführen, werden zunächst alle \emph{date}-Dokumente geladen, auf die die Bedingung \lstinline|d_year = 1993| zutrifft.
+Anschließend werden alle \emph{lineorder}-Do\-ku\-men\-te geladen, bei denen die Bedingungen \lstinline|lo_discount between 1 and 3| und \lstinline|lo_quantity < 25| zutreffen.
+Danach werden die beiden Listen der \emph{date}-Dokumente und \emph{lineorder}-Dokumente mit der Funktion \lstinline|filterDocuments| zusammengeführt, wobei die Liste \lstinline|relevantLineOrderDocuments| entsteht.
+Schließlich wird der Ge\-samt\-um\-satz aus den \lstinline|relevantLineOrderDocuments| berechnet und ausgegeben. Die Berechnung erfolgt unter Verwendung von Long-Datentypen, da das Ergebnis den Wertebereich von Integer überschreiten kann.
+
+\begin{lstlisting}[
+    caption=Ausführen der SSB Query Q1.1 mit Client-seitigen Joins Variante 1,
+    label=code:redis-olap-client-q-1-1-variant-1,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): Unit = {
+	val dateFilters: List[Query.Filter] = List(new Query.NumericFilter("d_year", 1993, 1993))
+	val dateDocuments: List[Document] = queryDocuments(jedisPooled, "date-index", filters = dateFilters, List("d_datekey"))
+
+	val lineorderFilters = List(
+		new Query.NumericFilter("lo_discount", 1, 3),
+		new Query.NumericFilter("lo_quantity", 0, 24) // This is not quite correct, since it is assumed that quantity always >= 0
+	)
+	val lineorderDocuments = queryDocuments(jedisPooled, "lineorder-index", filters = lineorderFilters, List("lo_orderdate", "lo_extendedprice", "lo_discount"))
+
+	val relevantLineOrderDocuments = filterDocuments(lineorderDocuments, "lo_orderdate", dateDocuments, "d_datekey")
+	//println("Relevant lineorder documents: " + relevantLineOrderDocuments.length)
+	val revenue = relevantLineOrderDocuments.map(doc => doc.getString("lo_extendedprice").toLong * doc.getString("lo_discount").toLong).sum // The usage of Long is crucial, since the result > Integer MAX
+	println("Revenue: " + revenue)
+}
+\end{lstlisting}
+
+
+% TODO: Indexe suchen und ersetzen durch Indizes
+
+
+\subsubsection{Aufbau der Query Q2.1 in Variante 1}
+Für die Queries aus Kategorie 2 werden im Original die Daten aus den Tabellen \emph{lineorder}, \emph{part}, \emph{supplier} und \emph{date} gejoint (siehe \cref{sec:ssb-q2}).
+
+\begin{lstlisting}[
+    caption=Originale SQL Query Q2.1 des SSB,
+    label=code:ssb-q-2-1,
+    language=Sql
+]
+select sum(lo_revenue), d_year, p_brand1
+  from lineorder, date, part, supplier
+  where lo_orderdate = d_datekey
+  and lo_partkey = p_partkey
+  and lo_suppkey = s_suppkey
+  and p_category = 'MFGR#12'
+  and s_region = 'AMERICA'
+  group by d_year, p_brand1
+  order by d_year, p_brand1;
+\end{lstlisting}
+
+
+Für Qeuery Q2.1 werden zunächst alle Dokumente aus dem \emph{part}-index abgefragt, bei denen \lstinline|p_category=MFGR#12| gilt.
+Anschließend werden alle Dokumente aus dem \emph{supplier}-index abgefragt, bei denen \lstinline|s_region=AMERICA| gilt.
+Als nächsten Schritt werden alle Dokumente aus dem \emph{date}-index abgefragt. Die letzte Abfrage lädt alle Dokumente aus dem \emph{lineoder}-index.
+
+Anschließend werden die geladenen Listen mit Dokumenten durch mehrere Verknüpfungsschritte zusammengeführt.
+Zunächst wird die Liste \lstinline|lineorderDocuments| mittels der Funktion \lstinline|filterDocuments| gefiltert und unter Verwendung der Felder \emph{lo\_suppkey} und \emph{s\_suppkey} mit \lstinline|supplierDocuments| verknüpft.
+Anschließend wird das Ergebnis erneut durch die Anwendung von \lstinline|filterAndJoinDocuments| gefiltert und mit \lstinline|partDocuments| verknüpft, wobei die Felder \emph{lo\_partkey} und \emph{p\_partkey}, sowie das Feld \emph{p\_brand1}, verwendet werden.\\
+Danach erfolgt eine weitere Filterung und Verknüpfung mit \lstinline|dateDocuments|, bei der die Felder \emph{lo\_orderdate} und \emph{d\_datekey}, sowie das Feld \emph{d\_year} verwendet werden.
+Das Ergebnis besteht aus den relevanten Dokumenten, die einer Filterung und Verknüpfung unterzogen wurden.
+
+Als letzten Schritt werden die gefilterten Dokumente aus \lstinline|relevantLineOrderDocuments| nach den Werten der Felder \emph{d\_year} und \emph{p\_brand1} gruppiert.
+Dann werden die Umsätze für jede Gruppe berechnet und in einer Liste von Tupeln gespeichert.
+Schließlich werden die Ergebnisse als eine Art Tabelle formatiert und ausgegeben.
+
+\begin{lstlisting}[
+    caption=Ausführen der SSB Query Q2.1 mit Client-seitigen Joins Variante 1,
+    label=code:redis-olap-client-q-2-1-variant-1,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): Unit = {
+	val partQuery: Query = new Query("@p_category:{MFGR\\#12}")
+	val partDocuments = queryDocuments(jedisPooled, "part-index", partQuery, returnFields = List("p_brand1", "p_partkey"))
+
+	val supplierQuery: Query = new Query("@s_region:{AMERICA}")
+	val supplierDocuments = queryDocuments(jedisPooled, "supplier-index", supplierQuery, returnFields = List("s_suppkey"))
+
+	val dateDocuments: List[Document] = queryDocuments(jedisPooled, "date-index", returnFields = List("d_year", "d_datekey"))
+
+	val lineorderDocuments = queryDocuments(jedisPooled, "lineorder-index", returnFields = List("lo_revenue", "lo_orderdate", "lo_partkey", "lo_suppkey"))
+
+	val relevantLineOrderDocuments = lineorderDocuments
+		.pipe(filterDocuments(_, "lo_suppkey", supplierDocuments, "s_suppkey"))
+		.pipe(filterAndJoinDocuments(_, "lo_partkey", partDocuments, "p_partkey", List("p_brand1")))
+		.pipe(filterAndJoinDocuments(_, "lo_orderdate", dateDocuments, "d_datekey", List("d_year")))
+
+	val grouped: Map[(String, String), List[Document]] = relevantLineOrderDocuments.groupBy(doc => (doc.getString("d_year"), doc.getString("p_brand1")))
+
+	val result: List[((String, String), Long)] = grouped.view.mapValues(docs => docs.map(_.getString("lo_revenue").toLong).sum).toList.sortBy(_._1)
+
+	println("    sum   |    d_year  |    p_brand1    ")
+	result.foreach(x => println(x._2 + " |    " + x._1._1 + "    |    " + x._1._2))
+	println(result.size + " results")
+}
+\end{lstlisting}
+
+
+\subsubsection{Aufbau der Query Q1.1 in Variante 2}
+Um sich das Laden unnötig vieler \emph{lineoder}-Daten zu sparen, werden in dieser Variante zuerst die Daten der anderen Indizes (im Sternschema die Faktentabellen) geladen. Anschließend wird daraus ein Filter-String gebaut, der bei der Query für die \emph{lineorder}-Daten angewandt wird.
+
+Für \emph{Query Q1.1} werden zuerst die relevanten \emph{date}-Datensätze geladen, also die Dokumente, bei denen \lstinline|d_year=1993| gilt.
+
+Im Anschluss wird ein Query-String für die \emph{lineorder}-Daten erzeugt, indem für jedes Dokument, das aus dem \emph{date-index} abgerufen wird, eine Datumsbereichsabfrage erstellt wird. Diese Abfragen werden in einer Liste zusammengefasst und mit dem Trennzeichen \enquote{\lstinline+|+} (logisches Oder) zu einem einzigen RediSearch-Abfragestring kombiniert. Dieser Ansatz ermöglicht die Kombination mehrerer spezifischer Datumsabfragen in einer einzigen Datenbankabfrage.
+
+Als nächstes wird die zweite Abfrage, diesmal für den \emph{lineorder-index} erstellt. Dazu werden numerische Filter für die Felder \lstinline|lo_discount| und \lstinline|lo_quantity| verwendet. Zusätzlich wird der gerade erstellte Query-String für das Feld \lstinline|lo_orderdate| hinzugefügt. Es wird angegeben, dass nur die Felder \lstinline|lo_extendedprice| und \lstinline|lo_discount| abgefragt werden sollen.
+
+Als letzter Schritt wird der Umsatz berechnet, indem über die Liste der abgefragten Dokumente (\lstinline|relevantLineOrderDocuments|) iteriert wird. Für jedes Dokument werden die Werte von \lstinline|lo_extendedprice| und \lstinline|lo_discount| ausgelesen, in den Datentyp \emph{Long} konvertiert und multipliziert. Die Ergebnisse werden dann summiert, um den Gesamtertrag zu erhalten. Die Verwendung von \emph{Long} ist hier von entscheidender Bedeutung, um große Zahlen zu verarbeiten, die den maximalen Wert eines \emph{Integer} überschreiten.
+
+\begin{lstlisting}[
+    caption=Berechnen des Umsatzes der geladenen lineoder-Dokumente für Q1.1 im Redis Olap Client,
+    label=code:redis-olap-client-q1-1-variant-2,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): Unit = {
+	val dateFilters: List[Query.Filter] = List(new Query.NumericFilter("d_year", 1993, 1993))
+	val dateDocuments: List[Document] = queryDocuments(jedisPooled, "date-index", filters = dateFilters, List("d_datekey"))
+
+	val d_datekeys = dateDocuments.flatMap { doc =>
+		val validDateRanges = "@lo_orderdate:[" + doc.getString("d_datekey") + " " + doc.getString("d_datekey") + "]"
+		List(validDateRanges) // return a List with the dateRange string
+	}
+
+	val queryString = d_datekeys.mkString(" | ")
+	val query = new Query(queryString)
+	val lineorderFilters = List(
+		new Query.NumericFilter("lo_discount", 1, 3),
+		new Query.NumericFilter("lo_quantity", 0, 24)
+	)
+	val relevantLineOrderDocuments = queryDocuments(jedisPooled, "lineorder-index", query = query, filters = lineorderFilters, List("lo_extendedprice", "lo_discount"))
+	val revenue = relevantLineOrderDocuments.map(doc => doc.getString("lo_extendedprice").toLong * doc.getString("lo_discount").toLong).sum // The usage of Long is crucial, since the result > Integer MAX
+	println("Revenue: " + revenue)
+}
+\end{lstlisting}
+
+
+
+\subsubsection{Aufbau der Query Q2.1 in Variante 2}
+Wie in Variante 1 von Query Q2.1 werden zunächst alle relevanten Dokumente der Indizes \emph{part}, \emph{supplier} und \emph{date} anhand der angegebenen Filter geladen. 
+Daraufhin werden diese Dokumente zur Erstellung von Filter-Strings für die abschließende Abfrage des \emph{lineorder}-Index genutzt.
+Die Ergebnisse sollen nach bestimmten Feldern gruppiert werden. Die geladenen \emph{lineoder}-Dokumente enthalten jedoch nicht die benötigten Felder \emph{p\_brand1} und \emph{d\_year} sondern nur die IDs der entsprechenden Dokumente in den anderen Indizes. Um die Gruppierung korrekt durchzuführen, werden die Felder mit den IDs mit den entsprechenden Feldern aus den geladenen \emph{part}- und \emph{date}-Dokumenten ersetzt (siehe Hilfsfunktion \lstinline|exchangeDocumentProperties| in \cref{sec:redis-scale-helper}).
+
+Im letzten Schritt werden die \emph{lineorder}-Dokumente gruppiert und ausgegben.
+
+
+\begin{lstlisting}[
+    caption=Ausführen der SSB Query Q2.1 mit Client-seitigen Joins Variante 2,
+    label=code:redis-olap-client-q-2-1-variant-2,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): Unit = {
+	val partQuery: Query = new Query("@p_category:{MFGR\\#12}")
+	val partDocuments: List[Document] = queryDocuments(jedisPooled, "part-index", partQuery, returnFields = List("p_brand1", "p_partkey"))
+
+	val validPartKeys = partDocuments.flatMap { doc =>
+		val validSuppKeys = "@lo_partkey:[" + doc.getString("p_partkey") + " " + doc.getString("p_partkey") + "]"
+		List(validSuppKeys)
+	}
+
+	val validPartKeysQuery = validPartKeys.mkString(" | ")
+	
+	val supplierQuery: Query = new Query("@s_region:{AMERICA}")
+	val supplierDocuments: List[Document] = queryDocuments(jedisPooled, "supplier-index", supplierQuery, returnFields = List("s_suppkey"))
+
+	val validSuppkeys = supplierDocuments.flatMap { doc =>
+		val validSuppKeyRanges = "@lo_suppkey:[" + doc.getString("s_suppkey") + " " + doc.getString("s_suppkey") + "]"
+		List(validSuppKeyRanges)
+	}
+	val validSuppkeysQuery = validSuppkeys.mkString(" | ")
+
+	val dateDocuments: List[Document] = queryDocuments(jedisPooled, "date-index", returnFields = List("d_year", "d_datekey"))
+
+	val validDatekeys = dateDocuments.flatMap { doc =>
+		val validDateRanges = "@lo_orderdate:[" + doc.getString("d_datekey") + " " + doc.getString("d_datekey") + "]"
+		List(validDateRanges)
+	}
+
+	val validDateKeysQuery = validDatekeys.mkString(" | ")
+
+	val completeQuery = validPartKeysQuery + " " +  validSuppkeysQuery + " " + validDateKeysQuery
+
+	val relevantLineorderDocuments = queryDocuments(jedisPooled, "lineorder-index", query = Query(completeQuery), returnFields = List("lo_revenue", "lo_orderdate", "lo_partkey", "lo_suppkey"))
+
+	// Replace lo_partkey and lo_orderdate with proper p_brand1 and d_year
+	val updatedLineorderDocuments = GroupByHelper.exchangeDocumentProperties(partDocuments, dateDocuments, relevantLineorderDocuments)
+	
+	val grouped: Map[(String, String), List[Document]] = updatedLineorderDocuments.groupBy(doc => (doc.getString("d_year"), doc.getString("p_brand1")))
+
+	val result: List[((String, String), Long)] = grouped.view.mapValues(docs => docs.map(_.getString("lo_revenue").toLong).sum).toList.sortBy(_._1)
+	println("    sum   |    d_year  |    p_brand1    ")
+	result.foreach(x => println(x._2 + " |    " + x._1._1 + "    |    " + x._1._2))
+	println(result.size + " results")
+}
+\end{lstlisting}
+
+
+
 
 % TODO: Position fixen
-\subsubsection{Ergebnisse}
+\subsubsection{Vergleich der Laufzeiten von Abfragen}
 \begin{table}[h]
 \centering
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \hline
-Query & Redis & PostgreSQL \\ \hline
-Q 1.1 & 1019  & 283       \\
-Q 1.2 & 65    & 261       \\
-Q 1.3 & 29    & 261       \\
-Q 2.1 & 27055 & 278       \\
-Q 2.2 & 26595 & 267       \\ \hline
+Query & Redis client-approach 1 & Redis client-approach 2 & PostgreSQL \\ \hline
+Q 1.1 & 3901 ms & 961 ms & 283 ms       \\
+Q 1.2 & 1098 ms & 74 ms & 261 ms       \\
+Q 1.3 & 1087 ms & 41 ms & 261 ms       \\
+Q 2.1 & 21301 ms & 3167 ms & 278 ms       \\
+Q 2.2 & 21856 ms & 22012 ms & 267 ms       \\
+Q 2.3 & 20358 ms & 900 ms & 228 ms       \\\hline
 \end{tabular}
 \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Client-Ansatz.\\
  Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar nacheinander durchgeführten Messungen gebildet wurde.}
@@ -579,20 +812,27 @@ Q 2.2 & 26595 & 267       \\ \hline
     \label{pic:results-client}    % label the image for internal referencing
 \end{figure}
 
-Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in kleineren Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten ohne RediSearch-Aggregationen verwendet. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_client\_c}, \emph{Q1\_2\_client\_c}, \emph{Q1\_3\_client\_c}, \emph{Q2\_1\_client\_a} und\\ \emph{Q2\_2\_client\_a}.
-Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten. % Hier eventuell auf Aggregation verweisen
+Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in kleineren Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten der beiden Ansätze, einmal mit vorberechneten Queries und einmal ohne genutzt. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode:\\
+\emph{Q1\_1\_client\_a} und \emph{Q1\_1\_client\_c}; \emph{Q1\_2\_client\_a} und \emph{Q1\_2\_client\_c};\\ \emph{Q1\_3\_client\_a} und \emph{Q1\_3\_client\_c};\\ \emph{Q2\_1\_client\_a} und \emph{Q2\_1\_client\_b}; \emph{Q2\_2\_client\_a} und \emph{Q2\_2\_client\_b}.
+\\Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten. % Hier eventuell auf Aggregation verweisen
 
-% Noch was zu Q2.1
+% TODO: Hier vergleich der Ausführungszeiten und Erläuterung warum
 
 \subsubsection{Fazit}
 % Warum nur bis Q2.2
 
+
+
+
+% ----------------------------------------------------------
 \subsection{Ansatz 3: Serverseitige Joins}
 Der Hauptgedanke dieses Ansatzes besteht darin, die Anzahl an Anfragen des \emph{Scala}-Programms an Redis zu minimieren, um somit schneller Ergebnisse zu erzielen.
 Hierfür wird das Joinen und die weitere Verarbeitung der Daten vom Client auf den Redis-Server verlagert. Dies wird durch \emph{Lua}-Skripte, die auf dem Server laufen, ermöglicht.
 
 Dieses Kapitel ist in der gleichen Struktur wie das vorherige aufgebaut:
 Zuerst wird die eingesetzte Datenstruktur analysiert. Daraufhin folgt eine detaillierte Beschreibung der Strukturierung und Implementierung der Abfragen in \emph{Scala} und in \emph{Lua}. Im dritten Teil erfolgt die Betrachtung der Ergebnisse, worauf im vierten Teil ein vorläufiges Fazit gezogen wird.
+
+Dieser Ansatz wurde für die Queries \emph{Q1.1} und \emph{Q1.2} umgesetzt.
 
 \subsubsection{Aufbau der Daten}
 Der Aufbau der Daten entspricht dem Aufbau der Daten im Client-Ansatz (siehe \cref{sec:client-approach-datastructure}). Dieser Ansatz unterscheidet sich lediglich in den Abfragen.
@@ -624,7 +864,7 @@ jedisPooled.functionLoadReplace(LuaScriptLoader.loadLuaScript("src/main/resource
 
 Wie beim Client-Ansatz werden auch hier zunächst nur die date-Daten abgefragt. Aus diesen Daten wird dann ein Filterstring erzeugt, um in einer weiteren Query die lineorder-Dokumente nach den Werten des Feldes \emph{lo\_orderdate} zu filtern. Dazu wurde die Lua-Funktion \lstinline|queryFilterCriteria| geschrieben.
 
-Die Funktion \lstinline|queryFilterCriteria| wird verwendet, um einen Index nach bestimmten Kriterien zu durchsuchen und aus den Ergebnissen einen Query-String für numerische Werte zu erzeugen. Die Funktion ist das Äquivalent zu \cref{code:redis-olap-client-q1-1-query-string,} in Scala.
+Die Funktion \lstinline|queryFilterCriteria| wird verwendet, um einen Index nach bestimmten Kriterien zu durchsuchen und aus den Ergebnissen einen Query-String für numerische Werte zu erzeugen. Die Funktion ist das Äquivalent zum Erstellen des Query-Strings in Scala.
 Sie führt eine Suche mit RediSearch anhand der übergebenen Query durch und verarbeitet die Ergebnisse. Aus den gefundenen Dokumenten wird dann ein Filterstring für eine weitere Abfrage erzeugt und zurückgegeben. Dabei nutzt sie auch die Funktion \lstinline|flattenTable|.
 
 \begin{lstlisting}[
