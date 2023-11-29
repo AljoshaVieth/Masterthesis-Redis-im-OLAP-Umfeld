@@ -844,7 +844,7 @@ Der Datentyp \emph{TEXT} wird für \emph{name} und \emph{preparation} verwendet,
 
 Dem Feld \emph{name} wird ein Gewicht von 5.0 zugewiesen, um seine Relevanz bei Suchanfragen zu erhöhen. Dieser Index ermöglicht eine effiziente Suche im Rezeptverzeichnis und das Filtern der Ergebnisse nach Kriterien wie Zutaten, Kategorie, Kochzeit und Schwierigkeitsgrad.
 
-\subsection{Aggregations}
+\subsection{Aggregations}\label{sec:redisearch-aggregations}
 Aggregationen (Aggregations) stellen die effektivste Methode dar, um in Redis mit RediSearch Daten abzufragen. Die hier dargestellten Informationen basieren auf den Erklärungen, die in der Online-Dokumentation~\cite{redis_ltd_aggregations_nodate} von Redis zu finden sind.
 
 Aggregationen ermöglichen die Verarbeitung und Analyse von Suchergebnissen durch verschiedene Operationen wie Gruppierung, Sortierung und Daten-Transformation. Ähnlich wie bei anderen Datenbanken sollen diese Verfahren dazu beitragen, analytische Erkenntnisse aus den Daten zu gewinnen. Des Weiteren können mit Aggregationen facettierte Suchanfragen durchgeführt werden. Suchergebnisse können so anhand verschiedener Merkmale oder \enquote{Facetten} gefiltert und verfeinert werden.

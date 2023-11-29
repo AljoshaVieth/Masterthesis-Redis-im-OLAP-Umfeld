@@ -178,7 +178,7 @@ Um eindeutige Schlüsselnamen zu generieren, wird der Wert, der normalerweise al
 Die Daten werden gebündelt und in einer Pipeline an Redis übermittelt. Durch diese Bündelung auf maximal 1000 Elemente pro Pipeline wird die Häufigkeit der Kommunikation mit Redis reduziert. Das wiederum verbessert die Effizienz, da weniger einzelne Anfragen nötig sind.
 
 
-\subsubsection{Einfügen von denormalisierten Daten}
+\subsubsection{Einfügen von denormalisierten Daten}\label{sec:ssb-inserter-denormalized}
 Beim denormalisierten Ansatz werden zuerst alle \emph{.tbl}-Dateien komplett geladen.
 
 Für jede Tabelle gibt es eine passende Scala \emph{case class} die die notwendigen Daten für den SSB Benchmark halten.
@@ -376,7 +376,7 @@ private def insertDenormalizedObjectsIntoRedis(pipeline: Pipeline): Unit = {
 	})
 }
 \end{lstlisting}
-
+% TODO: Eventuell Bild einfügen
 % TODO: Zeigen, dass Strings oder bytes egal sind.
 
 
@@ -687,7 +687,7 @@ override def execute(jedisPooled: JedisPooled): Unit = {
 
 
 \subsubsection{Aufbau der Query Q1.1 in Variante 2}
-Um sich das Laden unnötig vieler \emph{lineoder}-Daten zu sparen, werden in dieser Variante zuerst die Daten der anderen Indizes (im Sternschema die Faktentabellen) geladen. Anschließend wird daraus ein Filter-String gebaut, der bei der Query für die \emph{lineorder}-Daten angewandt wird.
+Um sich das Laden unnötig vieler \emph{lineoder}-Daten zu sparen, werden in dieser Variante zuerst die Daten der anderen Indizes (im Sternschema die Dimensionstabellen) geladen. Anschließend wird daraus ein Filter-String gebaut, der bei der Query für die \emph{lineorder}-Daten angewandt wird.
 
 Für \emph{Query Q1.1} werden zuerst die relevanten \emph{date}-Datensätze geladen, also die Dokumente, bei denen \lstinline|d_year=1993| gilt.
 
@@ -837,6 +837,34 @@ Dieser Ansatz wurde für die Queries \emph{Q1.1} und \emph{Q1.2} umgesetzt.
 \subsubsection{Aufbau der Daten}
 Der Aufbau der Daten entspricht dem Aufbau der Daten im Client-Ansatz (siehe \cref{sec:client-approach-datastructure}). Dieser Ansatz unterscheidet sich lediglich in den Abfragen.
 
+\subsubsection{Erklärung von Hilfsfunktionen}
+Bei Redis-Abfragen speichert Lua die Ergebnisse immer in der Datenstruktur \emph{table}. Dabei werden die Daten verschachtelt, was die Weiterverarbeitung erschwert. Aus diesem Grund wurde die Hilfsfunktion \lstinline|flattenTable| entwickelt, die diese Verschachtelung aufhebt.
+
+\begin{lstlisting}[
+    caption=Die Funktion flattenTable in Lua,
+    label=code:redis-olap-server-lua-flattentable,
+    language=Ada
+]
+-- This function takes a nested table as input and returns a flattened version of it
+local function flattenTable(tbl)
+    local flattened = {}  -- Create an empty table to store the flattened values
+    local index = 1  -- Initialize the index for the flattened table
+    local function flatten(value)
+        if type(value) == "table" then  -- If the value is a table, recursively flatten its elements
+            for _, nestedValue in ipairs(value) do
+                flatten(nestedValue)
+            end
+        else  -- If the value is not a table, store it in the flattened table
+            flattened[index] = value
+            index = index + 1
+        end
+    end
+    flatten(tbl)  -- Call the flatten function to start flattening the table
+    return flattened  -- Return the flattened table
+end
+\end{lstlisting}
+
+
 \subsubsection{Aufbau der Abfragen}
 Es ist in Redis möglich, Lua-Skripte auf den Server zu laden und diese dann von Client-Seite aus zu verwenden (siehe \cref{sec:lua-in-redis}).
 Um die Anzahl der Anfragen zwischen Client und Server zu reduzieren, wird die gesamte Logik zur Ausführung der Abfragen auf den Server verlagert. Hierfür wurden mehrere Funktionen in Lua geschrieben, die in diesem Abschnitt erläutert werden.
@@ -935,34 +963,6 @@ println(jedisPooled.fcall("runQ1_1_a", List[String]().asJava, List("date-index",
 \end{lstlisting}
 
 
-
-
-Hinweis: Bei Redis-Abfragen speichert Lua die Ergebnisse immer in der Datenstruktur table. Dabei werden die Daten verschachtelt, was die Weiterverarbeitung erschwert. Aus diesem Grund wurde die Hilfsfunktion \lstinline|flattenTable| entwickelt, die diese Verschachtelung aufhebt.
-
-\begin{lstlisting}[
-    caption=Die Funktion flattenTable in Lua,
-    label=code:redis-olap-server-lua-flattentable,
-    language=Ada
-]
--- This function takes a nested table as input and returns a flattened version of it
-local function flattenTable(tbl)
-    local flattened = {}  -- Create an empty table to store the flattened values
-    local index = 1  -- Initialize the index for the flattened table
-    local function flatten(value)
-        if type(value) == "table" then  -- If the value is a table, recursively flatten its elements
-            for _, nestedValue in ipairs(value) do
-                flatten(nestedValue)
-            end
-        else  -- If the value is not a table, store it in the flattened table
-            flattened[index] = value
-            index = index + 1
-        end
-    end
-    flatten(tbl)  -- Call the flatten function to start flattening the table
-    return flattened  -- Return the flattened table
-end
-\end{lstlisting}
-
 \subsubsection{Ergebnisse}
 
 % TODO: Position fixen
@@ -971,8 +971,8 @@ end
 \begin{tabular}{lcc}
 \hline
 Query & Redis & PostgreSQL \\ \hline
-Q 1.1 & 2545  & 283       \\
-Q 1.2 & 98    & 261       \\ \hline
+Q 1.1 & 2545 ms  & 283 ms       \\
+Q 1.2 & 98 ms    & 261 ms       \\ \hline
 \end{tabular}
 \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Server-Ansatz.\\
  Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar nacheinander durchgeführten Messungen gebildet wurde.}
@@ -998,7 +998,219 @@ der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten.
 
 
 \subsection{Ansatz 4: Denormalisiert}
+
 \subsubsection{Aufbau der Daten}
+Um die Notwendigkeit von Join-Operationen bei Abfragen zu eliminieren, wurde in diesem Ansatz eine vollständig denormalisierte Datenstruktur implementiert. Dabei wurden sämtliche für die Queries benötigten Felder in die \emph{lineorder}-Dokumente integriert, wodurch Fakten und Dimensionen miteinander kombiniert wurden, wie in \cref{sec:ssb-inserter-denormalized} näher beschrieben. Diese Dokumente werden in einem \emph{denormalized-index} indiziert.
+
+Dank dieser Struktur können alle Queries mit einer einzigen RediSearch-Abfrage realisiert werden. Hierbei werden RediSearch-Aggregationen verwendet, die in Abschnitt \ref{sec:redisearch-aggregations} näher erläutert werden.
+
+Dieser Ansatz behandelt alle Queries des SSB.
+
 \subsubsection{Aufbau der Abfragen}
+In der erstellten Implementierung werden alle Queries mittels einer einzigen Aggregation durchgeführt, wobei diese Aggregation unter Verwendung der Klasse\\ \lstinline|AggregationBuilder| der \emph{Jedis}-Bibliothek erstellt wird.
+Es ist jedoch anzumerken, dass jede Aggregation alternativ auch als einfacher \emph{String} formuliert und direkt an Redis übermittelt werden könnte.
+
+Folgend wird für jede Query-Kategorie eine Query vorgestellt:
+
+\paragraph{Q1.1}: Diese Query berechnet die Gesamteinnahmen \emph{revenue} durch Multiplizieren des Preises \emph{lo\_extendedprice} mit dem Rabatt \emph{lo\_discount} für alle Bestellungen, also den \emph{lineoder}-Dokumenten, die folgende Kriterien erfüllen:\\
+Das Bestelldatum (\emph{lo\_orderdate}) entspricht dem Datumsschlüssel im \emph{date}-index\\
+(\emph{d\_datekey}), das Jahr des Datums ist \emph{1993} (\emph{d\_year}), der Rabatt liegt \emph{zwischen 1 und 3} (\emph{lo\_discount}, und die Bestellmenge (\emph{lo\_quantity}) ist \emph{weniger als 25}. 
+
+% TODO: Doppelte Listings lösen für Verzeichnis...
+\begin{lstlisting}[
+    caption=Originale SQL-Query Q1.1 des SSB,
+    label=code:ssb-q-1-1-b,
+    language=Sql
+]
+select sum(lo_extendedprice*lo_discount) as revenue
+  from lineorder, date
+  where lo_orderdate = d_datekey
+  and d_year = 1993
+  and lo_discount between 1 and 3
+  and lo_quantity < 25;
+\end{lstlisting}
+
+
+Im Scala-Code wird zunächst die Startzeit der Ausführung gespeichert, um später die Dauer zu messen. Danach wird ein Reducer konfiguriert, um die Summe von \emph{revenue} zu berechnen und als \emph{total\_revenue} zu bezeichnen. Die Aggregation selbst wird mit einem \lstinline|AggregationBuilder| von Jedis erstellt. Diese Aggregation filtert Daten basierend auf bestimmten Kriterien wie Rabatt, Menge und Jahr, lädt spezifische Felder und führt eine Berechnung durch, um die Einnahmen zu ermitteln. Es wird keine spezifische Gruppierung verwendet, aber der Reducer wird hinzugefügt, um die Summe zu berechnen, ohne die Anzahl der Ergebnisse zu begrenzen. Eine leere \emph{groupBy}-Anweisung ist notwendig, damit ein Reducer verwendet werden kann.
+
+\begin{lstlisting}[
+    caption=Aggregation für Query Q1.1 des SSB,
+    label=code:redis-olap-denormalized-q-1-1,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): AggregationResult = {
+	val startTime = System.currentTimeMillis()
+
+	System.currentTimeMillis() - startTime
+	val reducer: Reducer = Reducers.sum("revenue").as("total_revenue")
+	val aggregation = new AggregationBuilder("@lo_discount:[1 3] @lo_quantity:[0 24] @d_year:[1993 1993]")
+		.load("@lo_discount", "@lo_extendedprice")
+		.apply("@lo_discount * @lo_extendedprice", "revenue")
+		.groupBy(List.empty[String].asJavaCollection, List(reducer).asJavaCollection)
+		.limit(0, Integer.MAX_VALUE)
+
+	val result = jedisPooled.ftAggregate("denormalized-index", aggregation)
+	println("Executed in " + (System.currentTimeMillis() - startTime) + " ms")
+	result
+}
+\end{lstlisting}
+
+
+\paragraph{Q2.1}: Die Query Q2.1 im SSB Benchmark berechnet die Gesamteinnahmen\\
+(\emph{sum(lo\_revenue})) aufgeschlüsselt nach Jahr (\emph{d\_year}) und Markenbezeichnung\\
+(\emph{p\_brand1}).
+Sie verknüpft dazu im Original vier Tabellen: \emph{lineorder}, \emph{date}, \emph{part} und \emph{supplier}, basierend auf Übereinstimmungen von \emph{d\_datekey}, \emph{p\_partkey} und \emph{s\_suppkey}. Die Ergebnisse werden gefiltert, um nur Datensätze in der Produktkategorie (\lstinline|p_category = MFGR#12|) und der Region (\lstinline|s_region = AMERICA|) einzuschließen. Die Daten werden anschließend nach Jahr (\emph{d\_year}) und Marke (\emph{p\_brand1})gruppiert und in dieser Reihenfolge sortiert (siehe \cref{sec:ssb-q4}).
+
+\begin{lstlisting}[
+    caption=Originale SQL-Query Q2.1 des SSB,
+    label=code:ssb-q-1-2-b,
+    language=Sql
+]
+select sum(lo_revenue), d_year, p_brand1
+  from lineorder, date, part, supplier
+  where lo_orderdate = d_datekey
+  and lo_partkey = p_partkey
+  and lo_suppkey = s_suppkey
+  and p_category = 'MFGR#12'
+  and s_region = 'AMERICA'
+  group by d_year, p_brand1
+  order by d_year, p_brand1;
+\end{lstlisting}
+
+
+Die Scala-Funktion misst die Ausführungszeit, berechnet die Summe der Einnahmen (\emph{lo\_revenue}) mithilfe eines Reducers und filtert, lädt und gruppiert Daten anhand der Felder \emph{p\_category} und \emph{s\_region} nach Jahr ('\emph{`d\_year}`) und Marke ('\emph{`p\_brand1}`). Anschließend sortiert sie die Ergebnisse nach Jahr und Marke und gibt sie zurück. Nach der Ausführung wird die Dauer der Operation ausgegeben, bevor das Ergebnis zurückgegeben wird.
+
+\begin{lstlisting}[
+    caption=Aggregation für Query Q2.1 des SSB,
+    label=code:redis-olap-denormalized-q-2-1,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): AggregationResult = {
+	val startTime = System.currentTimeMillis()
+
+	val reducer: Reducer = Reducers.sum("lo_revenue").as("sum")
+	val aggregation = new AggregationBuilder("@p_category:{MFGR\\#12} @s_region:{AMERICA}")
+		.load("lo_revenue", "d_year", "p_brand1")
+		.groupBy(List("@d_year", "@p_brand1").asJavaCollection, List(reducer).asJavaCollection)
+		.sortBy(SortedField.asc("@d_year"), SortedField.asc("@p_brand1"))
+		.limit(0, Integer.MAX_VALUE)
+
+	val result = jedisPooled.ftAggregate("denormalized-index", aggregation)
+	println("Executed in " + (System.currentTimeMillis() - startTime) + " ms")
+	result
+}
+\end{lstlisting}
+
+In einem Befehl für das Redis-Cli würde diese Aggregation wie folgt aussehen:
+\begin{lstlisting}[
+    caption=Aggregation für Query Q2.1 des SSB als Befehl,
+    label=code:redis-olap-denormalized-q-2-1-command
+]
+FT.AGGREGATE denormalized-index "@p_category:{MFGR\\#12} @s_region:{AMERICA}" LOAD 3 lo_revenue d_year p_brand1 GROUPBY 2 @d_year @p_brand1 REDUCE SUM 1 @lo_revenue AS total_revenue SORTBY 4 @d_year ASC @p_brand1 ASC LIMIT 0 10000
+\end{lstlisting}
+
+
+% TODO: fill
+\paragraph{Q3.1}:
+
+\paragraph{Q4.1}:
+
+\subsubsection{Validierung der Richtigkeit der Resultate}
+In jeder Scala-Klasse, die eine Query repräsentiert, wird eine automatische Überprüfung der Ergebnisse durch die Implementierung der Funktionen \lstinline|isCorrect| und \lstinline|toComparableString| ermöglicht.
+Die Funktion \lstinline|isCorrect| vergleicht zwei Strings auf ihre Übereinstimmung. Auf der einen Seite steht das korrekte Ergebnis, das von PostgreSQL für die Abfrage geliefert wird, und auf der anderen Seite eine formatierte Version des Ergebnisses der Redis-Aggregation, die von der Funktion \lstinline|toComparableString| erzeugt wurde.
+Die korrekten Ergebnisse sind in \emph{.txt}-Dateien gespeichert und werden mit der Funktion \lstinline|readTextFileIntoString| eingelesen.
+
+\begin{lstlisting}[
+    caption=Die Scala-Funktion isCorrect für Q2.1,
+    label=code:redis-olap-denormalized-isCorrect,
+    language=Java
+]
+override def isCorrect(result: String): Boolean = {
+	readTextFileIntoString("src\\main\\resources\\scale-1\\formattedresults\\q_2_1_result.txt").equals(result)
+}
+\end{lstlisting}
+
+\begin{lstlisting}[
+    caption=Die Scala-Funktion toComparableString für Q2.1,
+    label=code:redis-olap-denormalized-toComparableString,
+    language=Java
+]
+override def toComparableString(results: AggregationResult): String = {
+	val strings = results.getResults.asScala.map { result =>
+		"" + result.get("sum") + " | " + result.get("d_year") + " | " + result.get("p_brand1")
+	}
+	strings.mkString("\n")
+}
+\end{lstlisting}
+
+\begin{lstlisting}[
+    caption=Die Scala-Funktion readTextFileIntoString,
+    label=code:redis-olap-denormalized-readTextFileIntoString,
+    language=Java
+]
+def readTextFileIntoString(filename: String): String = {
+	val bufferedSource = Source.fromFile(filename)
+	val fileContents = bufferedSource.getLines.mkString("\n")
+	bufferedSource.close()
+	fileContents
+}
+\end{lstlisting}
+
+In der Main-Klasse werden die Queries dann ausgeführt und die Ergebnisse auf Korrektheit überprüft.
+\begin{lstlisting}[
+    caption=Aufruf der Query Q2.1 aus der Main-Klasse,
+    label=code:redis-olap-denormalized-call-q-2-1-from-main,
+    language=Java
+]
+println("\nRunning Q2.1 denormalized ...")
+result = Q2_1_denormalized.execute(jedisPooled)
+formattedResult = Q2_1_denormalized.toComparableString(result)
+printResultIsCorrect(Q2_1_denormalized.isCorrect(formattedResult))
+
+private def printResultIsCorrect(result: Boolean): Unit = 
+  println(if (result) "Result is correct!" else "Result is incorrect!!!")
+
+\end{lstlisting}
+% TODO: Erweiterung mit Testframework
+
+Die Kontrolldaten stammen aus den Konsolenausgaben von PostgreSQL. Sie werden mit der Klasse \lstinline|FormatPostgresResults| im \emph{Redis Olap Client} formatiert (siehe Quellcode im Anhang).
+
 \subsubsection{Ergebnisse}
+% TODO: Volle Versiond der Tabellen in Anhang packen
+% TODO: Position fixen
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\hline
+Query & Redis denormalized & PostgreSQL \\ \hline
+Q 1.1 & 547 ms  & 283 ms       \\
+Q 1.2 & 52 ms   & 261 ms       \\
+Q 1.3 & 26 ms   & 261 ms       \\
+Q 2.1 & 128 ms  & 278 ms       \\
+Q 2.2 & 41 ms   & 267 ms       \\
+Q 2.3 & 8 ms    & 228 ms       \\
+Q 3.1 & 726 ms  & 317 ms       \\
+Q 3.2 & 57 ms   & 246 ms       \\
+Q 3.3 & 7 ms    & 217 ms       \\
+Q 3.4 & 5 ms    & 230 ms       \\
+Q 4.1 & 356 ms  & 335 ms       \\
+Q 4.2 & 153 ms  & 486 ms       \\
+Q 4.3 & 18 ms   & 260 ms       \\ \hline
+\end{tabular}
+\caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Denormalisierten-Ansatz.\\
+Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar nacheinander durchgeführten Messungen gebildet wurde.}
+\label{tab:results-denormalized}
+\end{table}
+
+
+
+% TODO: Position fixen
+\begin{figure}[ht]  % figure position
+    \centering      % center the image
+    \includegraphics[width=1\textwidth]{pictures/results/results-denormalized.png}
+    \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Denormalisierten-Ansatz.}      % caption the image
+    \label{pic:results-denormalized}    % label the image for internal referencing
+\end{figure}
+
+% TODO: Kapitel über Ähnlichkeit von SQL und Aggregation
 \subsubsection{Fazit}
