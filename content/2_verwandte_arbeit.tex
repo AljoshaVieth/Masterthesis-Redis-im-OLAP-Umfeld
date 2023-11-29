@@ -1,0 +1,31 @@
+\chapter{Verwandte Arbeit}
+Bei der Literaturrecherche zum Einsatz von \emph{Redis} in OLAP hat sich gezeigt, dass es nur eine begrenzte Anzahl von Studien gibt, die sich mit dem  Einsatz von \emph{Redis} oder anderen \emph{Key-Value-Stores} für OLAP beschäftigen. Der Schwerpunkt dieser Arbeiten liegt dabei auf dem ergänzenden Einsatz von \emph{Redis} in Verbindung mit anderen OLAP-Technologien.
+
+In der Arbeit \cite{franciscus_answering_2017} wird ein Verfahren zur Speicherung vorberechneter Daten in Redis präsentiert. Die Autoren von \cite{zhao_multidimensional_2014} konzentrieren sich auf die Speicherung von Daten aus OLAP-Cubes in Key-Value-Stores wie Redis. Wohingegen die Autoren von \cite{ly_implementation_2017} beschreiben, wie \emph{Redis} zur Implementierung einer Abfrage-Warteschlange in einem OLAP-System genutzt werden kann, um die Abfrageverarbeitung zu optimieren.
+
+Im Rahmen der nächsten Abschnitte wird exemplarisch eine weitere verwandte Arbeit dargestellt, um ihre Ansätze und Schlussfolgerungen im Hinblick auf die Forschungsfrage dieser Arbeit zu untersuchen.
+
+
+
+
+\section{OLAP Datenanalyse durch Speichern von Path-Enumeration Keys in Redis}
+In der entsprechenden akademischen Literatur zum Thema OLAP in Redis wird in einer Veröffentlichung~\cite{loyola_building_2012} ein neuartiger Ansatz zur Abfrage von OLAP-Daten durch die Autoren präsentiert.
+
+In ihrer Arbeit entwickeln die Autoren einen neuen Ansatz für die Abfrage von \emph{OLAP}-Daten, indem sie \emph{Redis} mit einer relationalen Datenbank wie \emph{MySQL} kombinieren. Der Schwerpunkt liegt auf der effizienten Speicherung und Abfrage multidimensionaler Daten in Redis, basierend auf einem Schlüsselgenerierungsschema, das vom \emph{Path-Enumeration}-Modell inspiriert ist. Dieses Modell baut auf der Baumstruktur einer relationalen Datenbank auf, um multidimensionale OLAP-Daten darzustellen und zu verwalten.
+
+Den Autoren zufolge stellt jeder Schlüssel im Schema eine Kombination von OLAP-Dimensionsbezeichnungen dar. Diese Schlüssel und die zugehörigen Werte, die die relevanten Metriken oder \emph{OLAP-Fakten} darstellen, werden in Redis gespeichert. Dieser Ansatz ermöglicht eine flexible und dynamische Verarbeitung von OLAP-Daten, indem Datensätze direkt und in Echtzeit während einer Anfrage generiert werden. So können Daten dynamisch erstellt und organisiert werden, basierend auf den Anforderungen der aktuellen Anfrage.
+
+Im Vergleich zu einem herkömmlichen, auf MySQL basierenden OLAP-System berichten die Autoren von signifikanten Vorteilen. Sie betonen, dass ihr Schema in der Lage ist, komplexe multidimensionale Abfragen schneller zu beantworten, was durch die effiziente Nutzung von Redis für schnelle Datenabfragen und einer relationalen Datenbank für die persistente Datenspeicherung erreicht wird.
+
+Allerdings sehen die Autoren auch Grenzen ihres Systems, insbesondere bei der Verarbeitung von nicht aggregierten Ereignissen, wie z.~B. dem Zählen von einzigartigen Usern, die einen erhöhten Speicherverbrauch verursachen.
+
+
+\subsection{Bewertung dieses Ansatzes}
+Das 2012 von den Autoren verfasste Paper bezieht sich auf eine frühere Version von Redis, die bereits mehr als zehn Jahre alt ist.
+Seitdem hat sich Redis erheblich weiterentwickelt.
+Die in der Arbeit verwendeten Abfragen sind größtenteils einfache Aggregationen, wie Summenbildung.
+Bei den wenigen komplexeren Abfragen, die sich auf individuelle Benutzer beziehen, erkennen die Autoren selbst die Grenzen ihres Ansatzes.
+Im Gegensatz dazu sind die Abfragen im Star Schema Benchmark wesentlich komplexer.
+Darüber hinaus handelt es sich bei der Lösung der Autoren um eine Kombination aus Redis und einem relationalem Datenbanksystem und nicht um eine eigenständige, vollständige Redis-basierte Lösung.
+
+Das Paper bietet informative Einsichten zur Optimierung eines OLAP-Systems mit Hilfe von Redis. Allerdings liegt der Schwerpunkt dieser Arbeit auf der kompletten Integration von OLAP in Redis. Daher hat das Paper keine signifikanten Auswirkungen auf die vorliegende Arbeit.

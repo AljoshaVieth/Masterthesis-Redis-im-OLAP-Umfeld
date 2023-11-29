@@ -1,56 +1,26 @@
 \chapter{Einleitung}
-\section{Einsatz von Künstlicher Intelligenz} % TODO: Richtigen Platz für diesen Disclaimer finden
-Zum Schreiben dieser Arbeit wurde Künstliche Intelligenz (KI) eingesetzt.
-Dabei wurden die Tools \enquote{ChatGPT} (GPT-4)~\cite{openai_chatgpt_nodate} der Firma \emph{OpenAI} sowie \enquote{DeepL Write}~\cite{deepl_se_deepl_nodate} von \emph{DeepL SE} verwendet.
-
-\emph{ChatGPT} wurde genutzt, um aus den eigens verfassten Sätzen oder Stichpunkten des Autors ausführlichere Texte zu generieren.
-Zusätzlich kam \emph{DeepL Write} zum Einsatz, um die Texte weiter zu verfeinern und ihnen einen akademischen Schreibstil zu verleihen.
-
-KI wurde nicht verwendet, um selbstständig komplette Texte zu formulieren oder neue Informationen zu generieren.
-Stattdessen wurden ausschließlich die vom Autor bereitgestellten Informationen verwendet, ohne dass die KI zusätzliche Inhalte oder Änderungen einbrachte.
-Etwaige zusätzliche Informationen oder Änderungen, die von der KI vorgeschlagen wurden, fanden keine Berücksichtigung.
-Diese Vorgehensweise sorgt dafür, dass die Integrität und Authentizität der Arbeit des Autors unbeeinträchtigt bleiben.
-
-Bei der Entwicklung des praktischen Teils dieser Arbeit wurde \emph{ChatGPT} genutzt, um den selbst geschriebenen Code zu optimieren, zu kommentieren, Beispieldaten zu generieren und Fehler zu analysieren.
 
 % TODO: Bilder positionen fixen
 % TODO: Seitenzahlen
 % TODO: Überprüfen ob Kapitel immer auf rechten Seiten anfangen.
+% TODO: Quellen
 \section{Hintergrund und Kontext}
-\section{Problemstellung}
-\section{Forschungsziel}
+Die vorliegende Arbeit untersucht die Eignung von Redis, einer weit verbreiteten Software, die in der Regel als Datenbank, Cache, Message Broker oder Streaming Engine verwendet wird, für Online-Analytical-Processing (OLAP)-Aufgaben. Redis zeichnet sich besonders durch seine Geschwindigkeit und Benutzerfreundlichkeit aus und findet vor allem in Online-Transaction-Processing-(OLTP) Umgebungen Anwendung. Der Einsatz von Redis im OLAP-Bereich ist jedoch weitgehend unerforscht, mit einigen wenigen Fällen, in denen Redis lediglich als Cache für vorberechnete Daten verwendet wird.
+
+\section{Forschungsfrage und Zielsetzung}
+Diese Arbeit untersucht, ob und inwiefern Redis als eigenständige Lösung für OLAP-Aufgaben genutzt werden kann. Der Star Schema Benchmark (SSB), der ursprünglich für relationale Datenbanken entwickelt wurde, wird zur Evaluierung herangezogen. Neben der grundsätzlichen Eignung von Redis für OLAP werden spezifische Aspekte wie Geschwindigkeit, Skalierbarkeit und Anpassungsaufwand von Daten analysiert.
+
+\section{Methodik}
+Um die Forschungsfrage zu beantworten, wird untersucht, wie Redis verwendet werden kann, um die Abfragen des SSB Benchmarks auszuführen. Der Benchmark wird üblicherweise zur Messung der Leistung von relationalen Datenbanksystemen eingesetzt, deren Daten im Sternschema vorliegen, das oft in OLAP-Bereichen verwendet wird.
+Anschließend erfolgt eine Analyse der Ergebnisse anhand verschiedener Kriterien wie Ausführungsgeschwindigkeit, Skalierbarkeit und Anpassungsaufwand der Datenstruktur.
+
+
 \section{Gliederung der Arbeit}
-
-\section{Verwandte Arbeit}
-Bei der Literaturrecherche zum Einsatz von \emph{Redis} in OLAP hat sich gezeigt, dass es nur eine begrenzte Anzahl von Studien gibt, die sich mit dem  Einsatz von \emph{Redis} oder anderen \emph{Key-Value-Stores} für OLAP beschäftigen. Der Schwerpunkt dieser Arbeiten liegt dabei auf dem ergänzenden Einsatz von \emph{Redis} in Verbindung mit anderen OLAP-Technologien.
-
-In der Arbeit \cite{franciscus_answering_2017} wird ein Verfahren zur Speicherung vorberechneter Daten in Redis präsentiert. Die Autoren von \cite{zhao_multidimensional_2014} konzentrieren sich auf die Speicherung von Daten aus OLAP-Cubes in Key-Value-Stores wie Redis. Wohingegen die Autoren von \cite{ly_implementation_2017} beschreiben, wie \emph{Redis} zur Implementierung einer Abfrage-Warteschlange in einem OLAP-System genutzt werden kann, um die Abfrageverarbeitung zu optimieren.
-
-Im Rahmen der nächsten Abschnitte wird exemplarisch eine weitere verwandte Arbeit dargestellt, um ihre Ansätze und Schlussfolgerungen im Hinblick auf die Forschungsfrage dieser Arbeit zu untersuchen.
-
-
-
-
-\subsection{OLAP Datenanalyse durch Speichern von Path-Enumeration Keys in Redis}
-In der entsprechenden akademischen Literatur zum Thema OLAP in Redis wird in einer Veröffentlichung~\cite{loyola_building_2012} ein neuartiger Ansatz zur Abfrage von OLAP-Daten durch die Autoren präsentiert.
-
-In ihrer Arbeit entwickeln die Autoren einen neuen Ansatz für die Abfrage von \emph{OLAP}-Daten, indem sie \emph{Redis} mit einer relationalen Datenbank wie \emph{MySQL} kombinieren. Der Schwerpunkt liegt auf der effizienten Speicherung und Abfrage multidimensionaler Daten in Redis, basierend auf einem Schlüsselgenerierungsschema, das vom \emph{Path-Enumeration}-Modell inspiriert ist. Dieses Modell baut auf der Baumstruktur einer relationalen Datenbank auf, um multidimensionale OLAP-Daten darzustellen und zu verwalten.
-
-Den Autoren zufolge stellt jeder Schlüssel im Schema eine Kombination von OLAP-Dimensionsbezeichnungen dar. Diese Schlüssel und die zugehörigen Werte, die die relevanten Metriken oder \emph{OLAP-Fakten} darstellen, werden in Redis gespeichert. Dieser Ansatz ermöglicht eine flexible und dynamische Verarbeitung von OLAP-Daten, indem Datensätze direkt und in Echtzeit während einer Anfrage generiert werden. So können Daten dynamisch erstellt und organisiert werden, basierend auf den Anforderungen der aktuellen Anfrage.
-
-Im Vergleich zu einem herkömmlichen, auf MySQL basierenden OLAP-System berichten die Autoren von signifikanten Vorteilen. Sie betonen, dass ihr Schema in der Lage ist, komplexe multidimensionale Abfragen schneller zu beantworten, was durch die effiziente Nutzung von Redis für schnelle Datenabfragen und einer relationalen Datenbank für die persistente Datenspeicherung erreicht wird.
-
-Allerdings sehen die Autoren auch Grenzen ihres Systems, insbesondere bei der Verarbeitung von nicht aggregierten Ereignissen, wie z.~B. dem Zählen von einzigartigen Usern, die einen erhöhten Speicherverbrauch verursachen.
-
-
-\subsubsection{Bewertung dieses Ansatzes}
-Das 2012 von den Autoren verfasste Paper bezieht sich auf eine frühere Version von Redis, die bereits mehr als zehn Jahre alt ist.
-Seitdem hat sich Redis erheblich weiterentwickelt.
-Die in der Arbeit verwendeten Abfragen sind größtenteils einfache Aggregationen, wie Summenbildung.
-Bei den wenigen komplexeren Abfragen, die sich auf individuelle Benutzer beziehen, erkennen die Autoren selbst die Grenzen ihres Ansatzes.
-Im Gegensatz dazu sind die Abfragen im Star Schema Benchmark wesentlich komplexer.
-Darüber hinaus handelt es sich bei der Lösung der Autoren um eine Kombination aus Redis und einem relationalem Datenbanksystem und nicht um eine eigenständige, vollständige Redis-basierte Lösung.
-
-Das Paper bietet informative Einsichten zur Optimierung eines OLAP-Systems mit Hilfe von Redis. Allerdings liegt der Schwerpunkt dieser Arbeit auf der kompletten Integration von OLAP in Redis. Daher hat das Paper keine signifikanten Auswirkungen auf die vorliegende Arbeit.
+Die Arbeit wird im zweiten Kapitel mit einem Überblick über verwandte Forschungsarbeiten eingeleitet.
+Im dritten Kapitel werden die technischen Grundlagen erläutert, die für das weitere Verständnis unbedingt notwendig sind.
+Das vierte Kapitel zeigt, wie der \acf{SSB} in PostgreSQL ausgeführt wird.
+In Kapitel 5 werden verschiedene Ansätze zur Umsetzung des \ac{SSB} in Redis beschrieben.
+Abschließend werden in Kapitel 6 die Implementierungen aus Kapitel 5 ausgewertet und miteinander verglichen.
+Schließlich wird in Kapitel 7 ein Fazit gezogen und ein Ausblick auf mögliche zukünftige Entwicklungen gegeben.
 
  

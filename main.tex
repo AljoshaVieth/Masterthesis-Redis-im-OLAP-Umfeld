@@ -19,6 +19,7 @@
 \frontmatter
 \pagenumbering{Roman}
 
+\include{framework/danksagung}
 \include{framework/abstract}            % Abstract
 \tableofcontents                        % Contents
 \listoffigures                          % List of Figures
@@ -30,6 +31,7 @@
 \mainmatter
 \lstset{breaklines=true}
 \include{content/1_einleitung}
+\include{content/2_verwandte_arbeit}
 \include{content/2_grundlagen}
 \include{content/3_ssb_in_postgres}
 \include{content/4_olap-in-redis}
@@ -50,8 +52,8 @@
 \appendix
 
 \begin{appendices}
-    \include{appendix/A_monthly_reports}
-    \include{appendix/B_another_important_appendix}
+    %\include{appendix/A_monthly_reports}
+    %\include{appendix/B_another_important_appendix}
     \include{appendix/anleitungen/ssb_daten_generieren}
     \include{appendix/anleitungen/ssb_in_postgresql}
 \end{appendices}
