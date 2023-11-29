@@ -1007,7 +1007,7 @@ Dank dieser Struktur können alle Queries mit einer einzigen RediSearch-Abfrage 
 Dieser Ansatz behandelt alle Queries des SSB.
 
 \subsubsection{Aufbau der Abfragen}
-In der erstellten Implementierung werden alle Queries mittels einer einzigen Aggregation durchgeführt, wobei diese Aggregation unter Verwendung der Klasse\\ \lstinline|AggregationBuilder| der \emph{Jedis}-Bibliothek erstellt wird.
+In der erstellten Implementierung werden alle Queries mittels einer einzigen Aggregation durchgeführt, wobei diese Aggregation unter Verwendung der Klasse\\ \emph{AggregationBuilder} der \emph{Jedis}-Bibliothek erstellt wird.
 Es ist jedoch anzumerken, dass jede Aggregation alternativ auch als einfacher \emph{String} formuliert und direkt an Redis übermittelt werden könnte.
 
 Folgend wird für jede Query-Kategorie eine Query vorgestellt:
@@ -1031,7 +1031,7 @@ select sum(lo_extendedprice*lo_discount) as revenue
 \end{lstlisting}
 
 
-Im Scala-Code wird zunächst die Startzeit der Ausführung gespeichert, um später die Dauer zu messen. Danach wird ein Reducer konfiguriert, um die Summe von \emph{revenue} zu berechnen und als \emph{total\_revenue} zu bezeichnen. Die Aggregation selbst wird mit einem \lstinline|AggregationBuilder| von Jedis erstellt. Diese Aggregation filtert Daten basierend auf bestimmten Kriterien wie Rabatt, Menge und Jahr, lädt spezifische Felder und führt eine Berechnung durch, um die Einnahmen zu ermitteln. Es wird keine spezifische Gruppierung verwendet, aber der Reducer wird hinzugefügt, um die Summe zu berechnen, ohne die Anzahl der Ergebnisse zu begrenzen. Eine leere \emph{groupBy}-Anweisung ist notwendig, damit ein Reducer verwendet werden kann.
+Im Scala-Code wird zunächst die Startzeit der Ausführung gespeichert, um später die Dauer zu messen. Danach wird ein \emph{Reducer} konfiguriert, um die Summe von \emph{revenue} zu berechnen und als \emph{total\_revenue} zu bezeichnen. Die Aggregation selbst wird mit einem \emph{AggregationBuilder} von Jedis erstellt. Diese Aggregation filtert Daten basierend auf bestimmten Kriterien wie Rabatt, Menge und Jahr, lädt spezifische Felder und führt eine Berechnung durch, um die Einnahmen zu ermitteln. Es wird keine spezifische Gruppierung verwendet, aber der \emph{Reducer} wird hinzugefügt, um die Summe zu berechnen, ohne die Anzahl der Ergebnisse zu begrenzen. Eine leere \emph{groupBy}-Anweisung ist notwendig, damit ein \emph{Reducer} verwendet werden kann.
 
 \begin{lstlisting}[
     caption=Aggregation für Query Q1.1 des SSB,
@@ -1078,7 +1078,7 @@ select sum(lo_revenue), d_year, p_brand1
 \end{lstlisting}
 
 
-Die Scala-Funktion misst die Ausführungszeit, berechnet die Summe der Einnahmen (\emph{lo\_revenue}) mithilfe eines Reducers und filtert, lädt und gruppiert Daten anhand der Felder \emph{p\_category} und \emph{s\_region} nach Jahr ('\emph{`d\_year}`) und Marke ('\emph{`p\_brand1}`). Anschließend sortiert sie die Ergebnisse nach Jahr und Marke und gibt sie zurück. Nach der Ausführung wird die Dauer der Operation ausgegeben, bevor das Ergebnis zurückgegeben wird.
+Die Aggregation für RediSearch berechnet die Summe der Einnahmen (\emph{lo\_revenue}) mithilfe eines \emph{Reducers} und filtert, lädt und gruppiert Daten anhand der Felder \emph{p\_category} und \emph{s\_region} nach Jahr ('\emph{`d\_year}`) und Marke ('\emph{`p\_brand1}`). Anschließend sortiert sie die Ergebnisse nach Jahr und Marke und gibt sie zurück. Nach der Ausführung wird die Dauer der Operation ausgegeben, bevor das Ergebnis zurückgegeben wird.
 
 \begin{lstlisting}[
     caption=Aggregation für Query Q2.1 des SSB,
@@ -1110,10 +1110,107 @@ FT.AGGREGATE denormalized-index "@p_category:{MFGR\\#12} @s_region:{AMERICA}" LO
 \end{lstlisting}
 
 
-% TODO: fill
-\paragraph{Q3.1}:
+\paragraph{Q3.1}: Die originale SQL-Abfrage zu Q3.1 berechnet die Summe der Einnahmen (dargestellt als \lstinline|sum(lo_revenue) as revenue|), indem Daten aus vier Tabellen (\emph{customer}, \emph{lineorder}, \emph{supplier}, \emph{date}) kombiniert werden. Die Abfrage konzentriert sich speziell auf Datensätze, bei denen sowohl der Kunde als auch der Lieferant in der Region \emph{ASIA} ansässig sind (\lstinline|c_region = 'ASIA' and s_region = 'ASIA'|). Zusätzlich wird die Abfrage auf Datensätze aus den Jahren 1992 bis 1997 beschränkt (\lstinline|d_year >= 1992 and d_year <= 1997|).
+Die resultierenden Daten werden nach der Nation des Kunden (\emph{c\_nation}), der Nation des Lieferanten (\emph{s\_nation}) und dem Jahr (\emph{d\_year}) gruppiert, um die Gesamteinnahmen für jede dieser Gruppen zu berechnen.
+Schließlich werden die Ergebnisse zunächst nach dem Jahr in aufsteigender Reihenfolge (\emph{ascending}) und dann innerhalb jedes Jahres nach den Einnahmen in absteigender Reihenfolge (\emph{descending}) sortiert, um einen geordneten Überblick über die Einnahmen zu geben.
 
-\paragraph{Q4.1}:
+\begin{lstlisting}[
+    caption=Originale SQL-Query Q3.1 des SSB,
+    label=code:ssb-q-3-1-b,
+    language=Sql
+]
+select c_nation, s_nation, d_year, sum(lo_revenue) as revenue
+  from customer, lineorder, supplier, date
+  where lo_custkey = c_custkey
+  and lo_suppkey = s_suppkey
+  and lo_orderdate = d_datekey
+  and c_region = 'ASIA'
+  and s_region = 'ASIA'
+  and d_year >= 1992
+  and d_year <= 1997
+  group by c_nation, s_nation, d_year
+  order by d_year asc, revenue desc;
+\end{lstlisting}
+
+Für die Aggregation in RediSearch wird zunächst ein \emph{Reducer} erzeugt, der die Summe des Feldes \emph{lo\_revenue} berechnet und das Ergebnis unter dem Namen \emph{revenue} speichert. Anschließend wird ein \emph{AggregationBuilder} initialisiert, der eine Aggregation der Daten definiert. Diese Aggregation filtert die Datensätze, die die folgenden Kriterien erfüllen: \emph{c\_region} und \emph{s\_region} sind \emph{ASIA} und \emph{d\_year} liegt zwischen \emph{1992} und \emph{1997}. Die zu ladenden Spalten sind \emph{c\_nation}, \emph{s\_nation}, \emph{d\_year} und \emph{lo\_revenue}.
+Die Aggregation gruppiert die Daten nach den Spalten \emph{c\_nation}, \emph{s\_nation} und \emph{d\_year} und wendet den zuvor definierten \emph{Reducer} an. Die Ergebnisse werden dann aufsteigend nach \emph{d\_year} und absteigend nach \emph{revenue} sortiert.
+
+\begin{lstlisting}[
+    caption=Aggregation für Query Q3.1 des SSB,
+    label=code:redis-olap-denormalized-q-3-1,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): AggregationResult = {
+	val startTime = System.currentTimeMillis()
+
+	val reducer: Reducer = Reducers.sum("lo_revenue").as("revenue")
+	val aggregation = new AggregationBuilder(
+		"@c_region:{ASIA}" +
+			" @s_region:{ASIA}" +
+			" @d_year:[1992 1997]")
+		.load("c_nation", "s_nation", "d_year", "lo_revenue")
+		.groupBy(List("@c_nation", "@s_nation", "@d_year").asJavaCollection, List(reducer).asJavaCollection)
+		.sortBy(SortedField.asc("@d_year"), SortedField.desc("@revenue"))
+		.limit(0, Integer.MAX_VALUE)
+
+	val result = jedisPooled.ftAggregate("denormalized-index", aggregation)
+	println("Executed in " + (System.currentTimeMillis() - startTime) + " ms")
+	result
+}
+\end{lstlisting}
+
+\paragraph{Q4.1}: Die originale SQL-Abfrage für Q4.1 berechnet den Gesamtgewinn, definiert als \lstinline|sum(lo_revenue - lo_supplycost) as profit|, indem Daten aus allen fünf Tabellen (\emph{date}, \emph{customer}, \emph{supplier}, \emph{part}, \emph{lineorder}) kombiniert werden.
+Die Abfrage konzentriert sich auf Datensätze, bei denen sowohl der Kunde (\lstinline|c_region = 'AMERICA'|) als auch der Lieferant (\lstinline|s_region = 'AMERICA'|) in der Region \emph{AMERICA} ansässig sind. Die Abfrage ist weiterhin auf Teile beschränkt, die von \emph{MFGR\#1}- oder \emph{MFGR\#2}-Herstellern produziert werden (\lstinline|p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2|`).
+Die Ergebnisse werden nach dem Jahr (\emph{d\_year}) und der Nation des Kunden (\emph{c\_nation}) gruppiert. Auf diese Weise wird der Gesamtgewinn für jede Kombination von Jahr und Kundennation berechnet.
+Schließlich werden die Ergebnisse nach dem Jahr und innerhalb jedes Jahres nach der Nation des Kunden sortiert. Diese Anordnung ermöglicht einen klaren Überblick über den Gewinn nach Jahren und Kundennationen.
+
+\begin{lstlisting}[
+    caption=Originale SQL-Query Q4.1 des SSB,
+    label=code:ssb-q-4-1-b,
+    language=Sql
+]
+select d_year, c_nation, sum(lo_revenue - lo_supplycost) as profit
+  from date, customer, supplier, part, lineorder
+  where lo_custkey = c_custkey
+  and lo_suppkey = s_suppkey
+  and lo_partkey = p_partkey
+  and lo_orderdate = d_datekey
+  and c_region = 'AMERICA'
+  and s_region = 'AMERICA'
+  and (p_mfgr = 'MFGR#1' or p_mfgr = 'MFGR#2')
+  group by d_year, c_nation
+  order by d_year, c_nation;
+\end{lstlisting}
+
+Für die Aggregation in Redis wird zunächst ein \emph{Reducer} erstellt, der die Summe der Felder \emph{calculated\_profit} berechnet und das Ergebnis unter dem Namen \emph{profit} speichert. Anschließend wird ein \emph{AggregationBuilder} für die Aggregation konfiguriert. Diese Aggregation filtert Datensätze, bei denen \emph{c\_region} und \emph{s\_region} auf \emph{AMERICA} gesetzt sind und \emph{p\_mfgr} entweder \emph{MFGR\#1} oder \emph{MFGR\#2} ist.
+Die Spalten \emph{c\_city}, \emph{s\_city}, \emph{d\_year}, \emph{lo\_revenue} und \emph{lo\_supplycost} werden geladen. Ein Ausdruck wird verwendet, um den \emph{calculated\_profit} zu berechnen, indem \emph{lo\_revenue} von \emph{lo\_supplycost} subtrahiert wird.
+Die Daten werden dann nach \emph{d\_year} und \emph{c\_nation} gruppiert, wobei der zuvor definierte \emph{Reducer} angewandt wird. Die Ergebnisse werden aufsteigend nach \emph{d\_year} und \emph{c\_nation} sortiert.
+
+\begin{lstlisting}[
+    caption=Aggregation für Query Q4.1 des SSB,
+    label=code:redis-olap-denormalized-q-4-1,
+    language=Java
+]
+override def execute(jedisPooled: JedisPooled): AggregationResult = {
+	val startTime = System.currentTimeMillis()
+
+	val reducer: Reducer = Reducers.sum("calculated_profit").as("profit")
+	val aggregation = new AggregationBuilder(
+			"@c_region:{AMERICA}" +
+			" @s_region:{AMERICA}" +
+			" @p_mfgr:{MFGR\\#1 | MFGR\\#2}")
+		.load("c_city", "s_city", "d_year", "lo_revenue", "lo_supplycost")
+		.apply("@lo_revenue - @lo_supplycost", "calculated_profit")
+		.groupBy(List("@d_year", "@c_nation").asJavaCollection, List(reducer).asJavaCollection)
+		.sortBy(SortedField.asc("@d_year"), SortedField.asc("@c_nation"))
+		.limit(0, Integer.MAX_VALUE)
+
+	val result = jedisPooled.ftAggregate("denormalized-index", aggregation)
+	println("Executed in " + (System.currentTimeMillis() - startTime) + " ms")
+	result
+}
+\end{lstlisting}
+
 
 \subsubsection{Validierung der Richtigkeit der Resultate}
 In jeder Scala-Klasse, die eine Query repräsentiert, wird eine automatische Überprüfung der Ergebnisse durch die Implementierung der Funktionen \lstinline|isCorrect| und \lstinline|toComparableString| ermöglicht.
@@ -1211,6 +1308,8 @@ Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar na
     \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Denormalisierten-Ansatz.}      % caption the image
     \label{pic:results-denormalized}    % label the image for internal referencing
 \end{figure}
+
+% TODO: Schreiben, dass PostgreSQL keine Indizes nutzt für ssb
 
 % TODO: Kapitel über Ähnlichkeit von SQL und Aggregation
 \subsubsection{Fazit}
