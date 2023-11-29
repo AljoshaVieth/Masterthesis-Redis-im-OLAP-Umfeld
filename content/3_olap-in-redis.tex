@@ -996,15 +996,30 @@ der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten.
 
 \subsubsection{Fazit}
 
+% TODO: Vergleich Speicherverbrauch normalisiert vs denormalisiert
 
 \subsection{Ansatz 4: Denormalisiert}
+Da Redis keine Joins unterstützt, können die mächtigen Aggregationen von RediSearch nicht für SSB-Abfragen verwendet werden, solange die Daten denormalisiert sind. Um die Aggregationen nutzen zu können, arbeitet dieser Ansatz mit denormalisierten Daten (siehe \cref{sec:ssb-inserter-denormalized}).
+In diesem Kapitel wird gezeigt, wie SSB-Queries mit jeweils nur einer Aggregation in RediSearch ausgeführt werden können. Dabei wird jeweils eine Aggregation pro Abfragekategorie näher betrachtet.
+
+Dieser Ansatz behandelt alle Queries des SSB.
 
 \subsubsection{Aufbau der Daten}
-Um die Notwendigkeit von Join-Operationen bei Abfragen zu eliminieren, wurde in diesem Ansatz eine vollständig denormalisierte Datenstruktur implementiert. Dabei wurden sämtliche für die Queries benötigten Felder in die \emph{lineorder}-Dokumente integriert, wodurch Fakten und Dimensionen miteinander kombiniert wurden, wie in \cref{sec:ssb-inserter-denormalized} näher beschrieben. Diese Dokumente werden in einem \emph{denormalized-index} indiziert.
+Um die Notwendigkeit von Join-Operationen bei Abfragen zu eliminieren, wurde in diesem Ansatz eine vollständig denormalisierte Datenstruktur implementiert. Dabei wurden sämtliche für die Queries benötigten Felder in die \emph{lineorder}-Dokumente integriert, wodurch Fakten und Dimensionen miteinander kombiniert wurden, wie in \cref{sec:ssb-inserter-denormalized} näher beschrieben. Diese Dokumente werden in einem \emph{denormalized-index} indiziert. Dabei werden alle Felder, die für die Aggregationen notwendig sind, indiziert.
+
+\begin{lstlisting}[
+    caption=Befehl zum Anlegen des Index für die denormalisierte Daten,
+    label=code:redis-index-denormalized,
+    numbers=none
+]
+FT.CREATE denormalized-index PREFIX 1 "lineorder:" SCHEMA lo_discount NUMERIC lo_extendedprice NUMERIC lo_orderdate NUMERIC SORTABLE lo_quantity NUMERIC lo_revenue NUMERIC SORTABLE lo_supplycost NUMERIC s_nation TAG s_region TAG s_city TAG c_region TAG c_nation TAG c_city TAG p_category TAG p_brand1 TAG d_year NUMERIC SORTABLE p_mfgr TAG
+\end{lstlisting}
+
+
 
 Dank dieser Struktur können alle Queries mit einer einzigen RediSearch-Abfrage realisiert werden. Hierbei werden RediSearch-Aggregationen verwendet, die in Abschnitt \ref{sec:redisearch-aggregations} näher erläutert werden.
 
-Dieser Ansatz behandelt alle Queries des SSB.
+
 
 \subsubsection{Aufbau der Abfragen}
 In der erstellten Implementierung werden alle Queries mittels einer einzigen Aggregation durchgeführt, wobei diese Aggregation unter Verwendung der Klasse\\ \emph{AggregationBuilder} der \emph{Jedis}-Bibliothek erstellt wird.
