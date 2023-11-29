@@ -9,10 +9,12 @@ Für diese Arbeit wurde der \acl{SSB} sowohl in PostgreSQL als auch in einer ang
 Es existiert ein GitHub-Repository ~\cite{nukoyokohama_ssb-postgres_2023}, das eine Anleitung und Skripte für das Ausführen des \ac{SSB} in PostgreSQL bereitstellt.
 Zur Ausführung wurde ein Docker-Container mit dem Image \enquote{postgres-standard} erstellt.
 Dabei wurden die Standardwerte der PostgreSQL-Konfiguration verwendet.
-Anschließend wurden die .tbl-Dateien und Skripte des Repositories in diesen Container geladen. % Deutschen Begriff für gebinded finden
-Nach der Erstellung des Containers wird zunächst das Skript 'tables.sql' ausgeführt, um die Tabellen in der Datenbank anzulegen.
-Danach können die Daten in die Tabellen importiert werden, indem das Skript 'load.sql' ausgeführt wird.
-Abschließend kann der Benchmark durch die Ausführung des Skripts 'explain-analyze.sql' aus dem Repository durchgeführt werden.
+Anschließend wurden die \emph{.tbl}-Dateien und Skripte des Repositories in diesen Container geladen. 
+Nach der Erstellung des Containers wird zunächst das Skript \emph{tables.sql} ausgeführt, um die Tabellen in der Datenbank anzulegen.
+Danach können die Daten in die Tabellen importiert werden, indem das Skript \emph{load.sql} ausgeführt wird.
+Abschließend kann der Benchmark durch die Ausführung des Skripts \emph{explain-analyze.sql} aus dem Repository durchgeführt werden.
+
+Eine ausführliche Anleitung ist im Anhang zu finden (siehe \cref{sec:appendix-ssb-in-postgres}).
 % Hier ganze Anleitung im Anhang verlinken
 
 % TODO: Ansatz aus Paper beleuchten
