@@ -226,11 +226,9 @@ Die Felder innerhalb der Tabellen beginnen mit einem Präfix, bestehend aus dem 
 Die Queries des \ac{SSB} unterscheiden sich von denen des \ac{TPC-H}.
 Der \ac{SSB} nutzt nur Queries, die genau eine SELECT-Anweisung auf der Faktentabelle LINEORDER nutzen und somit keine self-joins nutzen. %self-joins bissl weirder Ausdruck
 Die LINEORDER Tabelle wird dann mit einer oder mehreren Dimensionstabellen gejoint und die Ergebnisse somit gefiltert. 
-%TODO: Alle SSB SQL-Queries in den Anhang packen
 
 Die Queries des \ac{SSB} sind in vier Kategorien aufgeteilt (query flights): % query flights bissl weird
 
-%TODO: \usepackage{underscore}
 
 \paragraph{Q1}\label{sec:ssb-q1}
 %ausbauen
@@ -500,8 +498,7 @@ Ein praktisches Anwendungsbeispiel für Bitmaps in Redis ist ein Park\-haus-Ver\
 
 Redis bietet einige grundlegende Befehle zur Arbeit mit Bitmaps. Der Befehl \emph{SETBIT} dient dazu, ein Bit an einem bestimmten Offset auf 0 oder 1 zu setzen, während \emph{GETBIT} den Wert eines Bits an einem gegebenen Offset zurückgibt. Mit \emph{BITOP} lassen sich bitweise Operationen an einem oder mehreren Strings durchführen. \emph{BITCOUNT} führt eine Populationszählung durch und berichtet die Anzahl der auf 1 gesetzten Bits. \emph{BITPOS} schließlich findet das erste Bit mit dem spezifizierten Wert von 0 oder 1.
 
-% TODO: Was ist denn konstantzeitigen
-Es gibt zwei Kategorien von Bitoperationen: die konstantzeitigen Ein\-zel\-bit-O\-pe\-ra\-ti\-o\-nen, wie das Setzen oder Abrufen eines Bitwertes, und Operationen auf Bitgruppen, wie das Zählen der Anzahl gesetzter Bits in einem bestimmten Bereich. Diese zweite Kategorie umfasst beispielsweise die Populationszählung.
+Es gibt zwei Kategorien von Bitoperationen: die zeitkonstanten Ein\-zel\-bit-O\-pe\-ra\-ti\-o\-nen, wie das Setzen oder Abrufen eines Bitwertes, und Operationen auf Bitgruppen, wie das Zählen der Anzahl gesetzter Bits in einem bestimmten Bereich. Diese zweite Kategorie umfasst beispielsweise die Populationszählung.
 
 Bitmaps bieten den großen Vorteil, dass sie häufig erhebliche Speicherplatzersparnisse bei der Speicherung von Informationen ermöglichen.Zum Beispiel kann in einem System, das Benutzer über fortlaufende IDs identifiziert, ein Bit pro Benutzer genutzt werden, um eine einfache Information wie den Wunsch, einen Newsletter zu erhalten, zu speichern. Mit dieser Methode lassen sich solche Daten für bis zu 4 Milliarden Benutzer mit nur 512 MB Speicher verwalten.
 
@@ -568,9 +565,16 @@ Die Daten können außerdem in anderen metrischen Programmen, wie beispielsweise
 % Eventuell Abschnitt umstrukturieren
 
 \subsection{Redis Cluster}
-% https://learning.oreilly.com/library/view/mastering-redis/9781783988181/ch06.html#ch06lvl1sec42
-% https://learning.oreilly.com/library/view/redis-4-x-cookbook/9781783988167/d590a8d8-2532-4601-9568-a52ccdcbec6f.xhtml
+Mit Redis-Clustern kann Redis horizontal skaliert werden, wobei die Datenverteilung automatisch über mehrere Knoten erfolgt. Laut der Dokumentation von Redis~\cite{redis_ltd_scale_nodate} zeichnet sich diese Architektur durch ihre Fähigkeit aus, auch in gewissen Ausfallszenarien weiterhin funktionsfähig zu bleiben. Beispielsweise kann der Cluster Operationen fortsetzen, selbst wenn einzelne Knoten ausfallen oder Kommunikationsprobleme innerhalb des Clusters auftreten. Es ist jedoch zu beachten, dass bei umfangreicheren Ausfällen, wie dem Ausfall der Mehrheit der Master-Knoten, der gesamte Cluster nicht mehr verfügbar sein wird.
 
+Der Redis-Cluster garantiert keine strenge Konsistenz. Schreiboperationen, die dem Client als erfolgreich gemeldet wurden, können unter bestimmten Umständen verloren gehen. Der Hauptgrund dafür ist die asynchrone Replikation: Ein Master-Knoten bestätigt Schreiboperationen, bevor er sie an seine Replikate weiterleitet. Fällt dieser Master aus, bevor die Replikate aktualisiert wurden, kann ein Replikat ohne diese Schreibvorgänge zum neuen Master werden, wodurch die Daten verloren gehen.
+
+Redis Cluster unterstützen synchrone Schreibvorgänge über den \emph{WAIT}-Befehl, was den Datenverlust reduziert, aber auch dann keine hohe Konsistenz bietet. Bei komplexeren Ausfallszenarien ist es immer noch möglich, dass ein Replikat, das den Schreibvorgang nicht empfangen konnte, zum Master gewählt wird. Bei Netzwerkpartitionen können Schreibvorgänge ebenfalls verloren gehen, wenn ein isolierter Client weiterhin auf einen Master schreibt, der später durch ein Replikat auf der Mehrheitsseite der Partition ersetzt wird.
+
+
+
+\subsection{RedisInsight}
+RedisInsight ist eine kostenlos GUI-Anwendung zur Verwaltung von Redis-Datenbanken~\cite{redis_ltd_redisinsight_nodate}. Sie bietet unter anderem eine visuelle Ansicht der Daten, eine integrierte CLI sowie Analysen der Datenbank. Im Rahmen dieser Arbeit wurde sie für manuelle Anfragen und zur Visualisierung genutzt.
 \section{RediSearch}
 
 RediSearch ist ein Redis-Modul, das es ermöglicht, nach Daten in Redis über Indizes zu suchen.
@@ -629,7 +633,7 @@ Sie bestehen aus \emph{Documents}, \emph{Fields} und dem \emph{Schema}.
 \emph{Documents} sind die Basiseinheiten der Information, eindeutig identifizierbar durch ihren Schlüsselnamen, bestehend aus \emph{Hash}- oder \emph{JSON}-Datenobjekten. Jedes \emph{Document} enthält mehrere \emph{Fields}, die spezifische Attribute oder Eigenschaften repräsentieren und unterschiedliche Datentypen enthalten können. Bei einem Hash sind dies die einzelnen Elemente innerhalb des Hash und bei JSON die Felder des Dokuments.
 Das \emph{Schema} definiert die Struktur des Index. Es legt fest, wie die \emph{Fields} gespeichert und indiziert werden.
 
-Für eine effiziente Suche ist es wichtig, nur relevante \emph{Fields} zu indizieren, da die Indizierung aller \emph{Fields} zu unnötigem Overhead führen kann. Nicht indizierte \emph{Fields} tragen nicht zu den Suchergebnissen bei, können aber als Teil der \emph{Document}-Daten beim Abrufen der Suchergebnisse abgerufen werden. Aggregationen (siehe [VERWEIS AUF SPÄTERE KAPITEL]) können nur mit indizierten Feldern arbeiten. % TODO: Verweis auf Aggregation
+Für eine effiziente Suche ist es wichtig, nur relevante \emph{Fields} zu indizieren, da die Indizierung aller \emph{Fields} zu unnötigem Overhead führen kann. Nicht indizierte \emph{Fields} tragen nicht zu den Suchergebnissen bei, können aber als Teil der \emph{Document}-Daten beim Abrufen der Suchergebnisse abgerufen werden. Aggregationen (siehe \cref{sec:redisearch-aggregations}) können jedoch nur mit indizierten Feldern arbeiten. 
 
 \subsection{Anlegen von Inidizes}
 Indizes werden in RediSearch mithilfe des Befehls \emph{FT.CREATE} erstellt.
@@ -803,9 +807,8 @@ Die Bedeutung der einzelnen Optionen:
 Die Suche nach Dokumenten mit bestimmten Textwerten ist möglich durch die Verwendung von \emph{<term>} oder \emph{@<field\_name>}:
 \{<term>\} in der Abfragesyntax. Zum Beispiel:
 
-% TODO: LatexProblem fixen, falsche Anführungszeichen (muss "" sein)
 - Suche in allen Textattributen:
- \lstinline|FT.SEARCH recipeIndex \glqq egg\grqq|
+ \lstinline|FT.SEARCH recipeIndex "example text"|
 
 - Suche nur im Preparation-attribut:
  \lstinline|FT.SEARCH recipeIndex "@preparation:boil"|
@@ -1009,6 +1012,8 @@ Anschließend werden die Kategorien mit \lstinline|SORTBY 2 @avg\_cooking\_time 
 \lstinline|ASC| steht hierbei für \enquote{ascending} (aufsteigend). Da es sich  bei der Kochzeit um ein Feld handelt, muss ein \enquote{@} vorangestellt werden. In der \emph{REDUCE}-Anweisung weiter vorne wird der Name des zu erstellenden Felde ohne \enquote{@} angegeben.
 
 
+\subsection{RediSearch in einem Cluster}
+RediSearch ermöglicht Clustering ausschließlich innerhalb der kostenpflichtigen \emph{Redis Cloud} und \emph{Redis Enterprise Software}~\cite{redis_ltd_redisearch_2023}, wobei letztere laut Produktseite ~\cite{redis_ltd_scale_nodate} eine nahtlose Skalierung von Suche und Abfragen über einen gesamten Cluster hinweg ermöglicht, um Indizes auf Milliarden von Dokumenten über Hunderte von Servern zu erweitern.
 
 
 
@@ -1027,8 +1032,7 @@ Anschließend werden die Kategorien mit \lstinline|SORTBY 2 @avg\_cooking\_time 
 
 
 
-
-\section{Scala} % Todo: Eventuell ausbauen
+\section{Scala}
 Scala ist eine moderne Programmiersprache die Merkmale objektorientierter und funktionaler Sprachen aufweist.
 Sie zeichnet sich außerdem durch eine starke Typisierung aus.
 Ihre Syntax zeigt Parallelen zu Java auf, und es ist möglich, Java-Funktionen sowie Java-Libraries in Scala zu verwenden~\cite{epfl_scala_nodate-1, epfl_introduction_nodate}.
