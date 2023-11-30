@@ -79,7 +79,7 @@ Im Rahmen dieser Arbeit wurde der \emph{SSB Inserter} entwickelt. Es handelt sic
 \subsubsection{Konfiguration von Redis und Jedis}
 Redis verfügt über Eigenschaften, die beim Einfügen großer Datenmengen suboptimal sein können.
 Es bietet die Möglichkeit, Daten sowohl als Snapshot als auch in einer Append-Only-Datei zu speichern (siehe Dokumentation von Redis~\cite{redis_ltd_persistence_nodate}).
-Beim Einfügen von vielen Daten besteht die Gefahr, dass mehrfach Daten gespeichert werden, die in kurzer Zeit nicht mehr aktuell sind, wenn weitere Daten eingefügt werden. Aus diesem Grund wird beim Start des Programms sichergestellt, dass beide Optionen in der Konfiguration deaktiviert sind. Nachdem die Daten eingefügt wurden werden die Optionen wieder angepasst. 
+Beim Einfügen von vielen Daten besteht die Gefahr, dass mehrfach Daten gespeichert werden, die in kurzer Zeit nicht mehr aktuell sind, wenn weitere Daten eingefügt werden. Aus diesem Grund wird beim Start des Programms sichergestellt, dass beide Optionen in der Konfiguration deaktiviert sind. Nachdem die Daten eingefügt wurden, werden die Optionen wieder angepasst. 
 
 Jedis hat außerdem einen Timeout für Anfragen. Um sicherzustellen, dass dieser Timeout das Einfügen der Daten nicht beendet, wird er auf unendlich gesetzt.
 
@@ -102,7 +102,7 @@ jedis.configSet("save", "3600 1")
 
 \subsubsection{Einfügen der Daten mit künstlichen Namensräumen}
 % TODO: bissl drumrum ausbauen...
-Um die Daten des \emph{SSB} in \emph{Redis} zu integrieren, ist es notwendig, zunächst die generierten \emph{.tbl}-Dateien zu lesen. Da in diesen Dateien keine Informationen zu den Spaltennamen enthalten sind, muss das Programm diese vergeben. Die benötigten Spaltennamen wurden aus dem SQL-Import-Skript entnommen, welches normalerweise zur Erstellung der Tabellen in \emph{PostgreSQL} verwendet wird.
+Um die Daten des \emph{SSB} in \emph{Redis} zu integrieren, ist es notwendig, zunächst die generierten \emph{.tbl}-Dateien einzulesen. Da in diesen Dateien keine Informationen zu den Spaltennamen enthalten sind, muss das Programm diese vergeben. Die benötigten Spaltennamen wurden aus dem SQL-Import-Skript entnommen, welches normalerweise zur Erstellung der Tabellen in \emph{PostgreSQL} verwendet wird.
 
 Die Namen der Spalten sind in einem \emph{String}-Array innerhalb des \emph{Scala}-Programms gespeichert, wie in \Cref{code:ssb-inserter-datastructures} dargestellt:
 
@@ -226,7 +226,7 @@ def createCustomerMap(customerLines: Iterator[String]): Unit = {
 \end{lstlisting}
 
 
-Zum Einlesen der Daten gibt es die Funktion \lstinline|readLines|. Sie öffnet eine \emph{.tbl}-Datei, extrahiert den Namen der Tabelle aus dem Dateinamen und wendet die übergebene Funktion auf die Inhalte der Datei an. Die übergeben Funktion ist dabei die passende Funktion zur Erstellung einer Map zu dieser Tabelle, z.~B. \lstinline|createCustomerMap|. Nachdem die Datei geöffnet und die Zeilen an die Funktion übergeben wurden, wird die Datei geschlossen. Die Funktion integriert zusätzlich sowohl eine Zeitmessung als auch eine Fehlerbehandlung.
+Zum Einlesen der Daten gibt es die Funktion \lstinline|readLines|. Sie öffnet eine \emph{.tbl}-Datei, extrahiert den Namen der Tabelle aus dem Dateinamen und wendet die übergebene Funktion auf die Inhalte der Datei an. Die übergebene Funktion ist dabei die passende Funktion zur Erstellung einer Map zu dieser Tabelle, z.~B. \lstinline|createCustomerMap|. Nachdem die Datei geöffnet und die Zeilen an die Funktion übergeben wurden, wird die Datei geschlossen. Die Funktion integriert zusätzlich sowohl eine Zeitmessung als auch eine Fehlerbehandlung.
 
 \begin{lstlisting}[
     caption=Die Funktion readLines für den denormalisierten Ansatz,
@@ -797,7 +797,7 @@ Q 1.1 & 3901 ms & 961 ms & 283 ms       \\
 Q 1.2 & 1098 ms & 74 ms & 261 ms       \\
 Q 1.3 & 1087 ms & 41 ms & 261 ms       \\
 Q 2.1 & 21301 ms & 3167 ms & 278 ms       \\
-Q 2.2 & 21856 ms & 22012 ms & 267 ms       \\
+Q 2.2 & 24879 ms & 1717 ms & 267 ms       \\
 Q 2.3 & 20358 ms & 900 ms & 228 ms       \\\hline
 \end{tabular}
 \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Client-Ansatz.\\
@@ -819,6 +819,14 @@ Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwi
 % TODO: Hier vergleich der Ausführungszeiten und Erläuterung warum
 
 \subsubsection{Fazit}
+Der vorgestellte Ansatz demonstriert die Integration von Daten des \ac{SSB} in \emph{Redis} und die Umsetzung der ersten beiden Abfragekategorien durch clientseitige Joins, wobei die Datenstruktur möglichst nah an der originalen Normalform der Daten gehalten wird. Die durchgeführten Laufzeitmessungen zeigen, dass die zweite Redis-Implementierungsvariante, welche die Dimensionsdaten zuerst kombiniert um dann anhand dieser dei Faktendaten beim Aufrufen zu filtern, in Bezug auf die Ausführungsgeschwindigkeit mit \emph{PostgreSQL} vergleichbar ist. Insbesondere bei den Abfragen Q1.2 und Q1.3 zeigt sich sogar eine höhere Geschwindigkeit im Vergleich zu \emph{PostgreSQL}.
+
+Im Kontrast dazu erreicht Variante 1, bei der zunächst Dimensions- und Faktendaten geladen und anschließend clientseitig verknüpft werden, nicht die Laufzeiten von \emph{PostgreSQL}. Dies legt nahe, dass das clientseitige Joinen unter Einbeziehung vieler Faktendaten erhebliche Laufzeitkosten verursacht.
+
+Bei der Analyse komplexerer Abfragen der Kategorie 2 wird deutlich, dass auch Variante 2 nicht länger mit \emph{PostgreSQL} konkurrieren kann. Während in der ersten Abfragekategorie lediglich zwei Listen von Dokumenten verknüpft werden, erfordert die zweite Kategorie das Joinen von vier Listen, was zu einer merklichen Verlangsamung der Abfragen in dieser Kategorie führt. Beide Varianten zeigen eine unzureichende Skalierbarkeit im Hinblick auf die zunehmende Komplexität der Abfragen.
+
+Daraus lässt sich schlussfolgern, dass sich keine der beiden Varianten bei komplexeren Abfragen als ernstzunehmender Konkurrent zu \emph{PostgreSQL} behaupten kann. Aus diesem Grund wurde von der Implementierung der anspruchsvolleren Abfragen der Kategorien 3 und 4 abgesehen.
+
 % Warum nur bis Q2.2
 
 
@@ -968,18 +976,19 @@ println(jedisPooled.fcall("runQ1_1_a", List[String]().asJava, List("date-index",
 % TODO: Position fixen
 \begin{table}[h]
 \centering
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \hline
-Query & Redis & PostgreSQL \\ \hline
-Q 1.1 & 2545 ms  & 283 ms       \\
-Q 1.2 & 98 ms    & 261 ms       \\ \hline
+Query & Redis client-approach 2 & Redis server-approach & PostgreSQL \\ \hline
+Q 1.1 & 961 ms & 2545 ms  & 283 ms       \\
+Q 1.2 & 74 ms & 98 ms    & 261 ms       \\ 
+Q 1.2 & 41 ms & 37 ms    & 261 ms       \\ \hline
 \end{tabular}
 \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Server-Ansatz.\\
  Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar nacheinander durchgeführten Messungen gebildet wurde.}
 \label{tab:results-server}
 \end{table}
 
-\newpage % TODO: Check if necessairy
+% \newpage % TODO: Check if necessairy
 % TODO: Position fixen
 \begin{figure}[ht]  % figure position
     \centering      % center the image
@@ -991,11 +1000,16 @@ Q 1.2 & 98 ms    & 261 ms       \\ \hline
 Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen ent-
 wickelt, die sich hauptsächlich in Details unterscheiden. Für die Ergebnisse wurden
 hier jeweils die schnellsten Varianten verwendet. Die
-genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_server\_a}, \emph{Q1\_2\_server\_a}. Im Quellcode,
+genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_server\_a}, \emph{Q1\_2\_server\_a}, \emph{Q1\_3\_server\_a}. Im Quellcode,
 der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten.
 
 
 \subsubsection{Fazit}
+Der vorgestellte Ansatz erläutert, wie Daten des \ac{SSB} in Redis geladen und Abfragen der ersten Kategorie mittels server-seitiger Joins realisiert werden können. Dabei wird die Datenstruktur, analog zum Ansatz mit client-seitigen Joins, so nah wie möglich an den ursprünglichen normalisierten Daten orientiert. Bei den Abfragen Q1.2 und Q1.3 zeigt sich, dass der Ansatz mit serverseitigen Joins in Bezug auf die Ausführungszeiten gut mit den client-seitigen Joins der Variante 2 und \emph{PostgreSQL} konkurrieren kann. Allerdings wird bei der Abfrage Q1.1 deutlich, dass der serverseitige Join-Prozess erheblich mehr Zeit in Anspruch nimmt als der clientbasierte Ansatz 2 und \emph{PostgreSQL}.
+
+Sowohl der clientseitige Ansatz 2 als auch der serverseitige Ansatz können insgesamt nicht mit \emph{PostgreSQL} mithalten, wobei der serverbasierte Ansatz nochmals langsamer ist als der clientbasierte. Dies wird vermutlich durch die Beschränkungen von \emph{Lua} bei der Ausführung komplexer Aufgaben verursacht. Die Funktionalitäten von \emph{Lua} sind begrenzt, und häufig erfordert es komplizierteren Code als in \emph{Scala}. Zusätzlich ist das \emph{Lua}-Skript auf die Ressourcen des \emph{Redis}-Servers beschränkt.
+
+Bei dem Versuch, Abfragen der Kategorie 2 mittels \emph{Lua} zu implementieren, traten die Grenzen von \emph{Lua} erneut zutage. Es war ein erheblicher Aufwand erforderlich, um den Query-String aus den Dimensionsdaten zu generieren. Allein dieser Prozess dauerte bereits länger als die Ausführungszeiten der Abfrage Q2.1 im client-seitigen Ansatz der Variante 2 und in \emph{PostgreSQL}. Daher wurde von der Implementierung komplexerer Abfragen über die Kategorie 1 hinaus Abstand genommen. Der Ansatz mit \emph{Lua} stellt somit bei komplexeren Anfragen keine Konkurrenz zum client-seitigen Ansatz der Variante 2 oder zu \emph{PostgreSQL} dar.
 
 % TODO: Vergleich Speicherverbrauch normalisiert vs denormalisiert
 
@@ -1075,7 +1089,7 @@ override def execute(jedisPooled: JedisPooled): AggregationResult = {
 \paragraph{Q2.1}: Die Query Q2.1 im SSB Benchmark berechnet die Gesamteinnahmen\\
 (\emph{sum(lo\_revenue})) aufgeschlüsselt nach Jahr (\emph{d\_year}) und Markenbezeichnung\\
 (\emph{p\_brand1}).
-Sie verknüpft dazu im Original vier Tabellen: \emph{lineorder}, \emph{date}, \emph{part} und \emph{supplier}, basierend auf Übereinstimmungen von \emph{d\_datekey}, \emph{p\_partkey} und \emph{s\_suppkey}. Die Ergebnisse werden gefiltert, um nur Datensätze in der Produktkategorie (\lstinline|p_category = MFGR#12|) und der Region (\lstinline|s_region = AMERICA|) einzuschließen. Die Daten werden anschließend nach Jahr (\emph{d\_year}) und Marke (\emph{p\_brand1})gruppiert und in dieser Reihenfolge sortiert (siehe \cref{sec:ssb-q4}).
+Sie verknüpft dazu im Original vier Tabellen: \emph{lineorder}, \emph{date}, \emph{part} und \emph{supplier}, basierend auf Übereinstimmungen von \emph{d\_datekey}, \emph{p\_partkey} und\\ \emph{s\_suppkey}. Die Ergebnisse werden gefiltert, um nur Datensätze in der Produktkategorie (\lstinline|p_category = MFGR#12|) und der Region (\lstinline|s_region = AMERICA|) einzuschließen. Die Daten werden anschließend nach Jahr (\emph{d\_year}) und Marke (\emph{p\_brand1})gruppiert und in dieser Reihenfolge sortiert (siehe \cref{sec:ssb-q4}).
 
 \begin{lstlisting}[
     caption=Originale SQL-Query Q2.1 des SSB,
@@ -1327,7 +1341,8 @@ Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar na
 
 % TODO: Schreiben, dass PostgreSQL keine Indizes nutzt für ssb
 
-% TODO: Kapitel über Ähnlichkeit von SQL und Aggregation
-\subsubsection{Fazit}
-
 \section{Skalierung}
+% TODO: Kapitel über Ähnlichkeit von SQL und Aggregation
+\subsubsection{Vergleich der Ansätze}
+\subsubsection{Fazit} % + Vergleich der Ansätze
+

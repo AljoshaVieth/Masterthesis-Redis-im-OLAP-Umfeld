@@ -2,7 +2,7 @@
 \chapter{Technische Grundlagen}
 \section{Beliebtheit von Technologien}
 % Hier durch bessere Quelle austauschen
-In der vorliegenden Arbeit wird die Popularität von bestimmten Technologien auf Basis zweier Indizes dargestellt: dem \emph{\acf{PYPL}}~\cite{carbonnelle_pypl_2023} sowie dem \emph{\acf{TOPDB}}~\cite{carbonnelle_topdb_2023}.  Diese Indizes dienen der Einschätzung der Beliebtheit von Programmiersprachen und Datenbanken und basieren hierbei auf der Häufigkeit von Google-Suchen.
+In der vorliegenden Arbeit wird die Popularität von bestimmten Technologien auf Basis zweier Indizes dargestellt: dem \emph{\acf{PYPL}}~\cite{carbonnelle_pypl_2023} sowie dem \emph{\acf{TOPDB}}~\cite{carbonnelle_topdb_2023}.  Diese Indizes dienen der Einschätzung der Beliebtheit von Programmiersprachen und Datenbanken und basieren auf der Häufigkeit von Google-Suchen.
 
 Der \emph{\acf{PYPL}} misst die Beliebtheit von Programmiersprachen anhand der Analyse der Häufigkeit von Suchanfragen nach Tutorials auf Google. 
 Dieser Index beruht auf der Annahme, dass eine höhere Anzahl von Suchanfragen nach Tutorials für eine bestimmte Sprache auf eine größere Beliebtheit dieser Sprache hinweist.
@@ -11,7 +11,7 @@ Der \emph{\acf{PYPL}} bewertet die Beliebtheit von Datenbanken anhand der Analys
 
 \section{\acf{OLAP}}
 Viele Unternehmen verwenden heute große Mengen an Geschäftsdaten für eine strategische Planung.
-Durch eine Analyse der Daten lassen sich Handlungsempfehlungen ableiten.
+Durch eine Analyse solcher Daten lassen sich Handlungsempfehlungen ableiten.
 Typische Analysen umfassen die Berechnung des Umsatzes einer Filiale innerhalb des letzten Jahres sowie der Vergleich zu vorherigen Jahren oder die Analyse der Verkäufe von einzelnen Produkten in einem bestimmten Quartal.
 Diese Analysen erfordern eine umfassende Datenmenge, einschließlich historischer Daten.
 Klassische Datenbanksysteme für Transaktionen, etwa in einem Onlineshop, auch \acf{OLTP} genannt, sind für viele Schreib- und Lesezugriffe optimiert, nutzen meist wenig komplexe Abfragen (Queries) und enthalten häufig keine historischen Daten.
@@ -20,15 +20,15 @@ Bei diesem Einsatzgebiet von Datenbanken spricht man vom \acf{OLAP}~\cite[S.~97f
 
 \ac{OLAP} und \ac{OLTP} profitieren von verschiedenen Optimierungen der Datenstrukturen in einer Datenbank.
 Bei Nutzung einer gemeinsamen Datenbank für beide Verfahren würden die \ac{OLAP}-Abfragen außerdem die \ac{OLTP}-Transaktionen verlangsamen oder blockieren.
-Um das zu verhindern, nutzt man für \ac{OLAP} eigene Datenbanksysteme und speichert die Daten in sogenannten Data Warhouses.
+Um das zu verhindern, nutzt man für \ac{OLAP} eigene Datenbanksysteme und speichert die Daten in sogenannten Data Warehouses.
 
 \subsection{\acfp{DW}}
 \acp{DW} wurden entwickelt, um Daten zu speichern, die für strategische Entscheidungen im Geschäftsumfeld nützlich sein können.
 Dazu werden Daten aus Geschäftsprozessen wie etwa Verkäufen extrahiert, für die weitere Verwendung transformiert und in bestimmten Datenbanken gespeichert.
-Klassische  operative oder transaktionale Datenbankansätze, die auf den täglichen Gebrauch durch viele Nutzende optimiert sind, eignen sich nicht für ein \ac{DW} im \ac{OLAP}-Umfeld, da hier üblicherweise keine historischen Daten gespeichert werden.
+Klassische operative oder transaktionale Datenbankansätze, die auf den täglichen Gebrauch durch viele Nutzende optimiert sind, eignen sich nicht für ein \ac{DW} im \ac{OLAP}-Umfeld, da hier üblicherweise keine historischen Daten gespeichert werden.
 Des Weiteren enthalten diese detaillierte Daten, was das Ausführen von komplexen Abfragen erschwert bzw. verlangsamt.
 % Hier ähnliche Inhalte wie im Kapitel weiter oben
-Um aber Entscheidungen aus den Daten ableiten zu können, sind sowohl historische Daten als auch komplexe Abfragen notwendig.
+Um Entscheidungen aus den Daten ableiten zu können, sind sowohl historische Daten als auch komplexe Abfragen notwendig.
 Um diese Probleme zu lösen, enthält ein \ac{DW} im \ac{OLAP} Umfeld historische Daten und bietet ein optimiertes Datenmodell für komplexere Abfragen.
 In der ursprünglichen Definition nach Inmon werden \acp{DW} als Sammlung von subjektorientierten, integrierten, nicht flüchtigen und zeitvariablen Daten beschrieben. % TODO: Hier wäre Originalquelle ganz praktisch
 Subjektorientiert bedeutet, dass sich die Daten auf bestimmte Aspekte der geforderten Analyse beziehen, also z.~B. Daten über Produktionsmengen und Verkäufen bei Produktionsunternehmen.
@@ -72,17 +72,17 @@ Bei Abfragen können nun verschiedene Dimensionen kombiniert werden, um Daten au
 So können z.~B. die Verkäufe aus einem bestimmten Jahr in einer bestimmten Filiale aus der Faktentabelle abgefragt werden.
 Die Dimensionstabellen können außerdem sogenannte Hierarchien enthalten, die verschiedene Genauigkeiten der Dimension definieren.
 So kann ein Zeitpunkt in der Tabelle Werte für Uhrzeit, Tag, Monat, Quartal oder Jahr enthalten.
-Ein Ort kann etwa aus dem Ortsnamen, dem Bundesland, dem Land, dem Kontinent bestehen.
+Ein Ort kann etwa aus dem Ortsnamen, dem Bundesland, dem Land und dem Kontinent bestehen.
 So lassen sich genaue Abfragen zu Verkäufen einer bestimmten Filiale oder etwa allen Filialen in Europa abfragen~\cite[S.~5]{vaisman_data_2022}.
 
 \subsection{OLAP Cubes}
-In \emph{OLAP}-Systemen spielen Aggregatfunktionen wie \emph{COUNT}, \emph{SUM}, \emph{AVG}, \emph{MIN} und \emph{MAX} eine zentrale Rolle. Sie ermöglichen die effiziente Analyse und Aggregation großer Datenmengen. Eine Schlüsselstrategie zur Optimierung der Leistung von OLAP-Abfragen ist die Verwendung von \emph{materialisierten Aggregaten}. Diese entstehen, wenn häufig verwendete Aggregationsabfragen im Voraus berechnet und die Ergebnisse in einem Cache gespeichert werden.
+In \emph{OLAP}-Systemen spielen Aggregationsfunktionen wie \emph{COUNT}, \emph{SUM}, \emph{AVG}, \emph{MIN} und \emph{MAX} eine zentrale Rolle. Sie ermöglichen die effiziente Analyse und Aggregation großer Datenmengen. Eine Schlüsselstrategie zur Optimierung der Leistung von OLAP-Abfragen ist die Verwendung von \emph{materialisierten Aggregaten}. Diese entstehen, wenn häufig verwendete Aggregationsabfragen im Voraus berechnet und die Ergebnisse in einem Cache gespeichert werden.
 
 Die Informationen in diesem Abschnitt beruhen auf der Beschreibung von Datenwürfeln durch Martin Kleppmann~\cite[S.~109-111]{kleppmann_datenintensive_2019}.
 
 \emph{Materialisierte Sichten} sind in diesem Zusammenhang von besonderer Bedeutung. Sie dienen als Speicher für diese vorberechneten Daten. Strukturell ähneln sie den üblichen (virtuellen) Sichten (Views) in relationalen Datenbanksystemen und sind als tabellenähnliche Objekte konzipiert, die aggregierte Ergebnisse enthalten. Im Gegensatz zu virtuellen Sichten, die nur die Abfrage selbst speichern, enthalten materialisierte Sichten die tatsächlichen Abfrageergebnisse.
 
-Ein zentrales Element in OLAP-Systemen ist der so genannte \emph{OLAP Cube} oder Datenwürfel, der eine spezialisierte Form der materialisierten Sicht darstellt. In einem OLAP-Würfel werden Daten als ein Gitter von Aggregaten dargestellt, die nach verschiedenen Dimensionen gruppiert sind. Ein solcher Würfel kann aus mehreren Dimensionen bestehen, wobei jede Seite des Würfels eine Dimension darstellt. Betrachtet man nur zwei Dimensionen, so kann man sich den OLAP-Würfel als eine zweidimensionale Tabelle vorstellen. In dieser Tabelle stellt beispielsweise eine Achse die Zeitdimension und die andere Achse die Produktdimension dar. Die Zellen der Tabelle enthalten dann das Aggregat (z.~B. \emph{MAX}) eines Attributs (z.~B. Verkaufspreis) für alle Fakten, die dieser Kombination von Dimensionen entsprechen. Der Cube ermöglicht es beispielsweise, den höchsten Verkaufspreis eines Produkts zu einem bestimmten Zeitpunkt abzurufen.
+Ein zentrales Element in OLAP-Systemen ist der sogenannte \emph{OLAP Cube} oder Datenwürfel, der eine spezialisierte Form der materialisierten Sicht darstellt. In einem OLAP-Würfel werden Daten als ein Gitter von Aggregaten dargestellt, die nach verschiedenen Dimensionen gruppiert sind. Ein solcher Würfel kann aus mehreren Dimensionen bestehen, wobei jede Seite des Würfels eine Dimension darstellt. Betrachtet man nur zwei Dimensionen, so kann man sich den OLAP-Würfel als eine zweidimensionale Tabelle vorstellen. In dieser Tabelle stellt beispielsweise eine Achse die Zeitdimension und die andere Achse die Produktdimension dar. Die Zellen der Tabelle enthalten dann das Aggregat (z.~B. \emph{MAX}) eines Attributs (z.~B. Verkaufspreis) für alle Fakten, die dieser Kombination von Dimensionen entsprechen. Der Cube ermöglicht es beispielsweise, den höchsten Verkaufspreis eines Produkts zu einem bestimmten Zeitpunkt abzurufen.
 
 Ein weiterer Vorteil von Datenwürfeln ist die Möglichkeit, Aggregate unabhängig von einer bestimmten Dimension zu betrachten, wenn man sich entlang einer Achse des Würfels bewegt. So ist es beispielsweise möglich, den höchsten Verkaufspreis für jedes Produkt unabhängig vom Zeitpunkt oder den höchsten Preis zu bestimmten Zeitpunkten unabhängig vom Produkt zu ermitteln.
 
@@ -205,8 +205,8 @@ Die Daten und Abfragen des Benchmarks sind auf eine Datenbank ausgelegt, mit der
 \subsection{\acf{SSB}}
 Der \acf{SSB} ist eine abgewandelte Form des \ac{TPC-H}.
 
-\subsubsection{Schema des \ac{SSB}}
-Er verwendet die gleichen Daten, nutzt dafür jedoch ein Sternschema statt eines normalisierten Schemas.
+\subsubsection{Schema des \ac{SSB}} 
+Der \ac{SSB} verwendet die gleichen Daten, nutzt dafür jedoch ein Sternschema statt eines normalisierten Schemas.
 Um die Daten an ein Sternschema anzupassen, wurden die normalisierte Struktur des \ac{TPC-H} denormalisiert.
 Somit wurden einige Tabellen zusammengelegt.
 Außerdem wurden einige, für OLAP unwichtige, Daten entfernt.
@@ -340,6 +340,8 @@ ORDER BY
     d_year, c_nation;
 
 \end{lstlisting}
+Alle Queries sind in \cref{sec:appendix-ssb-queries} aufgelistet.
+
 
 \section{PostgreSQL}
 \emph{PostgreSQL} ist ein relationales Datenbankmanagementsystem, welches die \emph{SQL}-Spra\-che ver\-wen\-det und erweitert. Die folgenden Informationen basieren auf der offiziellen Webseite von \emph{PostgreSQL}~\cite{the_postgresql_global_development_group_postgresql_nodate}. Es handelt sich dabei um ein Open-Source-Projekt, welches seit über 35 Jahren entwickelt wird. Im Jahr 2023 belegt \emph{PostgreSQL} gemäß dem \emph{DB-Engines Ranking}~\cite{db-engines_most_2023} weltweit den vierten Platz unter den beliebtesten Datenbankmanagementsystemen, nach \emph{Oracle}, \emph{MySQL} und dem \emph{Microsoft SQL Server}.
@@ -357,13 +359,13 @@ In der vorliegenden Arbeit wird \emph{PostgreSQL} als Vergleichsbasis zu \emph{R
 
 \section{Redis}
 
-Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und heute häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_ltd_introduction_nodate}.
+Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) arbeitet und häufig als Datenbank, Cache, Message Broker oder Streaming Engine eingesetzt wird~\cite{redis_ltd_introduction_nodate}.
 In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_ltd_data_nodate}.
-Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.~B. JSON oder Time series unterstützt werden.
-Redis wird von vielen bekannten Unternehmen wie GitHub, StackOverflow, Snapchat, Craigslist oder X verwendet~\cite{redis_ltd_whos_nodate}.
+Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.~B. JSON oder Timeseries unterstützt werden.
+Redis wird von vielen bekannten Unternehmen wie GitHub, Stack Overflow, Snapchat, Craigslist oder X verwendet~\cite{redis_ltd_whos_nodate}.
 Redis wird immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
 
-Des weiteren besteht mit \enquote{Auto Tiering} die Möglichkeit, Arbeitsspeicher zusammen mit SSD-Speicher zu nutzen was die Infrastrukturkosten um bis zu 70\% senken kann~\cite{redis_ltd_auto_nodate}. Dieses Feature ist jedoch nur mit \enquote{Redis Enterprise} möglich.
+Des weiteren besteht mit \enquote{Auto Tiering} die Möglichkeit, Arbeitsspeicher zusammen mit SSD-Speicher zu nutzen, was die Infrastrukturkosten um bis zu 70\% senken kann~\cite{redis_ltd_auto_nodate}. Dieses Feature ist jedoch nur mit \enquote{Redis Enterprise} nutzbar.
 
 
 % Hier ist was doppelt, muss überprüft werden (wahrscheinlich untere lassen, obere entfernen)
@@ -374,9 +376,9 @@ Durch die Persistierung der Daten auf der Festplatte kann Redis als konventionel
 
 Außerdem kann Redis als Cache und Message Broker dienen.
 
-Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit anderen Datenbanken, wodurch Redis als optimale Wahl für den Cache von anderen, oft langsameren Datenbanken gilt. So kann Redis beispielsweise genutzt werden um in Echtzeit mit Nutzern zu interagieren währen die Historie der Transaktionen in einer anderen Datenbank gespeichert wird.
+Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit anderen Datenbanken, wodurch Redis als optimale Wahl für den Cache von anderen, oft langsameren Datenbanken gilt. So kann Redis beispielsweise genutzt werden, um in Echtzeit mit Nutzern zu interagieren, währen die Historie der Transaktionen in einer anderen Datenbank gespeichert wird.
 
-Redis bietet als Message-Broker dank des Publish-Subscribe-Paradigmas eine Lösung, um publizierte Nachrichten effizient über bestimmte Kanäle an Abonnenten zu verteilen. Hierbei hat Redis durch seine vielseitigen Datenstrukturen oft Vorteile gegenüber anderen etablierten Message-Brokern~\cite{joshi_you_nodate}.
+Redis bietet als Message Broker dank des Publish-Subscribe-Paradigmas eine Lösung, um publizierte Nachrichten effizient über bestimmte Kanäle an Abonnenten zu verteilen. Hierbei hat Redis durch seine vielseitigen Datenstrukturen oft Vorteile gegenüber anderen etablierten Message Brokern~\cite{joshi_you_nodate}.
 
 \subsection{Module für Redis}
 \subsubsection{Redis Stack}
