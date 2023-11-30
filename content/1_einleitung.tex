@@ -5,13 +5,13 @@
 % TODO: Überprüfen ob Kapitel immer auf rechten Seiten anfangen.
 % TODO: Quellen
 \section{Hintergrund und Kontext}
-Die vorliegende Arbeit untersucht die Eignung von Redis, einer weit verbreiteten Software, die in der Regel als Datenbank, Cache, Message Broker oder Streaming Engine verwendet wird, für Online-Analytical-Processing (OLAP)-Aufgaben. Redis zeichnet sich besonders durch seine Geschwindigkeit und Benutzerfreundlichkeit aus und findet vor allem in Online-Transaction-Processing-(OLTP) Umgebungen Anwendung. Der Einsatz von Redis im OLAP-Bereich ist jedoch weitgehend unerforscht, mit einigen wenigen Fällen, in denen Redis lediglich als Cache für vorberechnete Daten verwendet wird.
+Die vorliegende Arbeit untersucht die Eignung von Redis, einer weit verbreiteten Software, die in der Regel als Datenbank, Cache, Message Broker oder Streaming Engine verwendet wird, für Online-Analytical-Processing (OLAP)-Aufgaben. Redis zeichnet sich besonders durch seine Geschwindigkeit und einfache Abfragemöglichkeiten von Daten aus und findet vor allem im Bereich von Online-Transaction-Processing-(OLTP) Anwendung. Der Einsatz von Redis im OLAP-Bereich ist jedoch weitgehend unerforscht, mit einigen wenigen Ausnahmen, in denen Redis lediglich als Cache für vorberechnete Daten verwendet wird.
 
 \section{Forschungsfrage und Zielsetzung}
 Diese Arbeit untersucht, ob und inwiefern Redis als eigenständige Lösung für OLAP-Aufgaben genutzt werden kann, ohne dass dabei Daten vorberechnet werden müssen. Der Star Schema Benchmark (SSB), der ursprünglich für relationale Datenbanken entwickelt wurde, wird zur Evaluierung herangezogen. Neben der grundsätzlichen Eignung von Redis für OLAP werden spezifische Aspekte wie Geschwindigkeit, Skalierbarkeit und Anpassungsaufwand von Daten analysiert.
 
 \section{Methodik}
-Um die Forschungsfrage zu beantworten, wird untersucht, wie Redis verwendet werden kann, um die Abfragen des SSB Benchmarks auszuführen. Der Benchmark wird üblicherweise zur Messung der Leistung von relationalen Datenbanksystemen eingesetzt, deren Daten im Sternschema vorliegen, das oft in OLAP-Bereichen verwendet wird.
+Um die Forschungsfrage zu beantworten, wird untersucht, wie Redis verwendet werden kann, um die Abfragen des SSB Benchmarks auszuführen. Der Benchmark wird üblicherweise zur Messung der Leistung von relationalen Datenbanksystemen eingesetzt, deren Daten im Sternschema vorliegen, das oft in OLAP verwendet wird.
 Anschließend erfolgt eine Analyse der Ergebnisse anhand verschiedener Kriterien wie Ausführungsgeschwindigkeit, Skalierbarkeit und Anpassungsaufwand der Datenstruktur.
 
 
@@ -19,8 +19,7 @@ Anschließend erfolgt eine Analyse der Ergebnisse anhand verschiedener Kriterien
 Die Arbeit wird im zweiten Kapitel mit einem Überblick über verwandte Forschungsarbeiten eingeleitet.
 Im dritten Kapitel werden die technischen Grundlagen erläutert, die für das weitere Verständnis unbedingt notwendig sind.
 Das vierte Kapitel zeigt, wie der \acf{SSB} in PostgreSQL ausgeführt wird.
-In Kapitel 5 werden verschiedene Ansätze zur Umsetzung des \ac{SSB} in Redis beschrieben.
-Abschließend werden in Kapitel 6 die Implementierungen aus Kapitel 5 ausgewertet und miteinander verglichen.
+In Kapitel 5 werden verschiedene Ansätze zur Umsetzung des \ac{SSB} in Redis beschrieben, ausgewertet und mit einander verglichen.
 Schließlich wird in Kapitel 7 ein Fazit gezogen und ein Ausblick auf mögliche zukünftige Entwicklungen gegeben.
 
  

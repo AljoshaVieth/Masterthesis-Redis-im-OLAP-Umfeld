@@ -401,19 +401,12 @@ jedisPooled.sendCommand(SearchCommand.CONFIG, "SET", "TIMEOUT", "0")
 jedis.getClient.setTimeoutInfinite()
 \end{lstlisting}
 
-\section{4 Ansätze}
+\section{Verschiedene Ansätze für SSB in Redis}
 % TODO: Einleitungstext
-\subsection{Ansatz 1: Alles in Keys}
-\subsubsection{Aufbau der Daten}
-\subsubsection{Aufbau der Abfragen}
-\subsubsection{Vergleich der Laufzeiten von Abfragen}
-\subsubsection{Fazit}
-
-
 
 
 % ----------------------------------------------------------
-\subsection{Ansatz 2: Clientseitige Joins}
+\subsection{Ansatz 1: Clientseitige Joins}
 Dieser Ansatz nutzt eine Datenstruktur, die der Struktur von relationalen Datenbanken möglichst ähnlich ist. Da SSB-Abfragen in einer solchen Struktur zwingend Joins erfordern und Redis keine Joins unterstützt, werden in diesem Ansatz clientseitige Joins eingesetzt. Die verschiedenen Daten werden zunächst von Redis abgefragt und anschließend in einem Scala-Programm gejoint und weiterverarbeitet.
 
 Dieses Kapitel ist wie folgt aufgebaut:\\
@@ -833,7 +826,7 @@ Daraus lässt sich schlussfolgern, dass sich keine der beiden Varianten bei komp
 
 
 % ----------------------------------------------------------
-\subsection{Ansatz 3: Serverseitige Joins}
+\subsection{Ansatz 2: Serverseitige Joins}
 Der Hauptgedanke dieses Ansatzes besteht darin, die Anzahl an Anfragen des \emph{Scala}-Programms an Redis zu minimieren, um somit schneller Ergebnisse zu erzielen.
 Hierfür wird das Joinen und die weitere Verarbeitung der Daten vom Client auf den Redis-Server verlagert. Dies wird durch \emph{Lua}-Skripte, die auf dem Server laufen, ermöglicht.
 
@@ -971,7 +964,7 @@ println(jedisPooled.fcall("runQ1_1_a", List[String]().asJava, List("date-index",
 \end{lstlisting}
 
 
-\subsubsection{Ergebnisse}
+\subsubsection{Vergleich der Laufzeiten von Abfragen}
 
 % TODO: Position fixen
 \begin{table}[h]
@@ -1013,7 +1006,7 @@ Bei dem Versuch, Abfragen der Kategorie 2 mittels \emph{Lua} zu implementieren, 
 
 % TODO: Vergleich Speicherverbrauch normalisiert vs denormalisiert
 
-\subsection{Ansatz 4: Denormalisiert}
+\subsection{Ansatz 3: Denormalisiert}
 Da Redis keine Joins unterstützt, können die mächtigen Aggregationen von RediSearch nicht für SSB-Abfragen verwendet werden, solange die Daten denormalisiert sind. Um die Aggregationen nutzen zu können, arbeitet dieser Ansatz mit denormalisierten Daten (siehe \cref{sec:ssb-inserter-denormalized}).
 In diesem Kapitel wird gezeigt, wie SSB-Queries mit jeweils nur einer Aggregation in RediSearch ausgeführt werden können. Dabei wird jeweils eine Aggregation pro Abfragekategorie näher betrachtet.
 
@@ -1302,7 +1295,17 @@ private def printResultIsCorrect(result: Boolean): Unit =
 
 Die Kontrolldaten stammen aus den Konsolenausgaben von PostgreSQL. Sie werden mit der Klasse \lstinline|FormatPostgresResults| im \emph{Redis Olap Client} formatiert (siehe Quellcode im Anhang).
 
-\subsubsection{Ergebnisse}
+\subsubsection{Ähnlichkeiten der SQL Quries zu RediSearch Aggregationen}
+In der vorliegenden Arbeit wurde festgestellt, dass SQL-Abfragen und\\ Redis-Aggregationen eine ähnliche Syntaxstruktur aufweisen, wodurch bei entsprechenden Kenntnissen beider Sprachen die Ableitung der einen aus der anderen vereinfacht wird. \cref{pic:sql-redis-similiar} veranschaulicht die unterschiedlichen Segmente der Abfragen, indem sie farblich hervorgehoben werden.
+
+\begin{figure}[h]  % figure position
+    \centering      % center the image
+    \includegraphics[width=1\textwidth]{pictures/sql-redisearch-similiar.png}
+    \caption{Vergleich der SQL-Query und der RediSearch-Aggregation für Q2.1.}      % caption the image
+    \label{pic:sql-redis-similiar}    % label the image for internal referencing
+\end{figure}
+
+\subsubsection{Vergleich der Laufzeiten von Abfragen}
 % TODO: Volle Versiond der Tabellen in Anhang packen
 % TODO: Position fixen
 \begin{table}[h]
@@ -1330,19 +1333,75 @@ Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar na
 \end{table}
 
 
-
+\newpage
 % TODO: Position fixen
-\begin{figure}[ht]  % figure position
+\begin{figure}[h]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/results/results-denormalized.png}
-    \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Denormalisierten-Ansatz.}      % caption the image
+    \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und Postgre\-SQL beim Denormalisierten-Ansatz.}      % caption the image
     \label{pic:results-denormalized}    % label the image for internal referencing
 \end{figure}
 
+\begin{figure}[h]  % figure position
+    \centering      % center the image
+    \includegraphics[width=1\textwidth]{pictures/results/number-of-results.png}
+    \caption{Anzahl der Ergebnisse pro Suchanfrage.}      % caption the image
+    \label{pic:number-of-results}    % label the image for internal referencing
+\end{figure}
+
+\newpage
+\subsubsection{Fazit}
+Der vorgestellte Ansatz beleuchtet die Nutzung denormalisierter Daten des \emph{Star Schema Benchmark (SSB)} in \emph{Redis} unter Verwendung von RediSearch-Aggregationen. Diese Aggregationen lassen sich leicht aus den originalen SQL-Queries ableiten. Bei der Betrachtung der Laufzeiten dieses Ansatzes zeigt sich, dass er in den meisten Fällen \emph{PostgreSQL} deutlich überlegen ist. Ausnahmen bilden die Abfragen Q1.1, Q3.1 und Q4.1, bei denen der Ansatz \emph{PostgreSQL} unterlegen ist.
+
+
+Eine Erklärung für die langsameren Laufzeiten bei diesen spezifischen Queries offenbart sich bei der Untersuchung der Anzahl der durch den jeweiligen Query-Filter gefundenen \emph{lineorder}-Dokumente innerhalb der Aggregation. Je höher die Anzahl der zu verarbeitenden \emph{lineorder}-Dokumente, desto schlechter fällt die Laufzeit aus. 
+
+Insgesamt betrachtet stellt dieser Ansatz jedoch den einzigen ernstzunehmenden Konkurrenten zu \emph{PostgreSQL} dar. Er demonstriert die Effizienz von RediSearch-Aggregationen in Kombination mit denormalisierten Datenstrukturen.
 % TODO: Schreiben, dass PostgreSQL keine Indizes nutzt für ssb
 
+
+
+
+\newpage
+\section{Vergleich der Ansätze}
+Bei Vergleich der verschiedenen Ansätze zeigt sich, dass der Ansatz mit denormalisierter Datenstruktur in Kombination mit RediSearch-Aggregationen als einziger ernsthaft mit PostgreSQL konkurrieren kann. Dieses Ergebnis unterstreicht die Bedeutung einer angepassten Datenstruktur, die speziell auf die Stärken und Funktionalitäten von RediSearch abgestimmt ist, um effiziente Abfragen zu gewährleisten.
+
+
 \section{Skalierung}
-% TODO: Kapitel über Ähnlichkeit von SQL und Aggregation
-\subsubsection{Vergleich der Ansätze}
-\subsubsection{Fazit} % + Vergleich der Ansätze
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[height=0.9\textheight]{pictures/results/results-denormalized-scaled.png}
+    \caption{Vergleich der Ausführzeiten in Millisekunden von Redis und PostgreSQL beim Denormalisierten-Ansatz mit verschiedenen Skalierungen.}
+    \label{pic:scale}
+\end{figure}
+
+\section{Speicherverbrauch}
+In der vorliegenden Arbeit wurde neben den Laufzeiten der Queries auch der Speicherplatzverbrauch in Redis und in PostgreSQL im Vergleich zu den \emph{.tbl}-Dateien untersucht. Zur Messung des Speicherverbrauchs in \emph{Redis} kam der Befehl \lstinline|INFO| zum Einsatz, während für \emph{PostgreSQL} die Größe der Datenbank mittels des Befehls \lstinline|SELECT pg_size_pretty(pg_database_size('postgres')) AS size;| ermittelt wurde. Zusätzlich wurde die Größe der \emph{.tbl}-Dateien, welche die Rohdaten enthalten, analysiert. Diese Messungen wurden für die Skalierungsfaktoren 1, 2 und 4 durchgeführt.
+
+Die Ergebnisse zeigen eine lineare Skalierung der Datengröße über alle drei betrachteten Varianten hinweg. Konkret verdoppelt sich die Datengröße jeweils mit der Verdopplung des Skalierungsfaktors.
+
+Über alle betrachteten Skalierungen hinweg lässt sich feststellen, dass der Speicherbedarf der Daten in \emph{Redis} durchschnittlich etwa 4,3-mal größer ist als der entsprechende Speicherbedarf in \emph{PostgreSQL}. Im Vergleich zu den \emph{.tbl}-Dateien, die die Rohdaten enthalten, sind die Daten in \emph{Redis} sogar etwa 7,5-mal so groß. Bei \emph{PostgreSQL} wiederum zeigt sich, dass der Speicherbedarf etwa 1,75-mal größer ist als der der \emph{.tbl}-Dateien. Diese Ergebnisse unterstreichen signifikante Unterschiede im Speicherverbrauch zwischen den betrachteten Systemen.
+Es ist zu betonen, dass es sich bei dem angegebenen Speicherplatz in Redis um Arbeitsspeicher handelt. Die Daten für PostgreSQL und die \emph{.tbl}-Datein beziehen sich auf Festplattenspeicher.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\hline
+Query & Redis denormalized Ram 2 & PostgreSQL & .tbl-Dateien\\ \hline
+Q 1.1 & 4,21 GB & 0,98 GB  & 0,56 GB       \\
+Q 1.2 & 8,43 GB & 1,96 GB    & 1,12 GB       \\ 
+Q 1.2 & 16,96 GB & 3,89 GB    & 2,25 GB       \\ \hline
+\end{tabular}
+\caption{Vergleich des verbrauchten Speichers in Redis, PostgreSQL und die Größe der Rohdaten}
+\label{tab:storage}
+\end{table}
+
+\begin{figure}[h]  % figure position
+    \centering      % center the image
+    \includegraphics[width=1\textwidth]{pictures/storage.png}
+    \caption{Vergleich des verbrauchten Speichers in Redis, PostgreSQL und die Größe der Rohdaten}      % caption the image
+    \label{pic:storage}    % label the image for internal referencing
+\end{figure}
+\newpage
 

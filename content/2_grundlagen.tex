@@ -86,8 +86,7 @@ Ein zentrales Element in OLAP-Systemen ist der sogenannte \emph{OLAP Cube} oder 
 
 Ein weiterer Vorteil von Datenwürfeln ist die Möglichkeit, Aggregate unabhängig von einer bestimmten Dimension zu betrachten, wenn man sich entlang einer Achse des Würfels bewegt. So ist es beispielsweise möglich, den höchsten Verkaufspreis für jedes Produkt unabhängig vom Zeitpunkt oder den höchsten Preis zu bestimmten Zeitpunkten unabhängig vom Produkt zu ermitteln.
 
-Trotz ihrer Effizienz bei der Beantwortung bestimmter Abfragen haben Datenwürfel auch Nachteile. Sie sind auf Abfragen beschränkt, für die die benötigten Daten bereits voraggregiert wurden. Dies führt zu einer eingeschränkten Flexibilität in Bezug auf die Art der Abfragen, die sie unterstützen können. Während sie sich also hervorragend für die schnelle Beantwortung bestimmter Abfragen eignen, ist ihre Anwendung begrenzt, wenn die erforderlichen Daten nicht bereits voraggregiert wurden.
-
+Trotz ihrer Effizienz bei der Beantwortung bestimmter Abfragen haben Datenwürfel auch Nachteile. Sie sind auf Abfragen beschränkt, für die die benötigten Daten bereits voraggregiert wurden. Dies führt zu einer eingeschränkten Flexibilität in Bezug auf die Art der Abfragen, die sie unterstützen können. Während sie sich also hervorragend für die schnelle Beantwortung bestimmter Abfragen eignen, ist ihre Anwendung auf diese Daten begrenzt.
 %\begin{comment}
 %\subsection{Der OLAP-Cube}
 %%TODO: OLAP CUBE Voraggregation bei OLAP -> Kleppmann Seite 109 Kapitel 3
@@ -384,7 +383,7 @@ Redis bietet als Message Broker dank des Publish-Subscribe-Paradigmas eine Lösu
 \subsubsection{Redis Stack}
 \emph{Redis Stack} erweitert das klassische \emph{Redis} mit Modulen.
 Die Informationen, die diesem Abschnitt zugrunde liegen, stammen von der offiziellen Webseite von Redis~\cite{redis_ltd_about_nodate}.
-\emph{Redis Stack} kombiniert Redis mit den Modulen \emph{RediSearch}, \emph{RedisJSON}, \emph{RedisTimeSeries} und \emph{RedisBloom} zu einem benutzerfreundlichen Paket.
+\emph{Redis Stack} kombiniert Redis mit den Modulen \emph{RediSearch}, \emph{RedisJSON}, \emph{RedisTimeSeries} und \emph{RedisBloom} zu einem Paket.
 Dieses Paket ermöglicht erweiterte Funktionen wie die Verwendung probabilistischer Datenstrukturen, Abfragen von JSON-Dokumenten, kombinierte Abfragen von Hashes und JSON-Dokumenten sowie die Verarbeitung und Abfrage von Zeitreihendaten einschließlich Volltextsuche.
 
 Ziel von \emph{Redis Stack} ist es, die Entwicklung von Echtzeitanwendungen zu erleichtern, indem eine Backend-Datenplattform bereitgestellt wird, die Anfragen zuverlässig in Millisekunden oder weniger verarbeiten kann.

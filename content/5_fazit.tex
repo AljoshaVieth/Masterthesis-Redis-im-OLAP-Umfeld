@@ -1,11 +1,19 @@
 \chapter{Fazit}
+Die vorliegende Arbeit betrachtet eingehend die Eignung von Redis, einer Software, die primär für OLTP-Szenarien konzipiert wurde, für OLAP-Aufgaben, indem die Performance von Redis mit der von PostgreSQL anhand des \acf{SSB} verglichen wird. Es zeigt sich, dass Redis mithilfe der Integration des RediSearch-Moduls in der Lage ist, SSB-Abfragen effizient zu bearbeiten. Es stellte sich heraus, dass die denormalisierte Datenstruktur in Kombination mit einem umfassenden Indexierungssystem die effektivste Methode ist, um in Redis schnelle Abfragen mit RediSearch-Aggregationen zu ermöglichen. In diesem Kontext übertraf Redis PostgreSQL in Bezug auf die Antwortzeiten für die meisten SSB-Abfragen.
 
-\section{Interpretation der Ergebnisse}
+Allerdings wurde deutlich, dass Redis für diese Leistung einen signifikant höheren Speicherbedarf aufweist. Dieser Speicherbedarf ist insbesondere kritisch zu betrachten, da es sich hierbei um Arbeitsspeicher handelt. Obwohl dieser Vorteile in der Ausführungsgeschwindigkeit bietet, geht er mit höheren Kosten und potenziellen Skalierungsproblemen einher. Zusätzlich erfordert die Anpassung der Datenstrukturen an die Bedürfnisse von Redis einen erheblichen Aufwand, der jedoch als vertretbar einzustufen ist.
 
-\subsection{Skalierung}
-\subsection{Resourcenverbrauch}
+Es ist außerdem zu betonen, dass der \acf{SSB} in PostgreSQL ohne das Erstellen von speziellen Indizes auskommt. Eine Indizierung von bestimmten Daten könnte die Leistung von PostgreSQL steigern.
 
-\section{Lösung der Fragestellung}
+Es lässt sich schlussfolgern, dass Redis SSB-Queries durchführen und somit als eigenständiges System für OLAP-Operationen dienen kann. Allerdings ist hierfür eine angepasste Datenstruktur und ein erhöhter Speicherplatzbedarf erforderlich. Es ist wichtig zu berücksichtigen, dass RediSearch, obwohl es in bestimmten Szenarien sehr leistungsfähig ist, nicht die Ausgereiftheit und Flexibilität von SQL-Abfragen erreicht und dass es Situationen geben könnte, in denen OLAP-Queries nicht allein durch RediSearch-Aggregationen beantwortet werden können. In solchen Fällen müsste auf client- oder serverseitige Aggregationen zurückgegriffen werden, was laut Forschung zu einer verringerten Effizienz führen kann. Daher ist davon auszugehen, dass Redis in einem solchen Fall voraussichtlich nicht mit PostgreSQL konkurrieren kann.
 
+Abschließend ist festzuhalten, dass die Entscheidung für Redis als eigenständige OLAP-Lösung eine sorgfältige Abwägung der spezifischen Anforderungen und Rahmenbedingungen erfordert. Die verwandten Arbeiten zeigen, dass der Einsatz von Redis neben anderen Datenbanksystemen eine wertvolle Bereicherung darstellen kann, indem es als ergänzende Komponente zur effizienten Bereitstellung von gecachten Daten und zur Bearbeitung von Anfragen mit hoher Geschwindigkeit dient. 
 
 \section{Ausblick}
+Im diesem Ausblick werden potenzielle Entwicklungen und zukünftige Forschungsrichtungen im Kontext der in dieser Arbeit behandelten Thematik präsentiert.
+
+Zur Vereinfachung der Datentransformation von SQL-basierten Systemen zu Redis könnte die Entwicklung eines Konversionstools in Erwägung gezogen werden, welches SQL-Abfragen automatisch in RediSearch-Aggregationsanweisungen umsetzt. Diese Transformation könnte entweder durch festgelegte Regeln erfolgen, basierend auf einer detaillierten Analyse und dem Vergleich der Syntax von SQL und RediSearch, oder durch den Einsatz flexibler, auf künstlicher Intelligenz basierender Methoden.
+
+Des Weiteren gibt es mehrere Aspekte, die in dieser Studie nicht umfassend behandelt wurden, deren Untersuchung jedoch zusätzliche Erkenntnisse verspricht. Ein bedeutender Bereich ist das sogenannte "Auto Tiering" innerhalb von Redis Enterprise, welches die Kombination von Arbeitsspeicher und SSD-Speicher ermöglicht. Dies könnte potenziell die Kostennachteile, die sich aus der ausschließlichen Nutzung von Arbeitsspeicher ergeben, reduzieren.
+
+Ein weiterer Forschungsansatz könnte die Verbesserung serverseitiger Joins durch die Entwicklung eines spezifischen Redis-Moduls sein. In einem solchen Modul könnte komplexere Logik in C implementiert werden, was möglicherweise die Herausforderungen, die bei der Verwendung von Lua auftreten, überwinden könnte.
