@@ -1,43 +1,38 @@
 % TODO: FIX LATEX ERRORS
 \chapter{Technische Grundlagen}
-\section{Beliebtheit von Technologien}
-% Hier durch bessere Quelle austauschen
-In der vorliegenden Arbeit wird die Popularität von bestimmten Technologien auf Basis zweier Indizes dargestellt: dem \emph{\acf{PYPL}}~\cite{carbonnelle_pypl_2023} sowie dem \emph{\acf{TOPDB}}~\cite{carbonnelle_topdb_2023}.  Diese Indizes dienen der Einschätzung der Beliebtheit von Programmiersprachen und Datenbanken und basieren auf der Häufigkeit von Google-Suchen.
-
-Der \emph{\acf{PYPL}} misst die Beliebtheit von Programmiersprachen anhand der Analyse der Häufigkeit von Suchanfragen nach Tutorials auf Google. 
-Dieser Index beruht auf der Annahme, dass eine höhere Anzahl von Suchanfragen nach Tutorials für eine bestimmte Sprache auf eine größere Beliebtheit dieser Sprache hinweist.
-
-Der \emph{\acf{PYPL}} bewertet die Beliebtheit von Datenbanken anhand der Analyse der Suchhäufigkeit nach ihren Namen auf Google.  Eine erhöhte Suchfrequenz nach einer bestimmten Datenbank deutet dabei auf eine größere Popularität hin, ähnlich dem \emph{PYPL}-Index.
 
 \section{\acf{OLAP}}
-Viele Unternehmen verwenden heute große Mengen an Geschäftsdaten für eine strategische Planung.
-Durch eine Analyse solcher Daten lassen sich Handlungsempfehlungen ableiten.
-Typische Analysen umfassen die Berechnung des Umsatzes einer Filiale innerhalb des letzten Jahres sowie der Vergleich zu vorherigen Jahren oder die Analyse der Verkäufe von einzelnen Produkten in einem bestimmten Quartal.
-Diese Analysen erfordern eine umfassende Datenmenge, einschließlich historischer Daten.
-Klassische Datenbanksysteme für Transaktionen, etwa in einem Onlineshop, auch \acf{OLTP} genannt, sind für viele Schreib- und Lesezugriffe optimiert, nutzen meist wenig komplexe Abfragen (Queries) und enthalten häufig keine historischen Daten.
-Datenbanken für analytische Zwecke sollten hingegen stark auf die Leseoperationen optimiert sein und müssen komplexere Queries in angemessener Zeit durchführen können.
-Bei diesem Einsatzgebiet von Datenbanken spricht man vom \acf{OLAP}~\cite[S.~97f]{kleppmann_datenintensive_2019}.
+Kleppmann~\cite[S.~97f]{kleppmann_datenintensive_2019} beschreibt OLTP und OLAP wie folgt:
+Viele Unternehmen nutzen heute große Mengen an Geschäftsdaten für die strategische Planung.
+Aus der Analyse dieser Daten können Handlungsempfehlungen abgeleitet werden.
+Typische Analysen sind z.B. die Berechnung des Umsatzes einer Filiale im letzten Jahr im Vergleich zu den Vorjahren oder die Analyse des Absatzes einzelner Produkte in einem bestimmten Quartal.
+Diese Analysen erfordern eine große Menge an Daten, einschließlich historischer Daten.
+Klassische Datenbanksysteme für Transaktionen, z.B. in einem Online-Shop, auch \acf{OLTP} genannt, sind für viele Schreib- und Lesezugriffe optimiert, verwenden meist wenig komplexe Abfragen (Queries) und enthalten häufig keine historischen Daten.
+Datenbanken für analytische Zwecke sollten dagegen stark auf Lesezugriffe optimiert sein und müssen komplexere Abfragen in angemessener Zeit ausführen können.
+Bei diesem Einsatzgebiet von Datenbanken spricht man vom.
 
 \ac{OLAP} und \ac{OLTP} profitieren von verschiedenen Optimierungen der Datenstrukturen in einer Datenbank.
 Bei Nutzung einer gemeinsamen Datenbank für beide Verfahren würden die \ac{OLAP}-Abfragen außerdem die \ac{OLTP}-Transaktionen verlangsamen oder blockieren.
 Um das zu verhindern, nutzt man für \ac{OLAP} eigene Datenbanksysteme und speichert die Daten in sogenannten Data Warehouses.
 
-\subsection{\acfp{DW}}
-\acp{DW} wurden entwickelt, um Daten zu speichern, die für strategische Entscheidungen im Geschäftsumfeld nützlich sein können.
+\subsection{Data Warehouses}
+Die Informationen in diesem Abschnitt basieren auf dem Werk von Vaisman und Zimányi~\cite[S.~3f]{vaisman_data_2022}.
+Data Warehouses wurden entwickelt, um Daten zu speichern, die für strategische Entscheidungen im Geschäftsumfeld nützlich sein können.
 Dazu werden Daten aus Geschäftsprozessen wie etwa Verkäufen extrahiert, für die weitere Verwendung transformiert und in bestimmten Datenbanken gespeichert.
-Klassische operative oder transaktionale Datenbankansätze, die auf den täglichen Gebrauch durch viele Nutzende optimiert sind, eignen sich nicht für ein \ac{DW} im \ac{OLAP}-Umfeld, da hier üblicherweise keine historischen Daten gespeichert werden.
+Klassische operative oder transaktionale Datenbankansätze, die auf den täglichen Gebrauch durch viele Nutzende optimiert sind, eignen sich nicht für ein Data Warehouse im \ac{OLAP}-Umfeld, da hier üblicherweise keine historischen Daten gespeichert werden.
 Des Weiteren enthalten diese detaillierte Daten, was das Ausführen von komplexen Abfragen erschwert bzw. verlangsamt.
 % Hier ähnliche Inhalte wie im Kapitel weiter oben
 Um Entscheidungen aus den Daten ableiten zu können, sind sowohl historische Daten als auch komplexe Abfragen notwendig.
-Um diese Probleme zu lösen, enthält ein \ac{DW} im \ac{OLAP} Umfeld historische Daten und bietet ein optimiertes Datenmodell für komplexere Abfragen.
-In der ursprünglichen Definition nach Inmon werden \acp{DW} als Sammlung von subjektorientierten, integrierten, nicht flüchtigen und zeitvariablen Daten beschrieben. % TODO: Hier wäre Originalquelle ganz praktisch
+Um diese Probleme zu lösen, enthält ein Data Warehouse historische Daten und bietet ein optimiertes Datenmodell für komplexere Abfragen.
+
+In der ursprünglichen Definition werden Data Warehouses als Sammlung von subjektorientierten, integrierten, nicht flüchtigen und zeitvariablen Daten beschrieben. 
 Subjektorientiert bedeutet, dass sich die Daten auf bestimmte Aspekte der geforderten Analyse beziehen, also z.~B. Daten über Produktionsmengen und Verkäufen bei Produktionsunternehmen.
-Mit integrierten Daten ist gemeint, dass Daten aus verschiedenen Umgebungen in dem \ac{DW} integriert sind.
+Mit integrierten Daten ist gemeint, dass Daten aus verschiedenen Umgebungen in dem Data Warehouse integriert sind.
 Nicht flüchtig bedeutet, dass die Daten über lange Zeiträume hinweg gespeichert bleiben und somit weder gelöscht noch modifiziert werden.
 Zur Analyse ist es wichtig, Daten im zeitlichen Verlauf miteinander zu vergleichen, etwa um herauszufinden, wie sich die Verkäufe im letzten Quartal entwickelt haben.
-Zeitvariabel beschriebt daher, dass Daten aus verschiedenen Zeitpunkten gespeichert werden~\cite[S.~3f]{vaisman_data_2022}.
+Zeitvariabel beschriebt daher, dass Daten aus verschiedenen Zeitpunkten gespeichert werden.
 
-\subsection{Datenstruktur in Data Warehouses im OLAP Umfeld}
+\subsection{Datenstruktur in Data Warehouses}
 Die Mehrheit der am häufigsten verwendeten Datenbanken nutzt ein relationales Datenbankmodell~\cite{db-engines_most_2023}. 
 In einem solchen Modell können die Daten in verschiedenen Schemata aufgebaut sein.
 
@@ -50,7 +45,7 @@ Diese Fremdschlüssel benötigen in den meisten Fällen außerdem weniger Speich
 Ein Nachteil der Normalisierung ist jedoch, dass Abfragen komplizierter werden und länger in der Ausführung benötigen, da die Daten aus verschiedenen Tabellen kombiniert werden müssen.
 
 \subsubsection{Sternschema und Schneeflockenschema}
-In \acp{DW}, die für große Datenmengen und komplexe Abfragen gedacht sind, bildet das Normalisieren durch die erschwerten Abfragen einen Nachteil.
+In Data Warehouses, die für große Datenmengen und komplexe Abfragen gedacht sind, bildet das Normalisieren durch die erschwerten Abfragen einen Nachteil.
 Um Daten für Abfragen effizient zu speichern, werden diese nicht so weit wie möglich normalisiert, sondern anhand ihrer Inhalte verteilt. 
 Durch Verständnis der Daten können diese in eine sogenannte Faktentabelle und viele Dimensionstabellen aufgeteilt werden.
 
@@ -61,7 +56,7 @@ Diese Dimensionstabellen sind mit der Faktentabelle über Fremdschlüssel verbun
 In einem Diagramm werden die Dimensionstabellen um die Faktentabelle angeordnet, wodurch das Diagramm einem Stern ähnelt, bei dem die Faktentabelle das Zentrum, und die Dimensionen die Strahlen bilden.
 Deshalb spricht man auch von einem Sternschema.
 Werden die Faktentabellen zusätzlich noch unterteilt, die Daten also noch normalisiert, spricht man von einem Schneeflockenschema.
-Wie oben beschrieben eignen sich nicht normalisierte Daten jedoch besser für analytische Abfragen, weshalb das Sternschema oft bevorzugt wird.
+Wie oben beschrieben eignen sich nicht-normalisierte Daten jedoch besser für analytische Abfragen, weshalb das Sternschema oft bevorzugt wird.
 
 Die Faktentabelle enthält den Großteil der Daten.
 Jedes Ereignis wird in einer eigenen Zeile gespeichert, um somit so detailreich wie möglich analysieren zu können.
@@ -189,17 +184,15 @@ Trotz ihrer Effizienz bei der Beantwortung bestimmter Abfragen haben Datenwürfe
 %\end{comment}
 
 
-
-\subsection{Key Value Stores in \acs{OLAP}} % wahrscheinlich hier nicht nötig
-
 \section{Datenbank-Benchmarks}
 Datenbank-Benchmarks geben einen Überblick über die Leistung von verschiedenen Datenbank\-systeme und die Hardware, auf der diese laufen.
 %Datenbank-Benchmark oder Datenbankbenchmark ?
 Die Non-Profit-Or\-ga\-ni\-sa\-tion \acf{TPC} hat verschiedene Datenbank-Benchmarks entwickelt, die bei der Wahl des Datenbank\-systems oder der Hardware helfen können~\cite[s. 619]{barata_overview_2015}.
 
+Die folgenden Abschnitte geben eine Übersicht über den \emph{TPC-H} und den \emph{Star Schema Benchmark}.
 \subsection{\acf{TPC-H}}
 Der \acf{TPC-H} wurde zum Testen von analytischen Datenbanken entwickelt.
-Die Daten und Abfragen des Benchmarks sind auf eine Datenbank ausgelegt, mit der ein Anbieter seine Geschäftsdaten analysieren kann~\cite[S.~624-626]{barata_overview_2015}
+Die Daten und Abfragen des Benchmarks sind auf eine Datenbank ausgelegt, mit der ein Anbieter seine Geschäftsdaten analysieren kann~\cite[S.~624-626]{barata_overview_2015}. Er dient außerdem als Grundlage für den \emph{Star Schema Benchmark}, wird selbst aber hier nicht weiter erläutert.
 
 \subsection{\acf{SSB}}
 Der \acf{SSB} ist eine abgewandelte Form des \ac{TPC-H}.
@@ -360,9 +353,8 @@ Redis ist ein Key-Value Store, der vollständig im Arbeitsspeicher (in-memory) a
 In Redis können unterschiedliche Datenstrukturen verwendet werden. Dazu gehören Strings, Hashes, Listen, Sets, sortierte Sets, Bitmaps, Bitfields, georäumliche Indizes, Streams sowie HyperLogLog~\cite{redis_ltd_data_nodate}.
 Mit Erweiterungen, so genannten Modulen, können weitere Datentypen wie z.~B. JSON oder Timeseries unterstützt werden.
 Redis wird von vielen bekannten Unternehmen wie GitHub, Stack Overflow, Snapchat, Craigslist oder X verwendet~\cite{redis_ltd_whos_nodate}.
-Redis wird immer kostengünstiger einsetzbar, da die Arbeitsspeicher im Preis immer weiter fallen~\cite{bergai_trends_2020}.
 
-Des weiteren besteht mit \enquote{Auto Tiering} die Möglichkeit, Arbeitsspeicher zusammen mit SSD-Speicher zu nutzen, was die Infrastrukturkosten um bis zu 70\% senken kann~\cite{redis_ltd_auto_nodate}. Dieses Feature ist jedoch nur mit \enquote{Redis Enterprise} nutzbar.
+Mit \enquote{Auto Tiering} besteht die Möglichkeit, Arbeitsspeicher zusammen mit SSD-Speicher zu nutzen, was die Infrastrukturkosten um bis zu 70\% senken kann~\cite{redis_ltd_auto_nodate}. Dieses Feature ist jedoch nur mit dem kostenpflichtigen \enquote{Redis Enterprise} nutzbar.
 
 
 % Hier ist was doppelt, muss überprüft werden (wahrscheinlich untere lassen, obere entfernen)
@@ -371,8 +363,7 @@ Des weiteren besteht mit \enquote{Auto Tiering} die Möglichkeit, Arbeitsspeiche
 Redis ist eine vielseitige Datenbank, die sich nicht streng als herkömmliche Datenbank kategorisieren lässt. Obwohl Redis die grundlegenden Anforderungen an eine traditionelle Datenbank erfüllt, wie das Sammeln und Speichern von Informationen, die dann leicht abgerufen, bearbeitet oder gelöscht werden können, bietet Redis zusätzliche Funktionen, die vor allem durch die Geschwindigkeit aufgrund der vollständigen Ausführung im Arbeitsspeicher und die vielseitigen Datenstrukturen ermöglicht werden.
 Durch die Persistierung der Daten auf der Festplatte kann Redis als konventionelle Datenbank genutzt werden.
 
-Außerdem kann Redis als Cache und Message Broker dienen.
-
+Außerdem kann Redis als Cache und Message Broker dienen:\\
 Die hohe Geschwindigkeit von Redis erlaubt eine vorteilhafte Verbindung mit anderen Datenbanken, wodurch Redis als optimale Wahl für den Cache von anderen, oft langsameren Datenbanken gilt. So kann Redis beispielsweise genutzt werden, um in Echtzeit mit Nutzern zu interagieren, währen die Historie der Transaktionen in einer anderen Datenbank gespeichert wird.
 
 Redis bietet als Message Broker dank des Publish-Subscribe-Paradigmas eine Lösung, um publizierte Nachrichten effizient über bestimmte Kanäle an Abonnenten zu verteilen. Hierbei hat Redis durch seine vielseitigen Datenstrukturen oft Vorteile gegenüber anderen etablierten Message Brokern~\cite{joshi_you_nodate}.
@@ -392,6 +383,7 @@ Außerdem wurde das offizielle \emph{Docker-Image} des \emph{Redis Stack}~\cite{
 \emph{RediSearch} wird im weiteren Verlauf dieser Arbeit ausführlich beschrieben.
 
 \subsection{Datentypen in Redis}
+In den folgenden Abschnitten werden die verschiedenen Datentypen von Redis beschrieben. Die Informationen stammen dabei aus der Redis Dokumentation. Die einzelnen Seiten sind jeweils am Ende der Abschnitte als Quelle angegeben.
 \subsubsection{Strings}
 Strings in Redis sind grundlegende Datentypen, die eine Folge von Bytes repräsentieren.
 Sie können verschiedene Inhalte wie Text, serialisierte Objekte oder binäre Datenarrays repräsentieren und sind auf eine maximale Größe von 512 MB beschränkt.
@@ -409,9 +401,7 @@ Hashes können auch genutzt werden um Daten aus relationalen Datenbanken in Redi
 
 Für die Arbeit mit Hashes stellt Redis verschiedene Befehle bereit. Der Befehl \emph{HSET} ermöglicht das Setzen mehrerer Felder eines Hashes, wohingegen \emph{HGET} für das Abrufen des Wertes eines einzelnen Feldes genutzt wird. \emph{HMGET} bietet eine ähnliche Funktion wie \emph{HGET}, gibt jedoch die Werte mehrerer Felder in Form eines Arrays zurück.
 
-Bei der Betrachtung der Performance von Hash-Befehlen in Redis zeichnen sich die meisten durch eine Effizienz mit einer Komplexität von O(1) aus. Allerdings gibt es auch Befehle wie \emph{HKEYS}, \emph{HVALS} und \emph{HGETALL}, deren Komplexität O(n) beträgt, wobei n für die Anzahl der Feld-Wert-Paare im Hash steht. Diese Differenzierung in der Performance ist bei der Anwendung von Hashes in Redis entscheidend, um eine optimale Effizienz und Leistung zu gewährleisten.
-
-~\cite{redis_ltd_hashes_nodate}.
+Bei der Betrachtung der Performance von Hash-Befehlen in Redis zeichnen sich die meisten durch eine Effizienz mit einer Komplexität von O(1) aus. Allerdings gibt es auch Befehle wie \emph{HKEYS}, \emph{HVALS} und \emph{HGETALL}, deren Komplexität O(n) beträgt, wobei n für die Anzahl der Feld-Wert-Paare im Hash steht. Diese Differenzierung in der Performance ist bei der Anwendung von Hashes in Redis entscheidend, um eine optimale Effizienz und Leistung zu gewährleisten ~\cite{redis_ltd_hashes_nodate}.
 \subsubsection{Listen}
 Der Listen-Datentyp in Redis besteht aus verketteten Listen von String-Werten. Er wird häufig verwendet, um Stacks und Queues zu implementieren sowie Queue-Management-Systeme für Hintergrundprozesse zu bauen.
 Die maximale Länge einer Redis-Liste beträgt \(2^{32} - 1\) (4.294.967.295) Elemente.
@@ -574,7 +564,7 @@ Redis Cluster unterstützen synchrone Schreibvorgänge über den \emph{WAIT}-Bef
 
 
 \subsection{RedisInsight}
-RedisInsight ist eine kostenlos GUI-Anwendung zur Verwaltung von Redis-Datenbanken~\cite{redis_ltd_redisinsight_nodate}. Sie bietet unter anderem eine visuelle Ansicht der Daten, eine integrierte CLI sowie Analysen der Datenbank. Im Rahmen dieser Arbeit wurde sie für manuelle Anfragen und zur Visualisierung genutzt.
+RedisInsight ist eine kostenlos GUI-Anwendung zur Verwaltung von Redis-Datenbanken \cite{redis_ltd_redisinsight_nodate}. Sie bietet unter anderem eine visuelle Ansicht der Daten, eine integrierte CLI sowie Analysen der Datenbank. Im Rahmen dieser Arbeit wurde sie für manuelle Anfragen und zur Visualisierung genutzt.
 \section{RediSearch}
 
 RediSearch ist ein Redis-Modul, das es ermöglicht, nach Daten in Redis über Indizes zu suchen.
@@ -593,7 +583,6 @@ RediSearch bietet eine begrenzte Unterstützung für benutzerdefinierte Funktion
 Zusätzlich dazu umfasst RediSearch numerische Filter und Bereichsabfragen, Geo-Filterung unter Verwendung von Redis-Geo-Befehlen und Suchfunktionen für Vektoren, die für semantische Suchaufgaben sowohl exakte als auch approximative Algorithmen verwenden.
 Es unterstützt Unicode und ermöglicht das Abrufen von vollständigen Dokumentinhalten oder nur deren IDs.
 
-RediSearch kann auch in verteilten Datenbank-Clustern eingesetzt werden.
 \subsection{Interner Aufbau von RediSearch}
 \subsubsection{Redis String DMA} % Ist das noch relevant?
 \emph{Redis String DMA} ermöglicht es Redis-Modulen, Daten auf \enquote{Redis-String-Schlüssel} zu mappen. Sie erhalten dann direkte Zeiger auf die Daten, ohne diese kopieren oder serialisieren zu müssen.
@@ -973,8 +962,8 @@ Die Beispiele werden anhand von Screenshots aus der CLI in RedisInsight dargeste
 \end{figure}
 
 RediSearch sucht zunächst mit \lstinline|*| nach allen Dokumenten.\\
-Anschließend werden die die beiden Felder \lstinline|@name @cooking\_time| mit \lstinline|LOAD 2 @name @cooking\_time|  geladen. Für die restliche Pipeline ist dies nicht zwingend notwendig, da \lstinline|SORTBY| auch bei nicht geladenen Feldern funktioniert, solange diese \emph{sortable} sind (siehe \ref{sec:redisearch-aggregation-syntax}). Jedoch würden ohne diese Anweisung die Namen der Rezepte nicht im Ergebnis der Abfrage zurückgegeben werden.\\
-Als letzter Schritt werden die Ergebnisse anhand der Kochzeit sortiert: \lstinline|SORTBY 2 @cooking\_time DESC MAX 3|. \lstinline|DESC| gibt hierbei an, dass die Ergebnisse absteigend sortiert werden. Die Anweisung \lstinline|MAX 3| sorgt dafür, dass nur die ersten drei Dokumente zurückgegeben werden.
+Anschließend werden die die beiden Felder \lstinline|@name @cooking_time| mit\\ \lstinline|LOAD 2 @name @cooking_time|  geladen. Für die restliche Pipeline ist dies nicht zwingend notwendig, da \lstinline|SORTBY| auch bei nicht geladenen Feldern funktioniert, solange diese \emph{sortable} sind (siehe \ref{sec:redisearch-aggregation-syntax}). Jedoch würden ohne diese Anweisung die Namen der Rezepte nicht im Ergebnis der Abfrage zurückgegeben werden.\\
+Als letzter Schritt werden die Ergebnisse anhand der Kochzeit sortiert: \lstinline|SORTBY 2 @cooking_time DESC MAX 3|. \lstinline|DESC| gibt hierbei an, dass die Ergebnisse absteigend sortiert werden. Die Anweisung \lstinline|MAX 3| sorgt dafür, dass nur die ersten drei Dokumente zurückgegeben werden.
 
 
 % Schauen, ob zuerst Text oder Bild kommen soll
@@ -991,7 +980,7 @@ Die in \cref{pic:redisearch-aggregation-example-2} dargestellte Abfrage ermittel
 
 Als erster Schritt wird mit (\lstinline|*|) nach allen Dokumenten im Index gesucht.\\
 Anschließend werden mit \lstinline|GROUPBY 1 @difficulty| alle Dokumente anhand der Schwierigkeit gruppiert.\\ 
-Außerdem wird mit \lstinline|COUNT 0 AS num\_recipes| ein neues Feld namens \enquote{\emph{num\_recipes}} hinzugefügt, das angibt, wie viele Rezepte in jeder Schwierigkeitskategorie vorhanden sind.
+Außerdem wird mit \lstinline|COUNT 0 AS num_recipes| ein neues Feld namens \enquote{\emph{num\_recipes}} hinzugefügt, das angibt, wie viele Rezepte in jeder Schwierigkeitskategorie vorhanden sind.
 
 
 
@@ -1007,8 +996,8 @@ Außerdem wird mit \lstinline|COUNT 0 AS num\_recipes| ein neues Feld namens \en
 \end{figure}
 
 Zu Beginn wird nach allen Dokumenten gesucht.\\
-Anschließend werden die Dokumente nach Schwierigkeitsgrad gruppiert und ein neues Feld \lstinline|avg\_cooking\_time| eingefügt, das die berechnete durchschnittliche Kochzeit der Rezepte nach Kategorie beinhaltet.\\
-Anschließend werden die Kategorien mit \lstinline|SORTBY 2 @avg\_cooking\_time ASC| nach durchschnittlicher Kochzeit sortiert.
+Anschließend werden die Dokumente nach Schwierigkeitsgrad gruppiert und ein neues Feld \emph{avg\_cooking\_time} eingefügt, das die berechnete durchschnittliche Kochzeit der Rezepte nach Kategorie beinhaltet.\\
+Anschließend werden die Kategorien mit \lstinline|SORTBY 2 @avg_cooking_time ASC| nach durchschnittlicher Kochzeit sortiert.
 \lstinline|ASC| steht hierbei für \enquote{ascending} (aufsteigend). Da es sich  bei der Kochzeit um ein Feld handelt, muss ein \enquote{@} vorangestellt werden. In der \emph{REDUCE}-Anweisung weiter vorne wird der Name des zu erstellenden Felde ohne \enquote{@} angegeben.
 
 
@@ -1039,7 +1028,6 @@ Ihre Syntax zeigt Parallelen zu Java auf, und es ist möglich, Java-Funktionen s
 Scala läuft in der JVM, mit JavaScript im Browser oder nativ mit LLVM~\cite{epfl_scala_nodate}.
 
 \subsection{Einsatzgebiete von Scala}
-Auf dem \emph{\acf{PYPL}} belegt Scala im November 2023 den 20. Platz der beliebtesten Programmiersprachen~\cite{carbonnelle_pypl_2023}.
 Durch die Kompatibilität mit Java eigenet sich Scala auch für alle gängigen Einsatzgebiete von Java. 
 Durch Scalas besondere Eigenschaften eignet es sich jedoch besonders für hochdurchsatzfähige HTTP-Server und -Clients, in Form von Skripten für die Kommandozeile, mit JavaScript im Frontend-Web sowie für die Datenverarbeitung.
 
@@ -1050,7 +1038,7 @@ Scala hat einige Charakteristiken, die ihm im Vergleich zu Java einen Vorteil ve
 Besonders zu betonen sind folgende Eigenschaften von Scala im Gegensatz zu Java~\cite{epfl_scala_nodate-1, epfl_scala_nodate-2}: % Quellenangabe hier so okay?
 
 \begin{enumerate}
-    \item \emph{Kompakterer und ausdrucksstärkerer Code:} Scala ermöglicht oftmals kürzere und prägnantere Codezeilen im Vergleich zu Java. Dies wird durch spezifische Konstrukte in Scala, wie \emph{case}-Klassen und Collections-Operationen (\emph{map} und \texttt{toMap}), sowie durch Pattern Matching erreicht, was den Code weniger umfangreich und einfacher lesbar macht.
+    \item \emph{Kompakterer und ausdrucksstärkerer Code:} Scala ermöglicht oftmals kürzere und prägnantere Codezeilen im Vergleich zu Java. Dies wird durch spezifische Konstrukte in Scala, wie \emph{case}-Klassen und Collections-Operationen (\emph{map} und \emph{toMap}), sowie durch Pattern Matching erreicht, was den Code weniger umfangreich und einfacher lesbar macht.
     
     \item \emph{Funktionale Programmierung:} Scala, eine Sprache, die objektorientierte und funktionale Programmierstile unterstützt, bietet Vorteile durch funktionale Konzepte wie Higher-Order-Funktionen und effiziente Methoden zur Transformation von Collections. Diese Eigenschaften sind in Java oft weniger elegant umsetzbar oder erfordern mehr Boilerplate-Code.
     
@@ -1074,7 +1062,6 @@ Die Entscheidung für Scala in dieser Arbeit basiert auf den oben genannten Vort
 Lua ist eine Programmiersprache, die auf ihrer offiziellen Webseite als mächtige, effiziente, leichtgewichtige und integrierbare Skriptsprache beschrieben wird~\cite{ierusalimschy_lua_nodate}. Die Sprache unterstützt eine Vielzahl von Programmierparadigmen wie prozedurale Programmierung, objektorientierte Programmierung, funktionale Programmierung, datengesteuerte Programmierung und Datenbeschreibung. Die Informationen in den folgenden Abschnitten stammen, sofern nicht anders angegeben, von der offiziellen Lua-Webseite.
 
 \subsection{Einsatzgebiete von Lua}
-Auf dem \emph{\acf{PYPL}} belegt Lua im November 2023 den 21. Platz der beliebtesten Programmiersprachen~\cite{carbonnelle_pypl_2023}.
 
 Aufgrund ihrer geringen Größe wird Lua häufig als Skriptsprache innerhalb von Anwendungen verwendet. Ein Beispiel hierfür ist \emph{Fusion 18}~\cite{blackmagic_design_fusion_nodate}, eine in Hollywood häufig verwendete Compositing-Software. Auch in der Videospielbranche wird Lua häufig für Erweiterungen verwendet, z.~B. bei \emph{World of Warcraft}~\cite{wowpedia_lua_2023}.
 

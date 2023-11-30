@@ -1,5 +1,5 @@
 \chapter{Fazit}
-Die vorliegende Arbeit betrachtet eingehend die Eignung von Redis, einer Software, die primär für OLTP-Szenarien konzipiert wurde, für OLAP-Aufgaben, indem die Performance von Redis mit der von PostgreSQL anhand des \acf{SSB} verglichen wird. Es zeigt sich, dass Redis mithilfe der Integration des RediSearch-Moduls in der Lage ist, SSB-Abfragen effizient zu bearbeiten. Es stellte sich heraus, dass die denormalisierte Datenstruktur in Kombination mit einem umfassenden Indexierungssystem die effektivste Methode ist, um in Redis schnelle Abfragen mit RediSearch-Aggregationen zu ermöglichen. In diesem Kontext übertraf Redis PostgreSQL in Bezug auf die Antwortzeiten für die meisten SSB-Abfragen.
+Die vorliegende Arbeit betrachtet eingehend die Eignung von Redis, einer Software, die primär für OLTP-Szenarien konzipiert wurde, für OLAP-Aufgaben, indem die Performance von Redis mit der von PostgreSQL anhand des \acf{SSB} verglichen wird. Es zeigt sich, dass Redis mit Hilfe der Integration des RediSearch-Moduls in der Lage ist, SSB-Abfragen effizient zu bearbeiten. Es stellte sich heraus, dass die denormalisierte Datenstruktur in Kombination mit einem umfassenden Indexierungssystem die effektivste Methode ist, um in Redis schnelle Abfragen mit RediSearch-Aggregationen zu ermöglichen. In diesem Kontext übertraf Redis PostgreSQL in Bezug auf die Antwortzeiten für die meisten SSB-Abfragen.
 
 Allerdings wurde deutlich, dass Redis für diese Leistung einen signifikant höheren Speicherbedarf aufweist. Dieser Speicherbedarf ist insbesondere kritisch zu betrachten, da es sich hierbei um Arbeitsspeicher handelt. Obwohl dieser Vorteile in der Ausführungsgeschwindigkeit bietet, geht er mit höheren Kosten und potenziellen Skalierungsproblemen einher. Zusätzlich erfordert die Anpassung der Datenstrukturen an die Bedürfnisse von Redis einen erheblichen Aufwand, der jedoch als vertretbar einzustufen ist.
 
@@ -16,7 +16,7 @@ Zur Vereinfachung der Datentransformation von SQL-basierten Systemen zu Redis k�
 
 Des Weiteren gibt es mehrere Aspekte, die in dieser Studie nicht umfassend behandelt wurden, deren Untersuchung jedoch zusätzliche Erkenntnisse verspricht.
 
-Ein bedeutender Bereich ist das sogenannte "Auto Tiering" innerhalb von \emph{Redis Enterprise}, welches die Kombination von Arbeitsspeicher und SSD-Speicher ermöglicht. Dies könnte potenziell die Kostennachteile, die sich aus der ausschließlichen Nutzung von Arbeitsspeicher ergeben, reduzieren.
+Ein bedeutender Bereich ist das sogenannte \enquote{Auto Tiering} innerhalb von \emph{Redis Enterprise}, welches die Kombination von Arbeitsspeicher und SSD-Speicher ermöglicht. Dies könnte potenziell die Kostennachteile, die sich aus der ausschließlichen Nutzung von Arbeitsspeicher ergeben, reduzieren.
 
 Ebenfalls nur mit \emph{Redis Enterprise} möglich ist die Nutzung von RediSearch in Clustern. Ein Verteilen der Daten hat eventuell Auswirkungen auf die Performance der Queries.
 

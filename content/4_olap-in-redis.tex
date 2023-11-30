@@ -1,12 +1,16 @@
 \chapter{SSB in Redis}
 Der \emph{Star Schema Benchmark} wurde ursprünglich für relationale Datenbanken entwickelt, die auf SQL basieren. Er ist nicht ohne weiteres auf Key-Value-Stores wie \emph{Redis} übertragbar. In diesem Kapitel wird erläutert, wie die Daten und Abfragen des SSB angepasst werden können, um den Benchmark in Redis durchführen zu können.
 
-In Kapitel ~\ref{sec:ssb-data-in-redis} werden Ansätze vorgestellt, wie die Daten innerhalb von Redis strukturiert werden können. Im Anschluss daran wird das im Rahmen dieser Arbeit entwickelte Programm \emph{SSB Inserter} zum Einfügen der Daten in Redis vorgestellt.
+Im folgenden Kapitel wird kurz erläutert, warum RediSearch benötigt wird.
+
+In Kapitel ~\ref{sec:ssb-data-in-redis} werden Ansätze vorgestellt, wie die Daten innerhalb von Redis strukturiert werden können. Im Anschluss daran wird das im Rahmen dieser Arbeit entwickelte Programm \emph{Redis SSB Importer} zum Einfügen der Daten in Redis vorgestellt.
 
 
 Kapitel ~\ref{sec:ssb-use-in-redis} beschäftigt sich mit der Ausführung des SSB in Redis.
 Zunächst wird das entwickelte Programm \emph{Redis OLAP Client} vorgestellt, welches zur Ausführung der Queries verwendet wurde. Anschließend werden verschiedene Ansätze zur Durchführung der Queries erläutert. % TODO: Das Programm wird nicht zuerst vorgestellt
 
+\section{SSB in Redis ohne RediSearch}
+Redis bietet nur sehr wenige Möglichkeiten, nach Daten zu suchen. Mit Befehlen wie \emph{SCAN}~\cite{redis_ltd_scan_nodate} kann nur nach bestimmten Mustern im Schlüssel gesucht werden. Ohne RediSearch gibt es keine Möglichkeit, in Redis nach bestimmten Values zu suchen. Um nach Daten im Key zu suchen, müssen die Daten vorberechnet werden. Aus diesem Grund wurden keine Implementierungen ohne RediSearch realisiert.
 
 \section{SSB Daten in Redis}\label{sec:ssb-data-in-redis}
 
@@ -68,8 +72,8 @@ In \Cref{pic:redis-hash-vs-json-memory} wird der Vergleich der Speicherplatznutz
 \end{figure}
 
 % TODO: SSB als Abkürzung öfter verwenden
-\subsection{SSB Inserter}\label{sec:ssb-inserter}
-Im Rahmen dieser Arbeit wurde der \emph{SSB Inserter} entwickelt. Es handelt sich hierbei um ein Scala-Programm, das Daten, die für den SSB Benchmark erstellt wurden, aus \emph{.tbl}-Dateien einliest und anschließend in angepasster Form in Redis speichert. Es wurden unterschiedliche Methoden zur Strukturierung dieser Daten in Redis verfolgt. In diesem Kapitel werden diese Methoden und die Umsetzung des Programms erläutert.
+\subsection{Redis SSB Importer}\label{sec:ssb-inserter}
+Im Rahmen dieser Arbeit wurde der \emph{Redis SSB Importer} entwickelt. Es handelt sich hierbei um ein Scala-Programm, das Daten, die für den SSB Benchmark erstellt wurden, aus \emph{.tbl}-Dateien einliest und anschließend in angepasster Form in Redis speichert. Es wurden unterschiedliche Methoden zur Strukturierung dieser Daten in Redis verfolgt. In diesem Kapitel werden diese Methoden und die Umsetzung des Programms erläutert.
 
 \subsubsection{Konfiguration von Redis und Jedis}
 Redis verfügt über Eigenschaften, die beim Einfügen großer Datenmengen suboptimal sein können.
@@ -119,11 +123,11 @@ val lineorderStructure: Array[String] =
 \end{lstlisting}
 
 
-Der SSB Inserter liest zuerst jede \emph{.tbl}-Datei mit der Methode \lstinline|readLines| ein. Dabei wird der Tabellenname aus dem Dateinamen extrahiert und die Datei in Zeilen gelesen. Die gelesenen Zeilen werden in Gruppen zu je 1000 Stück gebündelt. Für jede Gruppe wird die Funktion \lstinline|insertIntoRedis| aufgerufen, die die Daten in die Redis-Datenbank einfügt. Dabei wird der Tabellenname, ein Array mit den Spaltennamen, ein Jedis-Pipeline-Objekt und ein Boolean übergeben, der angibt, ob der Tabellenname \emph{lineorder} ist.
+Der Redis SSB Importer liest zuerst jede \emph{.tbl}-Datei mit der Methode \lstinline|readLines| ein. Dabei wird der Tabellenname aus dem Dateinamen extrahiert und die Datei in Zeilen gelesen. Die gelesenen Zeilen werden in Gruppen zu je 1000 Stück gebündelt. Für jede Gruppe wird die Funktion \lstinline|insertIntoRedis| aufgerufen, die die Daten in die Redis-Datenbank einfügt. Dabei wird der Tabellenname, ein Array mit den Spaltennamen, ein Jedis-Pipeline-Objekt und ein Boolean übergeben, der angibt, ob der Tabellenname \emph{lineorder} ist.
 Zusätzlich wird die Zeit gemessen, die zum lesen und Einfügen der Daten benötigt wird.
 
 \begin{lstlisting}[
-    caption=Die Funktion readLines des SSB Inserter,
+    caption=Die Funktion readLines des Redis SSB Importer,
     label=code:ssb-inserter-readlines,
     language=Java
 ]
@@ -145,7 +149,7 @@ def readLines(fileName: String, dataStructure: Array[String], pipeline: Pipeline
 Die Funktion \lstinline|insertIntoRedis| arbeitet wie folgt: Zunächst werden die vorliegenden Daten, die aus einer Folge von Zeilen bestehen, verarbeitet. Jede Zeile wird dabei anhand des Trennzeichen (\lstinline+|+) in einzelne Werte aufgeteilt. Anschließend wird für jedes Schlüsselelement im Array \emph{dataStructure} ein entsprechender Wert aus der aufgeteilten Zeile ausgewählt. Dann wird geprüft, ob der \emph{Boolean} \emph{isLineOrder} wahr ist. Falls zutreffend, wird der Schlüssel für die Redis-Datenbank aus dem Namen der Datenbank und den ersten beiden Werten der Zeile gebildet. Andernfalls wird der Schlüssel lediglich aus dem Datenbanknamen und dem ersten Wert der Zeile erzeugt. Jedes Schlüssel-Wert-Paar wird dann in der Redis-Pipeline mit einem \emph{hset}-Befehl erzeugt, um den Wert unter dem jeweiligen Schlüssel in der Datenbank zu speichern.
 
 \begin{lstlisting}[
-    caption=Die Funktion insertIntoRedis des SSB Inserter,
+    caption=Die Funktion insertIntoRedis des Redis SSB Importer,
     label=code:ssb-inserter-insertIntoRedis,
     language=Java
 ]
@@ -800,7 +804,7 @@ Q 2.3 & 20358 ms & 900 ms & 228 ms       \\\hline
 Hinweis: Im Laufe der Forschung wurden verschiedene Varianten der Abfragen entwickelt, die sich hauptsächlich in kleineren Details unterscheiden. Für die Ergebnisse wurden hier jeweils die schnellsten Varianten der beiden Ansätze, einmal mit vorberechneten Queries und einmal ohne genutzt. Die genutzten Varianten haben folgende Bezeichnungen im Quellcode:\\
 \emph{Q1\_1\_client\_a} und \emph{Q1\_1\_client\_c}; \emph{Q1\_2\_client\_a} und \emph{Q1\_2\_client\_c};\\ \emph{Q1\_3\_client\_a} und \emph{Q1\_3\_client\_c};\\ \emph{Q2\_1\_client\_a} und \emph{Q2\_1\_client\_b}; \emph{Q2\_2\_client\_a} und \emph{Q2\_2\_client\_b}.
 \\Im Quellcode, der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten. % Hier eventuell auf Aggregation verweisen
-
+Die ausführlichen Daten zur Laufzeit sind in \cref{sec:appendix-client-approach-times} vorhanden, wobei die markierten Zeilen den Median enthalten.
 % TODO: Ausbauen
 
 \subsubsection{Fazit}
@@ -983,6 +987,8 @@ hier jeweils die schnellsten Varianten verwendet. Die
 genutzten Varianten haben folgende Bezeichnungen im Quellcode: \emph{Q1\_1\_server\_a}, \emph{Q1\_2\_server\_a}, \emph{Q1\_3\_server\_a}. Im Quellcode,
 der im digitalen Anhang zu finden ist, sind weitere Varianten enthalten.
 
+
+Die ausführlichen Daten zur Laufzeit sind in \cref{sec:appendix-server-approach-times} vorhanden, wobei die markierten Zeilen den Median enthalten.
 
 \subsubsection{Fazit}
 Der vorgestellte Ansatz erläutert, wie Daten des \ac{SSB} in Redis geladen und Abfragen der ersten Kategorie mittels server-seitiger Joins realisiert werden können. Dabei wird die Datenstruktur, analog zum Ansatz mit client-seitigen Joins, so nah wie möglich an den ursprünglichen normalisierten Daten orientiert. Bei den Abfragen Q1.2 und Q1.3 zeigt sich, dass der Ansatz mit serverseitigen Joins in Bezug auf die Ausführungszeiten gut mit den client-seitigen Joins der Variante 2 und \emph{PostgreSQL} konkurrieren kann. Allerdings wird bei der Abfrage Q1.1 deutlich, dass der serverseitige Join-Prozess erheblich mehr Zeit in Anspruch nimmt als der clientbasierte Ansatz 2 und \emph{PostgreSQL}.
@@ -1283,14 +1289,14 @@ Die Kontrolldaten stammen aus den Konsolenausgaben von PostgreSQL. Sie werden mi
 
 \subsubsection{Ähnlichkeiten der SQL Quries zu RediSearch Aggregationen}
 In der vorliegenden Arbeit wurde festgestellt, dass SQL-Abfragen und\\ Redis-Aggregationen eine ähnliche Syntaxstruktur aufweisen, wodurch bei entsprechenden Kenntnissen beider Sprachen die Ableitung der einen aus der anderen vereinfacht wird. \cref{pic:sql-redis-similiar} veranschaulicht die unterschiedlichen Segmente der Abfragen, indem sie farblich hervorgehoben werden.
-
-\begin{figure}[h]  % figure position
+\newpage
+\begin{figure}[ht]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/sql-redisearch-similiar.png}
     \caption{Vergleich der SQL-Query und der RediSearch-Aggregation für Q2.1.}      % caption the image
     \label{pic:sql-redis-similiar}    % label the image for internal referencing
 \end{figure}
-
+\newpage
 \subsubsection{Vergleich der Laufzeiten von Abfragen}
 % TODO: Volle Versiond der Tabellen in Anhang packen
 % TODO: Position fixen
@@ -1319,7 +1325,6 @@ Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar na
 \end{table}
 
 
-\newpage
 % TODO: Position fixen
 \begin{figure}[h]  % figure position
     \centering      % center the image
@@ -1328,6 +1333,7 @@ Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar na
     \label{pic:results-denormalized}    % label the image for internal referencing
 \end{figure}
 
+\newpage
 \begin{figure}[h]  % figure position
     \centering      % center the image
     \includegraphics[width=1\textwidth]{pictures/results/number-of-results.png}
@@ -1336,11 +1342,14 @@ Die Messwerte wurden ermittelt, indem der Median von jeweils drei unmittelbar na
 \end{figure}
 
 \newpage
+
+Die ausführlichen Daten zur Laufzeit sind in \cref{sec:appendix-denormalized-approach-times} vorhanden, wobei die markierten Zeilen den Median enthalten.
+\newpage
 \subsubsection{Fazit}
 Der vorgestellte Ansatz beleuchtet die Nutzung denormalisierter Daten des \emph{Star Schema Benchmark (SSB)} in \emph{Redis} unter Verwendung von RediSearch-Aggregationen. Diese Aggregationen lassen sich leicht aus den originalen SQL-Queries ableiten. Bei der Betrachtung der Laufzeiten dieses Ansatzes zeigt sich, dass er in den meisten Fällen \emph{PostgreSQL} deutlich überlegen ist. Ausnahmen bilden die Abfragen Q1.1, Q3.1 und Q4.1, bei denen der Ansatz \emph{PostgreSQL} unterlegen ist.
 
 
-Eine Erklärung für die langsameren Laufzeiten bei diesen spezifischen Queries offenbart sich bei der Untersuchung der Anzahl der durch den jeweiligen Query-Filter gefundenen \emph{lineorder}-Dokumente innerhalb der Aggregation. Je höher die Anzahl der zu verarbeitenden \emph{lineorder}-Dokumente, desto schlechter fällt die Laufzeit aus. 
+Eine Erklärung für die langsameren Laufzeiten bei diesen spezifischen Queries offenbart sich bei der Untersuchung der Anzahl der durch den jeweiligen Query-Filter gefundenen \emph{lineorder}-Dokumente innerhalb der Aggregation. Je höher die Anzahl der zu verarbeitenden \emph{lineorder}-Dokumente, desto schlechter fällt die Laufzeit aus (siehe \cref{pictures/results/number-of-results.png}). 
 
 Insgesamt betrachtet stellt dieser Ansatz jedoch den einzigen ernstzunehmenden Konkurrenten zu \emph{PostgreSQL} dar. Er demonstriert die Effizienz von RediSearch-Aggregationen in Kombination mit denormalisierten Datenstrukturen.
 
@@ -1353,7 +1362,11 @@ Bei Vergleich der verschiedenen Ansätze zeigt sich, dass der Ansatz mit denorma
 
 
 \section{Skalierung}
+Für die Analyse der Skalierbarkeit wurden die (SSB)-Daten mit Skalierungsfaktoren von 1, 2 und 4 erzeugt. Ziel war es, die Leistungsfähigkeit von PostgreSQL und Redis im Kontext größer werdender Datenmengen zu vergleichen. Die Untersuchung offenbarte in beiden Datenbanksystemen eine lineare Skalierung. Die Ausführungszeiten der Queries wuchsen proportional zur Größe der Daten. Ein interessanter Aspekt, der sich abzeichnete, war die Leistung von Redis bei Queries, die eine besonders hohe Anzahl von lineorder-Dokumenten verarbeiten. Diese schnitten wie bereits oben beleuchtet schlechter ab als PostgreSQL.
 
+Die Zeiten werden in \cref{pic:scale} dargestellt.\\
+Die ausführlichen Daten sind in \cref{sec:appendix-denormalized-approach-times} vorhanden.
+\newpage
 \begin{figure}[p]
     \centering
     \includegraphics[height=0.9\textheight]{pictures/results/results-denormalized-scaled.png}
